@@ -1,0 +1,28 @@
+isc.DataSource.create({
+    allowAdvancedCriteria:true,
+    dropExtraFields:false,
+    ID:"DBListDS",
+    operationBindings:[
+        {
+            operationType:"fetch"
+        }
+    ],
+    fields:[
+        {
+            primaryKey:true,
+            name:"name"
+        },
+        {
+            name:"type"
+        },
+        {
+            name:"version"
+        },
+        {
+            name:"driverVersion"
+        },
+        {
+            name:"status"
+        }
+    ]
+})

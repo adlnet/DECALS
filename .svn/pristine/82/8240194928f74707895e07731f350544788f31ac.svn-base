@@ -1,0 +1,7 @@
+site.name="DECALS"
+root.url="http://decals.eduworks.com/"
+alfresco.url="http://decals.eduworks.com/alfresco/"
+site.url="http://decals.eduworks.com/public/"
+help.url="http://decals.eduworks.com/share/page/site/russel-community/dashboard"
+feedback.email="DECALS.feedback@eduworks.com"
+

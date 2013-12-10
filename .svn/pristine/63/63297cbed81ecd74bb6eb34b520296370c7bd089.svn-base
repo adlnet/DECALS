@@ -1,0 +1,9 @@
+isc.DataSource.create({
+    allowAdvancedCriteria:true,
+    ID:"XSComplexType",
+    addGlobalId:false,
+    Constructor:"XSComplexType",
+    fields:[
+    ],
+    inheritsFrom:"DataSource"
+})
