@@ -5,7 +5,7 @@
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
 
-  <!-- Servlets -->
+  <!-- Servlets 
   <servlet>
     <servlet-name>greetServlet</servlet-name>
     <servlet-class>com.eduworks.russel.ds.server.GreetingServiceImpl</servlet-class>
@@ -14,11 +14,11 @@
   <servlet-mapping>
     <servlet-name>greetServlet</servlet-name>
     <url-pattern>/russel_ds/greet</url-pattern>
-  </servlet-mapping>
+  </servlet-mapping>-->
   
   <!-- Default page to serve -->
   <welcome-file-list>
-    <welcome-file>Russel_ds.html</welcome-file>
+    <welcome-file>index.html</welcome-file>
   </welcome-file-list>
 
 </web-app>

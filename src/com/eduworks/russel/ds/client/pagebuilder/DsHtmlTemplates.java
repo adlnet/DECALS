@@ -8,18 +8,25 @@ public interface DsHtmlTemplates extends HtmlTemplates {
 	 * getLoginWidget Retrieves the login widget source code
 	 * @return TextResource
 	 */
-	@Source("template/DecalsLoginPanel.html")
-	public TextResource getLoginWidget();
+	@Source("template/DecalsGuestHeader.html")
+	public TextResource getGuestHeader();
 	
 	@Source("template/DecalsHeader.html")
-	public TextResource getHeader();
+   public TextResource getHeader();
 	
 	@Source("template/DecalsFooter.html")
 	public TextResource getFooter();
 	
-	@Source("template/DecalsRecentItemPanel.html")
-	public TextResource getRecentItemPanel();
+	@Source("template/DecalsStudentHomePanel.html")
+	public TextResource getStudentHomePanel();
 	
-	@Source("template/DecalsRecentItemPanelWidget.html")
-	public TextResource getRecentItemPanelWidget();
+	@Source("template/DecalsTeacherHomePanel.html")
+   public TextResource getTeacherHomePanel();
+	
+	@Source("template/DecalsGuestPanel.html")
+   public TextResource getGuestPanel();
+	
+	@Source("template/DecalsSearchPanel.html")
+	public TextResource getSearchPanel();
+	
 }

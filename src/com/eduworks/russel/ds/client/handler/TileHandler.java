@@ -18,22 +18,22 @@ package com.eduworks.russel.ds.client.handler;
 
 import java.util.Vector;
 
-import com.eduworks.gwt.client.net.CommunicationHub;
 import com.eduworks.gwt.client.net.api.Adl3DRApi;
-import com.eduworks.gwt.client.net.api.AlfrescoApi;
-import com.eduworks.gwt.client.net.callback.Adl3DRCallback;
-import com.eduworks.gwt.client.net.callback.AlfrescoCallback;
+import com.eduworks.gwt.client.net.api.ESBApi;
+//import com.eduworks.gwt.client.net.callback.Adl3DRCallback;
+import com.eduworks.gwt.client.net.callback.ESBCallback;
 import com.eduworks.gwt.client.net.callback.EventCallback;
-import com.eduworks.gwt.client.net.packet.Adl3DRPacket;
-import com.eduworks.gwt.client.net.packet.AlfrescoPacket;
-import com.eduworks.gwt.client.net.packet.StatusPacket;
+//import com.eduworks.gwt.client.net.packet.Adl3DRPacket;
+import com.eduworks.gwt.client.net.packet.AjaxPacket;
+import com.eduworks.gwt.client.net.packet.ESBPacket;
 import com.eduworks.gwt.client.pagebuilder.PageAssembler;
 import com.eduworks.gwt.client.util.Browser;
 import com.eduworks.russel.ui.client.Constants;
-import com.eduworks.russel.ui.client.Russel;
 import com.eduworks.russel.ui.client.ScreenDispatch;
-import com.eduworks.russel.ui.client.epss.ProjectFileModel;
 import com.eduworks.russel.ui.client.extractor.AssetExtractor;
+import com.eduworks.gwt.client.model.FileRecord;
+//import com.eduworks.russel.ui.client.model.FileRecord;
+import com.eduworks.russel.ui.client.model.StatusRecord;
 import com.eduworks.russel.ui.client.pagebuilder.MetaBuilder;
 import com.eduworks.russel.ui.client.pagebuilder.screen.EPSSEditScreen;
 import com.google.gwt.dom.client.Document;
@@ -57,7 +57,7 @@ import com.google.gwt.user.client.ui.TextBox;
  */
 public class TileHandler extends Constants{
 	protected SearchHandler ash;
-	public AlfrescoPacket searchRecord;
+	public FileRecord searchRecord;
 	public String tileType;
 	protected String idPrefix;
 	protected TileHandler tile;
@@ -74,9 +74,9 @@ public class TileHandler extends Constants{
 	 * @param asHandler AlfrescoSearchHandler Hook to search handler
 	 * @param thumbIdPrefix String Thumbnail id
 	 * @param searchTileType String
-	 * @param searchTermRecord AlfrescoPacket Information for the tile
+	 * @param searchTermRecord ESBPacket Information for the tile
 	 */
-	public TileHandler(SearchHandler asHandler, String thumbIdPrefix, String searchTileType, AlfrescoPacket searchTermRecord) {
+	public TileHandler(SearchHandler asHandler, String thumbIdPrefix, String searchTileType, FileRecord searchTermRecord) {
 		this.tile = this;
 		this.ash = asHandler;
 		this.searchRecord = searchTermRecord;
@@ -104,9 +104,9 @@ public class TileHandler extends Constants{
 	
 	/**
 	 * getSearchRecord Returns the information tied to the tile
-	 * @return AlfrescoPacket
+	 * @return ESBPacket
 	 */
-	public AlfrescoPacket getSearchRecord() {
+	public FileRecord getSearchRecord() {
 		return this.searchRecord;
 	}
 	
@@ -144,51 +144,53 @@ public class TileHandler extends Constants{
 		PageAssembler.attachHandler(idPrefix + "-objectOpen", Event.ONCLICK, new EventCallback() {
 																				@Override
 																				public void onEvent(Event event) {
-																					if (tileType.equals(AlfrescoSearchHandler.PROJECT_TYPE))
-																						ProjectFileModel.importFromAlfrescoNode(searchRecord.getNodeId(), 
-																																searchRecord.getFilename(),
-																																new AlfrescoCallback<AlfrescoPacket>() {
-																																	@Override
-																																	public void onSuccess(AlfrescoPacket alfrescoPacket) {
-																																		Russel.view.loadEPSSEditScreen(alfrescoPacket);
-																																	}
-																																	
-																																	@Override
-																																	public void onFailure(Throwable caught) {
+																					//TODO more SOLR query
+//																					if (tileType.equals(AlfrescoSearchHandler.PROJECT_TYPE))
+//																						ProjectFileModel.importFromAlfrescoNode(searchRecord.getGuid(), 
+//																																searchRecord.getFilename(),
+//																																new ESBCallback<ESBPacket>() {
+//																																	@Override
+//																																	public void onSuccess(ESBPacket alfrescoPacket) {
+//																																		Russel.view.loadEPSSEditScreen(alfrescoPacket);
+//																																	}
+//																																	
+//																																	@Override
+//																																	public void onFailure(Throwable caught) {
 //																																		StatusWindowHandler.createMessage(StatusWindowHandler.getProjectLoadMessageError(searchRecord.getFilename()),
-//																																										  StatusPacket.ALERT_ERROR);
-																																	}
-																																});
+//																																										  StatusRecord.ALERT_ERROR);
+//																																	}
+//																																});
 //																					else if (tileType.equals(AlfrescoSearchHandler.RECENT_TYPE)||tileType.equals(AlfrescoSearchHandler.ASSET_TYPE) ||
 //																							 tileType.equals(AlfrescoSearchHandler.NOTES_TYPE) ||tileType.equals(AlfrescoSearchHandler.SEARCH_TYPE)||
-//																							 tileType.equals(AlfrescoSearchHandler.COLLECTION_TYPE)||tileType.equals(AlfrescoSearchHandler.FLR_TYPE))
-																						//view().loadDetailScreen(searchRecord, tile);
+//																							 tileType.equals(AlfrescoSearchHandler.COLLECTION_TYPE)||tileType.equals(AlfrescoSearchHandler.FLR_TYPE)||
+//																							 tileType.equals(Adl3DRSearchHandler.SEARCH3DR_TYPE)||tileType.equals(Adl3DRSearchHandler.ASSET3DR_TYPE))
+//																						view().loadDetailScreen(searchRecord, tile);
 																				}
 																			 });
 		
 		PageAssembler.attachHandler(idPrefix + "-objectDelete", Event.ONCLICK, new EventCallback() {
 																					@Override
 																					public void onEvent(Event event) {
-																						if (Window.confirm("Are you sure you wish to delete this item?")) {
-//																							final StatusPacket status = StatusWindowHandler.createMessage(StatusWindowHandler.getDeleteMessageBusy(searchRecord.getFilename()),
-//																																						  StatusPacket.ALERT_BUSY);
-																							AlfrescoApi.deleteDocument(searchRecord.getNodeId(), new AlfrescoCallback<AlfrescoPacket>() {
-																																					@Override
-																																					public void onFailure(Throwable caught) {
+//																						if (Window.confirm("Are you sure you wish to delete this item?")) {
+//																							final StatusRecord status = StatusWindowHandler.createMessage(StatusWindowHandler.getDeleteMessageBusy(searchRecord.getFilename()),
+//																																						  StatusRecord.ALERT_BUSY);
+//																							ESBApi.deleteResource(searchRecord.getGuid(), new ESBCallback<ESBPacket>() {
+//																																					@Override
+//																																					public void onFailure(Throwable caught) {
 //																																						status.setMessage(StatusWindowHandler.getDeleteMessageError(searchRecord.getFilename()));
-//																																						status.setState(StatusPacket.ALERT_ERROR);
+//																																						status.setState(StatusRecord.ALERT_ERROR);
 //																																						StatusWindowHandler.alterMessage(status);
-																																					}
-																		
-																																					@Override
-																																					public void onSuccess(AlfrescoPacket result) {
+//																																					}
+//																		
+//																																					@Override
+//																																					public void onSuccess(ESBPacket result) {
 //																																						status.setMessage(StatusWindowHandler.getDeleteMessageDone(searchRecord.getFilename()));
-//																																						status.setState(StatusPacket.ALERT_SUCCESS);
+//																																						status.setState(StatusRecord.ALERT_SUCCESS);
 //																																						StatusWindowHandler.alterMessage(status);
-																																						DOM.getElementById(idPrefix+"-object").removeFromParent();
-																																					}
-																																				});
-																						}
+//																																						DOM.getElementById(idPrefix+"-object").removeFromParent();
+//																																					}
+//																																				});
+//																						}
 																					}
 																				});
 		
@@ -211,7 +213,7 @@ public class TileHandler extends Constants{
 																		public void onEvent(Event event) {
 																			((Label)PageAssembler.elementToWidget("projectAssetTitle", PageAssembler.LABEL)).setText(DOM.getElementById(idPrefix + "-objectTitle").getInnerText());
 																			((Hidden)PageAssembler.elementToWidget("epssActiveRemoveAsset", PageAssembler.HIDDEN)).setValue("");
-																			((Hidden)PageAssembler.elementToWidget("epssActiveAddAsset", PageAssembler.HIDDEN)).setValue(searchRecord.getNodeId() + "," + searchRecord.getFilename());
+																			((Hidden)PageAssembler.elementToWidget("epssActiveAddAsset", PageAssembler.HIDDEN)).setValue(searchRecord.getGuid() + "," + searchRecord.getFilename());
 																			((TextBox)PageAssembler.elementToWidget("inputDevNotes", PageAssembler.TEXT)).setText("");
 																			EPSSEditScreen.addAssetTrigger();
 																		}
@@ -241,22 +243,24 @@ public class TileHandler extends Constants{
 	}
 	
 	/**
-	 * fillTile Renders the tile information in the tile display based on search type
+	 * fillTile Renders the tile information in the tile display based on search type, maintaining current selection state
 	 * @param callback EventCallback
 	 */
 	public void fillTile(final EventCallback callback) {
-		((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).setStyleName("cube file");
+		if (this.getSelectState())
+			((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).setStyleName("cube file active");
+		else
+			((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).setStyleName("cube file");
 		((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).addStyleName(AssetExtractor.getFileType(searchRecord.getFilename()));	
-		((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).addStyleName(AssetExtractor.getFileType(searchRecord.getFilename()));
-		((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(searchRecord.getAverageRating() + " stars");
+		((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(searchRecord.getRating() + " stars");
 		long percent = 0;
-		if (searchRecord.getAverageRating()>0)
-			percent = Math.round(searchRecord.getAverageRating()/5.0 * 100);
+		if (searchRecord.getRating()>0)
+			percent = Math.round(searchRecord.getRating()/5.0 * 100);
 		if (DOM.getElementById(idPrefix + "-objectRating")!=null)
 			PageAssembler.setWidth(DOM.getElementById(idPrefix + "-objectRating"), percent+"%");
 		
-    	String fouo = searchRecord.getValueString("fouo");
-		if (fouo.equalsIgnoreCase(Constants.FOUO)) {
+    	Boolean fouo = searchRecord.getFOUO();
+		if (fouo) {
 			((Label)PageAssembler.elementToWidget(idPrefix + "-objectAlerts", PageAssembler.LABEL)).setStyleName("status-alert");
 			((Label)PageAssembler.elementToWidget(idPrefix + "-objectAlertsBack", PageAssembler.LABEL)).setStyleName("status-alert");
 			((Label)PageAssembler.elementToWidget(idPrefix + "-objectAlertText", PageAssembler.LABEL)).setText("FOUO");
@@ -276,81 +280,87 @@ public class TileHandler extends Constants{
 	    	final String description = searchRecord.getDescription();
 	    	((Label)PageAssembler.elementToWidget(idPrefix + "-objectTitleBack", PageAssembler.LABEL)).setText(description);
 	    	
+	    	//TODO fix this
 	    	// Retrieve the rest of the ADL 3DR Metadata
-    		Adl3DRApi.getADL3DRobject(searchRecord.getNodeId(), new Adl3DRCallback<Adl3DRPacket> () {
-																	@Override
-																	public void onFailure(Throwable caught) {
-																		((Label)PageAssembler.elementToWidget(idPrefix + "-objectDescription", PageAssembler.LABEL)).setText(description);
-																		callback.onEvent(null);
-																	}
-																	
-																	@Override
-																	public void onSuccess(Adl3DRPacket adlPacket) {
-																		// merge it into the searchRecord and save it for DetailView
-																		AlfrescoPacket moreData = adlPacket.convert2Russel();
-																		searchRecord.mergePackets(moreData);
-																		
-																		if (!Browser.isIE())
-																			DOM.getElementById(idPrefix + "-objectDescription").setAttribute("style", "background-image:url(" + searchRecord.getValueString("thumbnail") + ");");
-																		else {
-																			Image thumb = new Image();
-																			thumb.addErrorHandler(new ErrorHandler() {
-																									@Override
-																									public void onError(ErrorEvent event) {
-																										((Label)PageAssembler.elementToWidget(idPrefix + "-objectDescription", PageAssembler.LABEL)).setText(description);
-																									}
-																								  });
-																			thumb.setUrl(searchRecord.getValue("thumbnail").toString());
-																			RootPanel.get(idPrefix + "-objectDescription").add(thumb);
-																		}
-																		callback.onEvent(null);
-																		
-																	}
-    		});
+//    		Adl3DRApi.getADL3DRobject(searchRecord.getGuid(), new Adl3DRCallback<Adl3DRPacket> () {
+//																	@Override
+//																	public void onFailure(Throwable caught) {
+//																		((Label)PageAssembler.elementToWidget(idPrefix + "-objectDescription", PageAssembler.LABEL)).setText(description);
+//																		callback.onEvent(null);
+//																	}
+//																	
+//																	@Override
+//																	public void onSuccess(Adl3DRPacket adlPacket) {
+//																		// merge it into the searchRecord and save it for DetailView
+//																		ESBPacket moreData = adlPacket;
+//																		//TODO figure out what adl packet looks like
+//																		//searchRecord.mergePackets(moreData);
+//																		
+//																		if (!Browser.isIE())
+//																			DOM.getElementById(idPrefix + "-objectDescription").setAttribute("style", "background-image:url(" + searchRecord.getThumbnail() + ");");
+//																		else {
+//																			Image thumb = new Image();
+//																			thumb.addErrorHandler(new ErrorHandler() {
+//																									@Override
+//																									public void onError(ErrorEvent event) {
+//																										((Label)PageAssembler.elementToWidget(idPrefix + "-objectDescription", PageAssembler.LABEL)).setText(description);
+//																									}
+//																								  });
+//																			thumb.setUrl(searchRecord.getThumbnail());
+//																			RootPanel.get(idPrefix + "-objectDescription").add(thumb);
+//																		}
+//																		callback.onEvent(null);
+//																		
+//																	}
+//    		});
     		
-    		Adl3DRApi.getADL3DRobjectReview(searchRecord.getNodeId(), new Adl3DRCallback<Adl3DRPacket> () {
-																		@Override
-																		public void onFailure(Throwable caught) {
-//																			((Label)PageAssembler.elementToWidget(idPrefix + "-objectDescription", PageAssembler.LABEL)).setText(description);
-																			callback.onEvent(null);
-																		}
-																		
-																		@Override
-																		public void onSuccess(Adl3DRPacket adlPacket) {
-//																			// merge it into the searchRecord and save it for DetailView
-																			searchRecord.addKeyValue("feedback",adlPacket);
-																			((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(adlPacket.getAverageRating() + " stars");
-																			long percent = 0;
-																			if (adlPacket.getAverageRating()>0)
-																				percent = Math.round(adlPacket.getAverageRating()/5.0 * 100);
-																			if (Document.get().getElementById(idPrefix + "-objectRating")!=null)
-																				Document.get().getElementById(idPrefix + "-objectRating").setAttribute("style", "width:"+percent+"%");
-																	    	if (adlPacket.getCommentCount()>0) {
-																				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).setText(adlPacket.getCommentCount()+"");
-																				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).removeStyleName("hidden");
-																			} else
-																				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).addStyleName("hidden");
-																			callback.onEvent(null);
-																			
-																		}
-    		});
+	    	//TODO FIX THIS
+//    		Adl3DRApi.getADL3DRobjectReview(searchRecord.getGuid(), new Adl3DRCallback<Adl3DRPacket> () {
+//																		@Override
+//																		public void onFailure(Throwable caught) {
+////																			((Label)PageAssembler.elementToWidget(idPrefix + "-objectDescription", PageAssembler.LABEL)).setText(description);
+//																			callback.onEvent(null);
+//																		}
+//																		
+//																		@Override
+//																		public void onSuccess(Adl3DRPacket adlPacket) {
+////																			// merge it into the searchRecord and save it for DetailView
+//																			//TODO convert adl packet to FileRecord
+////																			searchRecord.put("feedback", adlPacket);
+//
+//																			FileRecord fr = new FileRecord();
+//																			((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(fr.getRating() + " stars");
+//																			long percent = 0;
+//																			if (fr.getRating()>0)
+//																				percent = Math.round(fr.getRating()/5.0 * 100);
+//																			if (Document.get().getElementById(idPrefix + "-objectRating")!=null)
+//																				Document.get().getElementById(idPrefix + "-objectRating").setAttribute("style", "width:"+percent+"%");
+//																	    	if (fr.getComments().size()>0) {
+//																				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).setText(fr.getComments().size()+"");
+//																				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).removeStyleName("hidden");
+//																			} else
+//																				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).addStyleName("hidden");
+//																			callback.onEvent(null);
+//																			
+//																		}
+//    		});
 		}
 		else {		
-			((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(searchRecord.getAverageRating() + " stars");
+			((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(searchRecord.getRating() + " stars");
 			percent = 0;
-			if (searchRecord.getAverageRating()>0)
-				percent = Math.round(searchRecord.getAverageRating()/5.0 * 100);
+			if (searchRecord.getRating()>0)
+				percent = Math.round(searchRecord.getRating()/5.0 * 100);
 			if (Document.get().getElementById(idPrefix + "-objectRating")!=null)
 				Document.get().getElementById(idPrefix + "-objectRating").setAttribute("style", "width:"+percent+"%");
-	    	if (searchRecord.getCommentCount()>0) {
-				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).setText(searchRecord.getCommentCount()+"");
+	    	if (searchRecord.getComments().size()>0) {
+				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).setText(searchRecord.getComments().size()+"");
 				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).removeStyleName("hidden");
 			} else
 				((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).addStyleName("hidden");
 	    	final String description = (searchRecord.getDescription()=="")?"Click to Edit":searchRecord.getDescription();
 	    	((Label)PageAssembler.elementToWidget(idPrefix + "-objectTitleBack", PageAssembler.LABEL)).setText(searchRecord.getFilename() + "  --  " + description);
 
-    		AlfrescoApi.getThumbnail(searchRecord.getNodeId(), new AlfrescoCallback<AlfrescoPacket>() {
+    		ESBApi.getThumbnail(searchRecord.getGuid(), new ESBCallback<ESBPacket>() {
 																	@Override
 																	public void onFailure(Throwable caught) {
 																		((Label)PageAssembler.elementToWidget(idPrefix + "-objectDescription", PageAssembler.LABEL)).setText(description);
@@ -358,9 +368,9 @@ public class TileHandler extends Constants{
 																	}
 																	
 																	@Override
-																	public void onSuccess(AlfrescoPacket alfrescoPacket) {
+																	public void onSuccess(ESBPacket alfrescoPacket) {
 																		if (!Browser.isIE())
-																			DOM.getElementById(idPrefix + "-objectDescription").setAttribute("style", "background-image:url(" + alfrescoPacket.getValueString("imageURL") + ");");
+																			DOM.getElementById(idPrefix + "-objectDescription").setAttribute("style", "background-image:url(" + alfrescoPacket.getString("imageURL") + ");");
 																		else {
 																			Image thumb = new Image();
 																			thumb.addErrorHandler(new ErrorHandler() {
@@ -369,7 +379,7 @@ public class TileHandler extends Constants{
 																										((Label)PageAssembler.elementToWidget(idPrefix + "-objectDescription", PageAssembler.LABEL)).setText(description);
 																									}
 																								  });
-																			thumb.setUrl(alfrescoPacket.getValueString("imageURL").toString());
+																			thumb.setUrl(alfrescoPacket.getString("imageURL"));
 																			RootPanel.get(idPrefix + "-objectDescription").add(thumb);
 																		}
 																		callback.onEvent(null);
@@ -379,74 +389,82 @@ public class TileHandler extends Constants{
 	}
 	
 	/**
-	 * refreshTile Retrieves the latest information pertaining to the node represented by the tile
+	 * refreshTile Retrieves the latest information pertaining to the node represented by the tile, maintaining current selection state
 	 * @param callback EventCallback
 	 */
 	public void refreshTile(final EventCallback callback) {
-		((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).setStyleName("cube file");
+		if (this.getSelectState())
+			((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).setStyleName("cube file active");
+		else
+			((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).setStyleName("cube file");
+
 		((Label)PageAssembler.elementToWidget(idPrefix + "-objectState", PageAssembler.LABEL)).addStyleName(AssetExtractor.getFileType(searchRecord.getFilename()));
 		
 		if (this.tileType.contains("3DR")) { 
-    		Adl3DRApi.getADL3DRobjectReview(searchRecord.getNodeId(), new Adl3DRCallback<Adl3DRPacket> () {
-							@Override
-							public void onFailure(Throwable caught) {
-								callback.onEvent(null);
-							}
-							
-							@Override
-							public void onSuccess(Adl3DRPacket adlPacket) {
-								// merge it into the searchRecord and save it for DetailView
-								searchRecord.addKeyValue("feedback",adlPacket);
-								((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(adlPacket.getAverageRating() + " stars");
-								long percent = 0;
-								if (adlPacket.getAverageRating()>0)
-									percent = Math.round(adlPacket.getAverageRating()/5.0 * 100);
-								if (Document.get().getElementById(idPrefix + "-objectRating")!=null)
-									Document.get().getElementById(idPrefix + "-objectRating").setAttribute("style", "width:"+percent+"%");
-						    	if (adlPacket.getCommentCount()>0) {
-									((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).setText(adlPacket.getCommentCount()+"");
-									((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).removeStyleName("hidden");
-								} else
-									((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).addStyleName("hidden");
-								callback.onEvent(null);
-							}
-			});
+		  //TODO Fix this
+//    		Adl3DRApi.getADL3DRobjectReview(searchRecord.getGuid(), new Adl3DRCallback<Adl3DRPacket> () {
+//							public void onFailure(Throwable caught) {
+//								callback.onEvent(null);
+//							}
+//							
+//							public void onSuccess(Adl3DRPacket adlPacket) {
+//								// merge it into the searchRecord and save it for DetailView
+//								//TODO more ADL 3DR crap
+//								//searchRecord.put("feedback", adlPacket);
+//								FileRecord fr = new FileRecord();
+//								((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(fr.getRating() + " stars");
+//								long percent = 0;
+//								if (fr.getRating()>0)
+//									percent = Math.round(fr.getRating()/5.0 * 100);
+//								if (Document.get().getElementById(idPrefix + "-objectRating")!=null)
+//									Document.get().getElementById(idPrefix + "-objectRating").setAttribute("style", "width:"+percent+"%");
+//						    	if (fr.getComments().size()>0) {
+//									((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).setText(fr.getComments().size()+"");
+//									((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).removeStyleName("hidden");
+//								} else
+//									((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).addStyleName("hidden");
+//								callback.onEvent(null);
+//							}
+//			});
 	
 		}
 		else {
-			AlfrescoApi.getObjectRatings(searchRecord.getNodeId(),
-					  new AlfrescoCallback<AlfrescoPacket>() {
+			ESBApi.getRatings(searchRecord.getGuid(),
+					  new ESBCallback<ESBPacket>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							AlfrescoPacket errorPacket = AlfrescoPacket.wrap(CommunicationHub.parseJSON(caught.getMessage()));
-							if (errorPacket.getHttpStatus()=="404")
-								missingFileTile();
-							else Window.alert(caught.getMessage());
+							//TODO fix error message for ratings 
+//							ESBPacket errorPacket = new ESBPacket(AjaxPacket.parseJSON(caught.getMessage()));
+//							if (errorPacket.getHttpStatus()=="404")
+//								missingFileTile();
+//							else Window.alert(caught.getMessage());
 							if (callback!=null)
 					    		callback.onEvent(null);
 						}
 						
 						@Override
-						public void onSuccess(AlfrescoPacket ratingRecord) {
-							((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(ratingRecord.getAverageRating() + " stars");
+						public void onSuccess(ESBPacket ratingRecord) {
+							searchRecord.parseESBPacket(ratingRecord);
+							((Label)PageAssembler.elementToWidget(idPrefix + "-objectRating", PageAssembler.LABEL)).setText(searchRecord.getRating() + " stars");
 							long percent = 0;
-							if (ratingRecord.getAverageRating()>0)
-								percent = Math.round(ratingRecord.getAverageRating()/5.0 * 100);
+							if (searchRecord.getRating()>0)
+								percent = Math.round(searchRecord.getRating()/5.0 * 100);
 							if (DOM.getElementById(idPrefix + "-objectRating")!=null)
 								PageAssembler.setWidth(DOM.getElementById(idPrefix + "-objectRating"), percent+"%");
 	
 						    	if (callback!=null)
 						    		callback.onEvent(null);
-								    AlfrescoApi.getObjectComments(searchRecord.getNodeId(), 
-										  new AlfrescoCallback<AlfrescoPacket>() {
+								    ESBApi.getComments(searchRecord.getGuid(), 
+										  new ESBCallback<ESBPacket>() {
 										    @Override
-											public void onSuccess(final AlfrescoPacket commentPacket) {
-										    	AlfrescoApi.getMetadata(searchRecord.getNodeId(), 
-																		new AlfrescoCallback<AlfrescoPacket>() {
+											public void onSuccess(final ESBPacket commentPacket) {
+										    	ESBApi.getResourceMetadata(searchRecord.getGuid(), 
+																		new ESBCallback<ESBPacket>() {
 																		    @Override
-																			public void onSuccess(final AlfrescoPacket ap) {
-																		    	String fouo = ap.getAlfrescoPropertyValue("russel:level");
-																				if (fouo.equalsIgnoreCase(Constants.FOUO)) {
+																			public void onSuccess(final ESBPacket ap) {
+																		    	searchRecord.parseESBPacket(ap);
+																		    	Boolean fouo = searchRecord.getFOUO();
+																				if (fouo) {
 																					((Label)PageAssembler.elementToWidget(idPrefix + "-objectAlerts", PageAssembler.LABEL)).setStyleName("status-alert");
 																					((Label)PageAssembler.elementToWidget(idPrefix + "-objectAlertsBack", PageAssembler.LABEL)).setStyleName("status-alert");
 																					((Label)PageAssembler.elementToWidget(idPrefix + "-objectAlertText", PageAssembler.LABEL)).setText("FOUO");
@@ -456,40 +474,40 @@ public class TileHandler extends Constants{
 																					((Label)PageAssembler.elementToWidget(idPrefix + "-objectAlertText", PageAssembler.LABEL)).setText("");
 																				}
 	
-																		    	if (commentPacket.getCommentCount()>0) {
-																					((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).setText(commentPacket.getCommentCount()+"");
+																		    	if (searchRecord.getComments().size()>0) {
+																					((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).setText(searchRecord.getComments().size()+"");
 																					((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).removeStyleName("hidden");
 																				} else
 																					((Label)PageAssembler.elementToWidget(idPrefix + "-objectComments", PageAssembler.LABEL)).addStyleName("hidden");
 																		    	
-																		    	String val = ap.getAlfrescoPropertyValue("cm:title");
-																		    	if (val!=null&&val.trim()!="")
-																		    		((Label)PageAssembler.elementToWidget(idPrefix + "-objectTitle", PageAssembler.LABEL)).setText(val);
+																		    	String title = searchRecord.getTitle();
+																		    	if (title!=null&&title.trim()!="")
+																		    		((Label)PageAssembler.elementToWidget(idPrefix + "-objectTitle", PageAssembler.LABEL)).setText(title);
 																		    	else 
 																		    		((Label)PageAssembler.elementToWidget(idPrefix + "-objectTitle", PageAssembler.LABEL)).setText(searchRecord.getFilename());
 																		    	
-																		    	val = ap.getAlfrescoPropertyValue("cm:description");
-																		    	((Label)PageAssembler.elementToWidget(idPrefix + "-objectTitleBack", PageAssembler.LABEL)).setText(searchRecord.getFilename() + "  --  " + val);
+																		    	final String description = searchRecord.getDescription();
+																		    	((Label)PageAssembler.elementToWidget(idPrefix + "-objectTitleBack", PageAssembler.LABEL)).setText(searchRecord.getFilename() + "  --  " + description);
 	
-																				AlfrescoApi.getThumbnail(searchRecord.getNodeId(), new AlfrescoCallback<AlfrescoPacket>() {
+																				ESBApi.getThumbnail(searchRecord.getGuid(), new ESBCallback<ESBPacket>() {
 																																		@Override
 																																		public void onFailure(Throwable caught) {
-																																			mb.addMetaDataToField("cm:description", idPrefix + "-objectDescription", ap);
+																																			mb.addMetaDataToField(idPrefix + "-objectDescription", description, true);
 																																		}
 																																		
 																																		@Override
-																																		public void onSuccess(AlfrescoPacket alfrescoPacket) {
+																																		public void onSuccess(ESBPacket alfrescoPacket) {
 																																			if (!Browser.isIE())
-																																				DOM.getElementById(idPrefix + "-objectDescription").setAttribute("style", "background-image:url(" + alfrescoPacket.getValueString("imageURL") + ");");
+																																				DOM.getElementById(idPrefix + "-objectDescription").setAttribute("style", "background-image:url(" + alfrescoPacket.getString("imageURL") + ");");
 																																			else {
 																																				Image thumb = new Image();
 																																				thumb.addErrorHandler(new ErrorHandler() {
 																																										@Override
 																																										public void onError(ErrorEvent event) {
-																																											mb.addMetaDataToField("cm:description", idPrefix + "-objectDescription", ap);
+																																											mb.addMetaDataToField(idPrefix + "-objectDescription", description, true);
 																																										}
 																																									  });
-																																				thumb.setUrl(alfrescoPacket.getValue("imageURL").toString());
+																																				thumb.setUrl(alfrescoPacket.getString("imageURL"));
 																																				RootPanel.get(idPrefix + "-objectDescription").add(thumb);
 																																			}
 																																		}
@@ -499,7 +517,7 @@ public class TileHandler extends Constants{
 																		    @Override
 																			public void onFailure(Throwable caught) {
 //																		    	StatusWindowHandler.createMessage(StatusWindowHandler.getMetadataMessageError(searchRecord.getFilename()),
-//														    													  StatusPacket.ALERT_ERROR);
+//														    													  StatusRecord.ALERT_ERROR);
 																			}
 																		});
 											}
@@ -507,7 +525,7 @@ public class TileHandler extends Constants{
 										    @Override
 											public void onFailure(Throwable caught) {
 //										    	StatusWindowHandler.createMessage(StatusWindowHandler.getCommentMessageError(searchRecord.getFilename()),
-//														  						  StatusPacket.ALERT_ERROR);
+//														  						  StatusRecord.ALERT_ERROR);
 											}
 										});
 							}
@@ -528,7 +546,7 @@ public class TileHandler extends Constants{
 		PageAssembler.runCustomJSHooks();
 		refreshTile(null);
 		((Hidden)PageAssembler.elementToWidget("epssActiveRemoveAsset", PageAssembler.HIDDEN)).setValue("");
-		((Hidden)PageAssembler.elementToWidget("epssActiveAddAsset", PageAssembler.HIDDEN)).setValue(searchRecord.getNodeId() + "," + searchRecord.getFilename());
+		((Hidden)PageAssembler.elementToWidget("epssActiveAddAsset", PageAssembler.HIDDEN)).setValue(searchRecord.getGuid() + "," + searchRecord.getFilename());
 		DOM.getElementById("epssUpdate").removeClassName("white");
 		DOM.getElementById("epssUpdate").addClassName("blue");
 		DOM.getElementById("r-save-alert").removeClassName("hide");
@@ -538,7 +556,7 @@ public class TileHandler extends Constants{
 	public void assetRemove()
 	{
 		removeTile();
-		((Hidden)PageAssembler.elementToWidget("epssActiveRemoveAsset", PageAssembler.HIDDEN)).setValue(searchRecord.getNodeId());
+		((Hidden)PageAssembler.elementToWidget("epssActiveRemoveAsset", PageAssembler.HIDDEN)).setValue(searchRecord.getGuid());
 		((Hidden)PageAssembler.elementToWidget("epssActiveAddAsset", PageAssembler.HIDDEN)).setValue("");
 		EPSSEditScreen.removeAssetTrigger();
 	}

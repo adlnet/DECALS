@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivysettings>
+  <settings defaultResolver="ndoc-ivyde-workspace-chain-resolver" overwriteMode="true"/>
+  <resolvers>
+    <chain name="ndoc-ivyde-workspace-chain-resolver">
+	  <!-- <ibiblio name="aduna" m2compatible="true" root="http://repo.aduna-software.org/maven2/releases/" /> -->
+      <ibiblio name="ibiblio" m2compatible="true"/>
+      <ibiblio name="aperture-repo" m2compatible="true" usepoms="false" root="http://aperture.sourceforge.net/maven/" />
+	  <ibiblio name="cloudera-repo" m2compatible="true" root="https://repository.cloudera.com/artifactory/cloudera-repos/" />
+	  <ibiblio name="java-repo" m2compatible="true" root="http://download.java.net/maven/2/" />
+	  <ibiblio name="jlibsvm-repo" m2compatible="true" root="http://dev.davidsoergel.com/artifactory/repo" />
+	  <ibiblio name="semweb4j-repo" m2compatible="true" root="http://semweb4j.org/repo/" />
+	  <ibiblio name="couchbase-repo" m2compatible="true" root="http://files.couchbase.com/maven2/" />
+	  <ibiblio name="info-bliki-repository" m2compatible="true" root="http://gwtwiki.googlecode.com/svn/maven-snapshot-repository/" />
+      <ibiblio name="jsi" m2compatible="true" root="http://sourceforge.net/projects/jsi/files/m2_repo" />
+    </chain>
+  </resolvers>
+</ivysettings>

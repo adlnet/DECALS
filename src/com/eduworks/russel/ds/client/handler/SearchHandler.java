@@ -2,10 +2,13 @@ package com.eduworks.russel.ds.client.handler;
 
 import java.util.Vector;
 
+import com.eduworks.gwt.client.model.Record;
 import com.eduworks.gwt.client.net.callback.EventCallback;
 import com.eduworks.gwt.client.net.packet.AjaxPacket;
-import com.eduworks.gwt.client.net.packet.SearchResultsPacket;
+import com.eduworks.gwt.client.net.packet.ESBPacket;
 import com.eduworks.russel.ui.client.Constants;
+import com.eduworks.gwt.client.model.FileRecord;
+//import com.eduworks.russel.ui.client.model.FileRecord;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
@@ -25,6 +28,7 @@ public abstract class SearchHandler extends Constants
 	public String	customQuery	= null;
 	protected String	searchType;
 	protected HTML	noResults	= null;
+	public Vector<String> filter = null;
 	protected Vector<String>	doNotShow	= new Vector<String>();
 	protected Vector<String>	showOnly	= new Vector<String>();
 	
@@ -63,18 +67,37 @@ public abstract class SearchHandler extends Constants
 		return fullSearch.trim();
 	}
 
-	protected abstract void buildTile0(AjaxPacket searchTermPacket, int index, String objPanel, Element td);
+	/**
+	 * buildTile0 Creates a tile for the given searchTermPacket using the provided index and placing it in the provided objPanel
+	 * @param searchTermPacket AjaxPacket Packet containing the information for a particular object in search results
+	 * @param index int The object index for the new tile
+	 * @param screenPosition int The desired position on the screen
+	 * @param objPanel String The name of the object panel where the tile should be placed
+	 * @param td Element The window element to which the tile should be appended
+	 */
+	protected abstract void buildTile0(Record searchRecord, int index, int screenPosition, String objPanel, Element td);
 
+	/**
+	 * hook Assigns the search handler to an object panel and designates a particular search type
+	 * @param string String Search bar ID 
+	 * @param string2 String Object panel name
+	 * @param searchType2 String The type of search
+	 */
 	public abstract void hook(String string, String string2, String searchType2);
 
-	public void toggleSelection(String id, AjaxPacket record){};
+	/**
+	 * toggleSelection Reverses the current select status of the object represented by the given id and record
+	 * @param id String
+	 * @param record AjaxPacket
+	 */
+	public void toggleSelection(String id, Record record){};
 	
 	/**
 	 * buildThumbnails Builds all of the tiles for the items in the search results
 	 * @param objPanel String Name of target panel for the tiles
 	 * @param searchTermPacket Adl3DRPacket 3DR search results
 	 */
-	public void buildThumbnails(String objPanel, SearchResultsPacket searchTermPacket)
+	public void buildThumbnails(String objPanel, AjaxPacket searchTermPacket)
 	{
 		RootPanel rp = RootPanel.get(objPanel);
 		if (rp!=null) {
@@ -83,24 +106,30 @@ public abstract class SearchHandler extends Constants
 			if (noResults!=null)
 				rp.remove(noResults);
 			
-			if (searchTermPacket.getSearchRecords().length()==0) {
+			if (searchTermPacket.getObject("obj").get("items").isArray().size()==0) {
 				rp.getElement().setAttribute("style", "text-align:center");
 				noResults = new HTML(NO_SEARCH_RESULTS); 
 				rp.add(noResults);
+				
 			} else 
 				rp.getElement().setAttribute("style", "");
 			
-			for (int x=0;x<searchTermPacket.getSearchRecords().length();x+=2) {
-				td = null;
-				if (!doNotShow.contains(searchType) && (showOnly.isEmpty() || showOnly.contains(searchType)))
-				{
-					// SEARCH3DR_TYPE uses the vertStack style, and will not use the table-based layout that requires insertion of cell separators.
-					td = DOM.createTD();
-					td.setId(x +"-" + rp.getElement().getId());
-					rp.getElement().appendChild(td);					
-				}
-				buildTile0(searchTermPacket, x, objPanel, td);
-				buildTile0(searchTermPacket, x+1, objPanel, td);	
+			int screenPosition = 0;
+			for (int x=0;x<searchTermPacket.getObject("obj").get("items").isArray().size();x++) {
+			   //TODO fix this
+//				FileRecord fr = new FileRecord(new ESBPacket(searchTermPacket.getObject("obj").get("items").isArray().get(x).isObject()));
+//				if (filter != null)
+//					if (filter.contains(fr.getGuid()))
+//						continue;
+//
+//				if (screenPosition % 2 == 0 && !doNotShow.contains(searchType) && (showOnly.isEmpty() || showOnly.contains(searchType)))
+//				{
+//					// SEARCH3DR_TYPE uses the vertStack style, and will not use the table-based layout that requires insertion of cell separators.
+//					td = DOM.createTD();
+//					td.setId(x +"-" + rp.getElement().getId());
+//					rp.getElement().appendChild(td);					
+//				}
+//				buildTile0(fr, x, screenPosition++, objPanel, td);
 			}
 			
 			processCallbacks();

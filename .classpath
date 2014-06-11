@@ -5,6 +5,6 @@
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/russel-ui"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/EwAppGwt"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/EwGWTLib"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
