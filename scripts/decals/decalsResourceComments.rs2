@@ -1,0 +1,121 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+commentDb={
+	indexDir=#decalsCommentDbDirectory(),
+	databaseName=#decalsCommentDbName(),
+	index=#decalsCommentDbIndexName() 
+};
+
+commentObj=#idxGet(commentDb,key="@resourceUrl").toObject();
+allCommentObj=#idxKeys(commentDb).cforEach(paramName="resourceUrl",op=commentObj);
+
+
+//============================
+//Comment
+//============================
+
+//--------------------------
+//Show all comments
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllComments=allCommentObj.displayJson();
+/decalsShowAllComments=getAllComments;
+
+//--------------------------
+//Comment information
+
+commentsForFile=commentObj.ccall(resourceUrl="@resourceUrl").cget(comments="");
+#decalsCommentsForFile = commentsForFile;
+
+numberOfCommentsForFile=commentsForFile.count();
+
+commentInfo=#if(
+	operator=commentObj,
+	operand="",
+    eq=#object(
+		resourceUrl="@resourceUrl",
+		numberOfComments=#add(a="0")
+	),
+    ne=#object(
+		resourceUrl="@resourceUrl",
+		numberOfComments=numberOfCommentsForFile
+	)
+);
+#decalsCommentInfo = commentInfo;
+
+getCommentInfoForUrl=#object(
+	b=commentInfo.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+).cget(b="").displayJson();
+
+/decalsGetCommentInfoForUrl=getCommentInfoForUrl;
+
+getCommentInfoForUrlGroup=#object(
+	b=#toArray(obj=decalsPostData.cget(resourceUrls="")).cforEach(
+																threaded="false",
+																paramName="rurl",
+																op=commentInfo.ccall(resourceUrl="@rurl")
+	)
+).cget(b="").displayJson();
+
+/decalsGetCommentInfoForUrlGroup=getCommentInfoForUrlGroup;
+
+getCommentsForUrl=commentsForFile.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")).displayJson();
+
+/decalsGetCommentsForUrl=getCommentsForUrl;
+
+//--------------------------
+//Add comment
+
+addCommentObj=#object(
+	resourceUrl="@resourceUrl",
+	comments=#listAdd(
+		a=commentsForFile,
+		b=#object(
+			commentId=#generateUUID(),
+			comment="@comment",
+			createDate=#date(_raw="true"),
+			userId=#decalsSessionUserId()
+		)
+	)
+);
+
+addCommentToDb=addCommentObj.idxSet(commentDb,key="@resourceUrl");
+
+addComment=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=addCommentToDb.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""),
+		sessionId=decalsPostData.cget(sessionId=""),
+		comment=decalsPostData.cget(comment="")),
+	c=#object(numberOfComments=numberOfCommentsForFile.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")))
+).cget(c="").displayJson();
+
+/decalsAddComment=addComment;
+
+//--------------------------
+//Remove comment
+
+commentsForFileWithRemove=commentsForFile.cforEach(
+	paramName="commentIt",
+    op=#if(
+    	operator=#toObject(obj="@commentIt").cget(commentId=""),
+    	operand="@commentId",
+    	ne=#toObject(obj="@commentIt")
+    )   
+).valueSet().removeDuplicates();
+
+removeCommentObj=#object(
+	resourceUrl="@resourceUrl",
+	comments=commentsForFileWithRemove
+);
+
+removeCommentFromDb=removeCommentObj.idxSet(commentDb,key="@resourceUrl");
+
+removeComment=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=removeCommentFromDb.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""),
+		sessionId=decalsPostData.cget(sessionId=""),
+		commentId=decalsPostData.cget(commentId="")),
+	c=#object(numberOfComments=numberOfCommentsForFile.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")))
+).cget(c="").displayJson();
+
+/decalsRemoveComment=removeComment;

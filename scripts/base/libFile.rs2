@@ -1,0 +1,581 @@
+//---------------------------------------
+//All functions publicly exposed in this library will be prefixed by 'pfile'.
+//
+//---------------------------------------//---------------------------------------
+//---------------File helper functions
+//==============
+
+getMultipartPostDataObj = #getFileFromPost(name="@field").fileToString().toObject();
+filePostdata = #getFileFromPost().getIndex(index="@postIndex");
+filePostMetadata = getMultipartPostDataObj.ccall(field="@field");
+inComment = getMultipartPostDataObj.ccall(field="@field");
+inRating = getMultipartPostDataObj.ccall(field="@field");
+
+file=#idxGet(key="@id").buildArguments();
+fileMetadata=#idxGet(key="@id").buildArguments();
+fileComment=#idxGet(key="@id").buildArguments();
+fileRating=#idxGet(key="@id").buildArguments();
+
+allFileMetadata=#idxKeys().buildArguments().cforEach(paramName="id",op=fileMetadata.ccall(id="@id"));
+#allFileMetadata=allFileMetadata;
+allFileComments=#idxKeys().buildArguments().cforEach(paramName="id",op=fileComment.ccall(id="@id"));
+#allFileComments=allFileComments;
+allFileRatings=#idxKeys().buildArguments().cforEach(paramName="id",op=fileRating.ccall(id="@id"));
+#allFileRatings=allFileRatings;
+
+fileExists=#if(
+	operator=file.ccall(id="@id"),
+	operand="",
+    eq="false",
+    ne="true"
+);
+#pfileFileExists=fileExists;
+
+fileMetadataExists=#if(
+	operator=fileMetadata.ccall(id="@id"),
+    operand="",
+    eq="false",
+    ne="true"
+);
+#pfileMetadataExists=fileMetadataExists;
+
+commentExists=#if(
+	operator=fileComment.ccall(id="@id"),
+    operand="",
+    eq="false",
+    ne="true"
+);
+#pfileCommentExists=commentExists;
+
+ratingExists=#if(operator=fileRating.ccall(id="@id"),
+                 operand="",
+                 eq="false",
+                 ne="true");
+#pfileRatingExists=ratingExists;
+
+newRecordKey=#generateUUID();
+
+//---------------------------------------//---------------------------------------
+//--------------Service calls
+//==============
+//Creates a database entry storing the Base64 encoded file contents and some general file metadata
+//Returns the key of the created file entry
+
+fileUpload=#object(
+	a=filePostdata.ccall(postIndex="@fileIndex").fileToBase64().idxSet(key="@id").buildArguments(
+		remove="id",
+        remove1="fileIndex"
+	),
+    c="@id"
+).ccall(id=newRecordKey).cget(c=""); 
+
+#fileUpload=fileUpload;
+
+//==============
+fileDuplicate=#object(
+	a=#fileToBase64().buildArguments(
+		key="@filename",
+        value="@filedata"
+	).idxSet(key="@id").buildArguments(
+		remove="id",
+        remove1="filedata"
+	),
+    c="@id"
+).ccall(id=newRecordKey).cget(c=""); 
+
+#fileDuplicate=fileDuplicate;
+
+//==============
+fileRename=#object(
+	a=file.ccall(id="@id").toObject().idxSet(key="@id").buildArguments(
+		remove="id",
+        remove1="filedata"
+	),
+    c="@id"
+).ccall(id=newRecordKey).cget(c=""); 
+
+#fileRename=fileRename;
+
+//==============
+//Creates a database entry storing the Base64 encoded file contents and some general file metadata
+//Returns the key of the created file entry
+
+fileUpdate=#object(
+	a=filePostdata.ccall(postIndex="@fileIndex").fileToBase64().idxSet(key="@id").buildArguments(
+		remove="id",
+        remove1="fileIndex"
+	),
+    c="@id"
+).cget(c="");
+
+#fileUpdate=fileUpdate;
+
+// /file/create=fileCreate;
+
+//==============
+//
+//TODO 
+//#if(operator=filePostdata.ccall(postIndex="@fileIndex").cget(mimeType=""),
+//                         operand="",
+//                          ne=filePostdata.ccall(postIndex="@fileIndex").cget(mimeType=""),
+//                           eq=
+
+createFileMetadata=#object(
+	a=#idxPut(key="@id",
+		fileName_t=#if(
+			operator="@fname",
+			operand="",
+			eq=#filename(obj=filePostdata.ccall(postIndex="@fileIndex")),
+			ne="@fname"
+		),		
+		fileSizeBytes_l=#if(
+			operator="@fsize",
+			operand="",
+			eq=#fileSize(obj=filePostdata.ccall(postIndex="@fileIndex")),
+			ne="@fsize"
+		),
+		mimeType_t=#if(
+			operator="@mime",
+			operand="",
+			eq=#mimeType(file=filePostdata.ccall(postIndex="@fileIndex")),
+			ne="@mime"
+		),
+		uploadDate_l=#date(_raw="true"),
+		updatedDate_l=#date(_raw="true"),
+		uploadedBy_t="@username").buildArguments(
+			remove="fileIndex",
+			remove1="id",
+			remove2="username",
+			remove3="mime",
+			remove4="inline",
+			remove5="fsize",
+			remove6="fname"
+		),
+	b="true"
+).cget(b="");
+
+#fileCreateMetadata = createFileMetadata;
+
+//==============
+//Deletes a file by the given key
+//NEED TO ADD DELETE FOR COMMENTS AND RATINGS TO AVOID ORPHANS.
+
+deleteFile=#object(
+	a=#pfileFileExists(id="@id"),
+	c=#idxDelete(key="@id").buildArguments(),	
+	d="true"
+).cget(d="");
+
+#fileDeleteFile=deleteFile;
+
+deleteFileMetadata=#object(
+	a=#pfileFileExists(id="@id"),
+	b=#idxDelete(key="@id").buildArguments(),
+	d="true"
+).cget(d="");
+
+#fileDeleteMetadata=deleteFileMetadata;
+
+// /file/delete=deleteFile;
+
+//==============
+//Returns the file for the given key
+
+getFile=#if(operator=#pfileFileExists(id="@id"),
+            operand="",
+            eq="",
+            ne=file.ccall(id="@id").toObject().base64ToFile(mimeType=#mimeType(file=file.ccall(id="@id").toObject().base64ToFile())));
+#fileGet=getFile;
+
+// /file/get/byKey=getFile;
+
+//==============
+//Returns the file for the given key
+
+getFileMetadata=#if(operator=#pfileMetadataExists(id="@id"),
+                    operand="",
+                    eq="",
+                    ne=fileMetadata.ccall(id="@id"));
+#fileGetMetadata=getFileMetadata;
+
+//==============
+//Adds a set of metadata (defined by the post data named "fileMetadata") to a file with the given key
+
+
+updateMetadata = #object(
+	a=#pfileFileExists(id=filePostMetadata.ccall(field="@field").cget(id="")),
+    b=#idxPut(key=filePostMetadata.ccall(field="@field").cget(id="")).buildArguments(arguments=filePostMetadata.ccall(field="@field"),
+                                                                                     key="updatedDate_l", 
+                                                                                     value=#date(_raw="true"),
+                                                                                     remove="field",
+                                                                                     remove1="id"),
+    c="true"
+).cget(c="").displayJson();
+
+#fileUpdateMetadata=updateMetadata;
+
+fileMetadataDb={
+	indexDir="@indexDir",
+	databaseName="@databaseName",
+	index="@index"
+};
+setMetadata = #object(
+	a=#pfileFileExists(id="@id"),
+    b=#idxSet(fileMetadataDb,key="@id",value="@value"),
+    c="true"
+).cget(c="");
+
+#fileSetMetadata=setMetadata;
+
+
+//==============
+//Updates a field with the given key with the given value for a given file ID
+
+getValue=#if(
+	operator="@isArray",
+	operand="true",
+	eq=#object(a="@value").cget(a="").toArray(),
+	ne="@value"
+);
+             
+updateFileMetadataField=#if(
+	operator=fileExists.ccall(id="@fileId"),
+	operand="true",
+	eq=#object(
+		a=#idxPut(key="@fileId").buildArguments(
+			key="@field",
+			value=getValue,
+			remove="field",
+			remove1="value",
+			remove2="isArray",
+			remove3="tempId"
+		),
+		b="true"
+	).cget(b=""),             	              	    
+	ne="false"
+);
+  
+ #fileUpdateMetadataField=updateFileMetadataField;
+
+// /file/updateMetadata=updateMetadata;
+
+//==============
+//Adds a comment (defined by the post data named "fileComment") to a file with the given key 
+//Returns the key of the created comment entry
+
+
+
+addComment=#object(
+	a=#pfileFileExists(id=inComment.ccall(field="@field").cget(id="")),
+	b=#object(
+		fileGuid=inComment.ccall(field="@field").cget(fileGuid=""),
+		comment=inComment.ccall(field="@field").cget(comment=""),
+		createDate=#date(_raw="true"),
+		updateDate=#date(_raw="true"),
+		createdBy=inComment.ccall(field="@field").cget(username=""),
+		updatedBy=inComment.ccall(field="@field").cget(username="")
+	).idxSet(key="@nck").buildArguments(remove="id",
+                                        remove1="field"),
+	c="@nck"
+).ccall(nck=newRecordKey).cget(c="");
+
+#fileAddComment=addComment;
+
+// /file/addComment=addComment;
+
+//==============
+//Returns all file comments for the file with the given key
+
+commentsForFile=allFileComments.cforEach(
+	paramName="id",
+	op=#if(
+		operator=fileComment.ccall(id="@id").toObject().cget(fileGuid=""),
+		operand="@fileGuid",
+		eq=fileComment.ccall(id="@id").toObject()
+	)
+);
+#fileGetCommentsByFile=commentsForFile;
+
+// /file/getComments/byFile=getCommentsByFile;
+
+//==============
+//Deletes the file comment with the given key
+
+deleteCommentByKey=#object(
+	a=#pfileCommentExists(),
+	b=#idxDelete(key="@id").buildArguments(),
+	c="true"
+).cget(c="");
+
+#fileDeleteCommentByKey=deleteCommentByKey;
+
+// /file/deleteComment/byKey=deleteCommentByKey;
+
+//==============
+//Deletes all file comments for the file with the given key
+deleteCommentsByFile=#object(
+	a=#pfileFileExists(id="@fileGuid"),
+	b=#fileGetCommentsByFile(fileGuid="@fileGuid").cforEach(paramName="id", op=#idxDelete(key="@id").buildArguments()),
+	c="true"
+).cget(c="");
+
+#fileDeleteCommentsByFile=deleteCommentsByFile;
+
+// /file/deleteComments/byFile=deleteCommentsByFile;
+
+//==============
+//Updates a file comment (defined by the post data named "fileComment")
+
+// inCommentUpdate=getMultipartPostDataObj.ccall(field="fileComment");
+
+// commentUpdateObj=#object(
+	// comment=inComment.cget(comment=""),
+	// updateDate=#date(_raw="true"),
+	// updatedBy=inComment.cget(username="")
+// );
+
+updateComment=#object(
+	a=#pfileCommentExists(id=inComment.ccall(field="@field").cget(id="")),
+	b=#idxPut(key=inComment.ccall(field="@field").cget(id="")).buildArguments(
+		arguments=inComment, 
+		remove="key",
+		remove1="field",
+		remove2="id"
+	),
+	c="true"
+).cget(c="");
+
+#fileUpdateComment=updateComment;
+
+// /file/updateComment=updateComment;
+
+//==============
+//Adds a rating (defined by the post data named "fileRating") to a file with the given key 
+//Returns the key of the created rating entry
+
+addRating=#object(
+	a=#pfileFileExists(id=inRating.ccall(field="@field").cget(fileGuid="")),
+	b=#object(
+		fileGuid=inRating.ccall(field="@field").cget(fileGuid=""),
+		rating=inRating.ccall(field="@field").cget(rating=""),
+		createDate=#date(_raw="true"),
+		updateDate=#date(_raw="true"),
+		createdBy=inRating.ccall(field="@field").cget(username=""),
+		updatedBy=inRating.ccall(field="@field").cget(username="")
+	).idxSet(key="@nrk").buildArguments(remove="field"),
+	c="@nrk"
+).ccall(nrk=newRecordKey).cget(c="");
+ 
+#fileAddRating=addRating;
+
+// /file/addRating=addRating;
+
+//==============
+//Returns a list of all file ratings in the database
+// getRatings=allFileRatings.displayJson();
+
+// #pfileGetRatings=getRatings;
+
+// /file/getRatings/all=getRatings;
+
+//==============
+//Returns the file rating for the given key
+
+getFileRatingByKey=#object(
+   a=#pfileRatingExists(),
+	b=fileRating
+).cget(b="");
+
+#pfileGetFileRating=getFileRatingByKey;
+
+// /file/getRating/byKey=getFileRatingByKey;
+
+//==============
+//Returns all file ratings for the file with the given key
+
+ratingsForFile=allFileRatings.cforEach(
+	paramName="id",
+	op=#if(
+		operator=fileRating.ccall(id="@id").toObject().cget(fileGuid=""),
+		operand="@fileGuid",
+		eq=fileRating
+	).toObject()
+);
+
+getRatingsByFile=#object(
+   a=#pfileFileExists(id="@fileGuid"),
+   b=ratingsForFile
+).cget(b="");
+
+#fileGetRatingsByFile=getRatingsByFile;
+
+// /file/getRatings/byFile=getRatingsByFile;
+
+//==============
+//Deletes the file rating with the given key
+
+deleteRatingByKey=#object(
+	a=#pfileRatingExists(),
+	b=#idxDelete(key="@id").buildArguments(),
+	c="true"
+).cget(c="");
+
+#fileDeleteRatingByKey=deleteRatingByKey;
+
+// /file/deleteRating/byKey=deleteRatingByKey;
+
+//==============
+//Deletes all file ratings for the file with the given key
+
+deleteFileRatings=ratingsForFile.cforEach(paramName="id",op=#idxDelete(key="@id").buildArguments());
+
+deleteRatingsByFile=#object(
+	a=#pfileFileExists().ccall(key="@fileGuid"),
+	b=deleteFileRatings,
+	c="true"
+).cget(c="");
+
+#fileDeleteRatingsByFile=deleteRatingsByFile;
+
+// /file/deleteRatings/byFile=deleteRatingsByFile; 
+
+//==============
+//Updates a file rating (defined by the post data named "fileRating")
+
+// inRatingUpdate=getMultipartPostDataObj.ccall(field="fileRating");
+
+// ratingUpdateObj=#object(
+	// rating=inRatingUpdate.cget(rating=""),
+	// updateDate=#date(_raw="true"),
+	// updatedBy=inRatingUpdate.cget(username="")
+// );
+
+updateRating=#object(
+	a=#pfileRatingExists(id=inRating.ccall(field="@field").cget(id="")),
+	b=#idxPut(key=inRating.ccall(field="@field").cget(id="")).buildArguments(
+		arguments=inRating,
+		key="updateDate", 
+		value=#date(_raw="true"),
+		key1="username", 
+		value1="@username",
+		remove="field",
+		remove1="id"
+	),
+	c="true"
+).cget(c="");
+
+#fileUpdateRating=updateRating;
+
+// /file/updateRating=updateRating;
+
+//==============
+//Returns the average rating for the file with the given key rounded to the nearest whole number.
+
+averageRatingForFile=ratingsForFile.cforEach(
+	paramName="id",
+	op=fileRating.ccall(id="@id").toObject().get(rating="")
+).valueSet().average();
+
+fileGetAverageRatingForFile=#object(
+	a=#pfileFileExists().ccall(key="@fileGuid"),
+	b=averageRatingForFile
+).cget(b="");
+
+#fileGetAverageRatingForFile=fileGetAverageRatingForFile;
+
+// /file/getAverageRating/byFile=getAverageRatingForFile;
+
+
+//==============
+//Returns the file metadata for the file with the given key
+
+// getMetadataByFile=#object(
+   // a=#pfileFileExists(),
+	// b=fileMetadata
+// ).cget(b="").displayJson();
+
+// #pfileGetMetadataByFile=getMetadataByFile;
+
+// /file/getMetadata/byKey=getMetadataByFile;
+
+//==============
+//Returns a list of all file metadata in the database
+
+// getMetadata=allFileMetadata.displayJson();
+
+// #pfileGetMetadata=getMetadata;
+
+// /file/getMetadata/all=getMetadata;
+
+//==============
+//Returns a list of all file metadata of files uploaded by the given user
+
+// userFilesMetadata=allFileMetadata.cforEach(paramName="key",op=#if(operator=fileMetadata.cget(uploadedBy=""),operand="@username",eq=fileMetadata));
+
+// getMetadataByUser=userFilesMetadata.displayJson();
+
+// #pfileGetMetadataByUser=getMetadataByUser;
+
+// /file/getMetadata/byUser=getMetadataByUser;
+
+//==============
+//Returns a list of all file metadata with the given mime type
+
+// mimeTypeFilesMetadata=allFileMetadata.cforEach(paramName="key",op=#if(operator=fileMetadata.cget(mimeType=""),operand="@mimeType",eq=fileMetadata));
+
+// getMetadataByMimeType=mimeTypeFilesMetadata.displayJson();
+
+// #pfileGetMetadataByMimeType=getMetadataByMimeType;
+
+// /file/getMetadata/byMimeType=getMetadataByMimeType;
+
+//==============
+//Download a file with the given key
+
+// dfObj=#object().buildArguments(key=fileMetadata.cget(fileName=""),value=file.cget(b64Contents=""));
+
+// downloadFile=#object(
+	// a=#pfileFileExists(),
+	// b=dfObj.base64ToFile()
+// ).cget(b="");
+
+// #pfileDownloadFile=downloadFile;
+
+// /file/download=downloadFile; 
+
+
+//==============
+//Returns a list of all file comments in the database
+// getComments=allFileComments.displayJson();
+
+// #pfileGetComments=getComments;
+
+// /file/getComments/all=getComments;
+
+//==============
+//Returns the file comment for the given key
+
+// getFileCommentByKey=#object(
+   // a=#pfileCommentExists(),
+	// b=fileComment
+// ).cget(b="").displayJson();
+
+//#pfileGetFileComment=getFileCommentByKey;
+
+// /file/getComment/byKey=getFileCommentByKey;
+
+//==============
+//Returns the information of an uploaded file
+
+// fileInfo=#object(
+	// a=#object(
+		// fileName=#filename(obj="@inFile"),
+		// fileSizeBytes=#fileSize(obj="@inFile"),
+		// b64Contents=#fileToBase64(obj="@inFile").getByParam(param=#filename(obj="@inFile")),
+		// mimeType=#mimeType(file="@inFile")
+	// )
+// ).cget(a="").displayJson();
+
+// #pfileFileInfo=fileInfo;
+
+// /file/info=fileInfo;

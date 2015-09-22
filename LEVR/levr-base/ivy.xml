@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ivy-module version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+  <info
+   organisation="com.eduworks"
+   module="levr-base"
+   status="integration">
+   <extends organisation="com.eduworks" module="levr-core" revision="latest.integration" location="../levr-core/ivy.xml" extendType="configurations,dependencies"/>
+  </info>
+  <dependencies>
+  	<dependency org="joda-time" name="joda-time" rev="2.3"/>
+  	<dependency org="org.mozilla" name="rhino" rev="1.7R4"/>
+	<dependency org="org.python" name="jython" rev="2.7-b1"/>
+  	<dependency org="oauth.signpost" name="signpost-core" rev="1.2.1.1"/>
+	  	
+  	<dependency org="org.beanshell" name="bsh" rev="1.3.0"/>
+  	<dependency org="com.sun.xml.stream.buffer" name="streambuffer" rev="0.8"/>
+    <dependency org="org.apache.solr" name="solr-commons-csv" rev="3.5.0"/>
+    <dependency org="org.apache.solr" name="solr-solrj" rev="4.7.2" />
+    <dependency org="com.paypal.sdk" name="merchantsdk" rev="2.4.103"/>
+    <dependency org="com.paypal.sdk" name="adaptivepaymentssdk" rev="2.4.103"/>
+    <dependency org="com.github.stephenc.high-scale-lib" name="high-scale-lib" rev="1.1.1"/>
+    <dependency org="com.ecyrd.speed4j" name="speed4j" rev="0.7"/>
+    <dependency org="rome" name="rome" rev="0.9"/>
+  	<dependency org="commons-codec" name="commons-codec" rev="1.6"/>
+  	<dependency org="xerces" name="xercesImpl" rev="2.6.2"/>            
+  	<dependency org="info.bliki.wiki" name="bliki-core" rev="3.1.01-SNAPSHOT"/>
+  	<dependency org="couchbase" name="couchbase-client" rev="1.1.5"/>
+  	<dependency org="net.sf.sociaal" name="freetts" rev="1.2.2"/>
+  	<dependency org="jivesoftware" name="smack" rev="3.1.0"/>
+  	<dependency org="jivesoftware" name="smackx" rev="3.1.0"/>
+  	<dependency org="ch.qos.logback" name="logback-classic" rev="1.1.2"/>
+  	
+  	<dependency org="org.jsoup" name="jsoup" rev="1.8.2"/>
+  	
+  	<!-- DATABASE CONNECTORS -->
+  	<dependency org="net.sourceforge.jtds" name="jtds" rev="1.3.1"/>
+  	<dependency org="mysql" name="mysql-connector-java" rev="5.1.35"/>
+    <dependency org="jcifs" name="jcifs" rev="1.3.17"/>
+  	  	                
+	<exclude org="javax.servlet"/> 
+	<exclude org="com.ibm.icu"/>
+	<exclude org="javax.sql"/>
+	<exclude org="javax.servlet"/>
+	<exclude org="javax.transaction"/>
+	<exclude org="commons-daemon"/>
+	<exclude org="groovy"/>
+	<exclude org="jwnl"/>
+    
+	<exclude module="slf4j-log4j12"/>
+	<exclude module="slf4j-simple"/>
+	<exclude module="google-collections"/>
+	<exclude org="com.google.collections"/>
+  </dependencies>
+</ivy-module>

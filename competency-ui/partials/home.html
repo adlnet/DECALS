@@ -1,0 +1,38 @@
+
+<div id="home" class="screen">
+	<div class="content">
+		<div class="row">
+			<div class="small-12 columns small-centered">
+				<header>
+					<h1>
+						Welcome 
+						<span>{{session.currentUser.firstName}}</span>
+						<span ng-hide="session.currentUser.firstName != undefined">{{session.currentUser.id}}</span>
+					</h1>
+					<h3 class="subheader">Where would you like to start?</h3>
+				</header>
+
+				<buttongroup>
+				<button class="large" ng-click="showSearch(context.model);">
+					<i class="fa fa-cube"></i> Models
+				</button>
+				<button class="large" ng-click="showSearch(context.competency);">
+					<i class="fa fa-sitemap"></i> Competencies
+				</button>
+				<!--button class="large" onclick="setContext('record');showSearch(true);">
+	                	<i class="fa fa-building"></i> 
+	                	Organizations
+	                </button-->
+				<button class="large" ng-click="showSearch(context.profile);">
+					<i class="fa fa-user"></i> Profiles
+				</button>
+				</buttongroup>
+			</div>
+		</div>
+	</div>
+
+	<div id="copyright">
+		<a href="http://www.eduworks.com" target="_blank"><img
+			src="img/eduworks.png"></a> Copyright 2014 Eduworks.
+	</div>
+</div>

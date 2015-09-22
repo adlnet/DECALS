@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivysettings>
+  <settings defaultResolver="eduworks-common-ivyde-workspace-chain-resolver"/>
+  <resolvers>
+    <chain name="eduworks-common-ivyde-workspace-chain-resolver">
+	  <!-- <ibiblio name="aduna" m2compatible="true" root="http://repo.aduna-software.org/maven2/releases/" /> -->
+	  <ibiblio name="ibiblio2" m2compatible="true" root="http://mirrors.ibiblio.org/maven2/"/>
+	  <ibiblio name="java-repo" m2compatible="true" root="http://download.java.net/maven/2/" />
+	  <ibiblio name="jlibsvm-repo" m2compatible="true" root="http://dev.davidsoergel.com/artifactory/repo" />
+	  <ibiblio name="aperture-repo" m2compatible="true" usepoms="false" root="http://aperture.sourceforge.net/maven/" />
+	  <ibiblio name="cloudera-repo" m2compatible="true" root="https://repository.cloudera.com/artifactory/cloudera-repos/" />
+	  <ibiblio name="semweb4j-repo" m2compatible="true" root="http://semweb4j.org/repo/" />
+	  <ibiblio name="couchbase-repo" m2compatible="true" root="http://files.couchbase.com/maven2/" />
+	  <ibiblio name="info-bliki-repository" m2compatible="true" root="http://gwtwiki.googlecode.com/svn/maven-snapshot-repository/" />
+	  <ibiblio name="ow2" m2compatible="true" root="http://repository.ow2.org/nexus/content/repositories/ow2-legacy/" />
+      <ibiblio name="jsi" m2compatible="true" root="http://sourceforge.net/projects/jsi/files/m2_repo" />
+	  <ibiblio name="eduworks" m2compatible="true" root="http://research.eduworks.com/repo" />
+	  <ibiblio name="k3d" m2compatible="true" root="http://k3d.org/nexus/content/repositories/public" />
+	  <ibiblio name="fuze" m2compatible="true" root="http://repo.fusesource.com/nexus/content/groups/public/" />
+	  </chain>
+  </resolvers>
+</ivysettings>

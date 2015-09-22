@@ -1,0 +1,288 @@
+//---------------------------------------
+//---------------Helpers
+//---------------------------------------
+//==============
+
+modelDB = {
+	indexDir = #competencyModelDirectory(),
+	databaseName = #competencyModelDBName(),
+	index = "0"
+};
+
+userDB = {
+	indexDir = #competencyUserDirectory(),
+	databaseName = #competencyUserDBName(),
+	index = "0"
+};
+
+firstChar = #string(str="@str", op="substr", begin="0", end="1");
+
+removedFirst = #string(str="@str", op="substr", begin="1");
+simpleId = #if(operator=firstChar, operand=":", eq=removedFirst, ne="@str");
+
+//---------------------------------------
+//---------------Service Functions
+//---------------------------------------
+//==============
+// CREATE Competency Record
+//--------------
+// #competencyCreateRecord
+//--------------
+// userId:
+// modelId:
+// competencyId:
+// levelId: 
+//==============
+
+// TODO: Check if the competency has a new version, if it does send error saying this is an older version of the competency (also add an override parameter to this so we can override the error if we want)
+
+recordValues = #add(
+	a="{':recordCompetency': ['",
+	b="@competencyId", 
+	c="'], ':recordLevel': ['",
+	d="@levelId",
+	e="'], ':recordUpdated': ['",
+	f=#competencyNow(),
+	g="'], ':recordCompetencyModel': ['", 
+	h="@modelId",
+	i="']}"
+);
+					
+
+createRecordParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	classId = "CompetencyRecord",
+	vals = recordValues
+};
+
+findExistingQuery = #add(
+	a="PREFIX comp: <",
+	b=#competencyStructureURI(),
+	c="#>
+		PREFIX record: <",
+	d=#competencyUserStructureURI(),
+	e="#>
+		SELECT ?id
+		WHERE { ?id record:recordCompetency ?comp .
+				?id record:recordLevel ?level .
+				FILTER( strends( str(?comp), '",
+	f= simpleId.call(str="@competencyId"),
+	g= "' ) && strends( str(?level), '",
+	h= simpleId.call(str="@levelId"),
+	i= "' ) ) }"
+);
+
+findExistingParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	query = findExistingQuery
+};
+
+findExisting = #ontologyQuery(findExistingParams);
+countExisting = #toArray(obj="@result").count();
+
+readRecordForQuery = #execute(service="competencyReadRecord", userId="@userId", recordId="@instanceId");
+readExisting = #toArray(obj="@result").getIndex(index="0").valueSet().getIndex(index="0").toParameter(op=readRecordForQuery, paramName="instanceId");
+
+createOrRead = #if(
+	operator=countExisting, 
+	operand="0",
+	eq=#ontologyCreateInstance(createRecordParams),
+	ne=readExisting
+);
+
+findAndCreate = findExisting.toParameter(op=createOrRead, paramName="result");
+
+createRecord = #object(
+	a=#competencyErrorUserExists(),
+	b=#competencyErrorModelIdSet(),
+	c=#competencyErrorModelExists(),
+	d=#competencyErrorUserOrAgentReadAccess(),
+	e=#competencyErrorUserOrAgentReadAccess(currentUser="@userId"),
+	f=#competencyErrorCompetencyIdSet(),
+	g=#competencyErrorCompetencyExists(),
+	h=#competencyErrorLevelExists(),
+	i=#competencyErrorLevelNotForCompetency(),
+	j=#ontologyAddImport(directory = #competencyDirectory(), ontologyId=#competencyUserModel(), importId=#competencyGetModelUri()),
+	k=findAndCreate
+).cget(k="");
+
+#competencyCreateRecord = createRecord;
+
+
+//==============
+// READ Competency Record
+//--------------
+// #competencyReadRecord
+//--------------
+// userId:
+// recordId:
+//==============
+
+
+readRecordParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	instanceId="@recordId"
+};
+
+readRecord = #ontologyReadInstance(readRecordParams);
+
+checkAccessRead = #object(
+						a=#decode(obj="@record").getByParam(param="@recordId").getByParam(param=":recordCompetencyModel").toArray().getIndex(index="0").toParameter(op=#competencyErrorUserOrAgentReadAccess(), paramName="modelId"),
+						b=#decode(obj="@record")
+					).ccall(record=readRecord).cget(b="");
+
+checkThenRead = #object(
+							a=#competencyErrorUserIdSet(),
+							b=#competencyErrorUserExists(),
+							c=#competencyErrorRecordIdSet(),
+							d=#competencyErrorRecordExists(),
+							e=checkAccessRead
+						).cget(e="");
+
+#competencyReadRecord = checkThenRead;
+
+
+//==============
+// READ ALL Competency Records
+//--------------
+// #competencyReadAllRecords
+//--------------
+// userId:
+//==============
+
+readAllRecordParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	classId="CompetencyRecord"
+};
+
+getRecords = #ontologyReadClassInstances(readAllRecordParams);
+
+checkAccess = #if(operator=#competencyCheckUserOrAgentReadAccess(modelId=#decode(obj="@record").getByParam(param=":recordCompetencyModel").toArray().getIndex(index="0")), operand="true",
+						eq=#decode(obj="@record"),
+						ne=#competencyMsgUserOrAgentReadAccess()
+				);
+
+checkThenReadRecords = #object(
+							a=#competencyErrorUserIdSet(),
+							b=#competencyErrorUserExists(),
+							c=getRecords.cforEach(op=checkAccess, paramName="recordId", valueName="record")
+						).cget(c="");
+
+#competencyReadAllRecords = checkThenReadRecords;
+
+
+//==============
+// UPDATE Competency Record Confidence
+//--------------
+// #competencyUpdateRecordConfidence
+//--------------
+// userId:
+// recordId:
+// confidence:
+//==============
+
+updateRecordVals = #ontologyReadInstance(
+	directory=#competencyDirectory(), 
+	ontologyId=#competencyUserModel(), 
+	instanceId="@recordId"
+).getByParam(
+	param="@recordId"
+).putInObject(
+	dest=":recordConfidence", 
+	item=#toArray(obj="@confidence"),
+).putInObject(
+	dest=":recordUpdated",
+	item=#toArray(obj=#competencyNow())
+).displayJson(_collapse="true");   
+
+updateRecordParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	instanceId = "@recordId",
+	vals = updateRecordVals
+};
+
+checkRecordExists = #ontologyReadInstance(updateRecordParams);
+
+updateRecord = #object().putInObject(
+							dest="@recordId",
+							item=#ontologyUpdateInstance(updateRecordParams)
+						);
+
+checkUpdateRecord = #object(
+						a=#competencyErrorUserIdSet(),
+						b=#competencyErrorUserExists(),
+						c=#competencyErrorRecordIdSet(),
+						d=#competencyErrorRecordExists(),
+						e=#competencyReadRecord(),
+						f=#competencyErrorConfidenceSet(),
+						g=#competencyErrorConfidenceValue(),
+						h=updateRecord
+					).cget(h="");
+
+#competencyUpdateRecordConfidence = checkUpdateRecord;
+
+//==============
+// DELETE Competency Record
+//--------------
+// #competencyDeleteRecord
+//--------------
+// userId:
+// recordId:
+//==============
+
+deleteRecordParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	instanceId = "@recordId"
+};
+
+deleteRecord = #ontologyDeleteInstance(deleteRecordParams);
+
+checkDeleteRecord = #object(
+						a=#competencyErrorUserIdSet(),
+						b=#competencyErrorUserExists(),
+						c=#competencyErrorRecordIdSet(),
+						d=#competencyErrorRecordExists(),
+						e=#competencyReadRecord(),
+						f=deleteRecord,
+						g="true"
+					).cget(g="");
+
+#competencyDeleteRecord = checkDeleteRecord;
+
+
+//==============
+// READ User's Competencies
+//--------------
+// #competencyReadUserCompetencies
+//--------------
+// userId:
+//==============
+
+readUserCompParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	instanceId = "@competencyId"
+};
+
+readCompetency = #ontologyReadInstance(readUserCompParams).reduce();
+
+readCompetencies = #if(operator=#competencyCheckUserOrAgentReadAccess(), operand="true", 
+						ne=#competencyMsgUserOrAgentReadAccess(),
+						eq=#ontologyReadInstance(readUserCompParams).ccall(competencyId=#toArray(obj="@competencyList"))
+					);
+
+readUserCompetencies = #competencyListUserCompetencies(userId="@userId").cforEach(op=readCompetencies, paramName="modelId", valueName="competencyList");
+
+checkReadUserCompetencies = #object(
+								a=#competencyErrorUserIdSet(),
+								b=#competencyErrorUserExists(),
+								c=readUserCompetencies
+							).cget(c="");
+
+#competencyReadUserCompetencies = checkReadUserCompetencies;

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN"
+        "http://www.tuckey.org/res/dtds/urlrewrite5.0.dtd">
+
+<urlrewrite>
+        <rule>
+                <from>^((?![\w/\-]*partials)[\w/\-]*)/home$</from>
+                <to>$1/index.html</to>
+        </rule>
+        <rule>
+                <from>^((?![\w/\-]*partials)[\w/\-]*)/login$</from>
+                <to>$1/index.html</to>
+        </rule>
+        <rule>
+                <from>^((?![\w/\-]*partials)[\w/\-]*)/search/[\w/]*</from>
+                <to>$1/index.html</to>
+        </rule>
+        <rule>
+                <from>^((?![\w/\-]*partials)[\w/\-]*)/view/[\w/\-]*</from>
+                <to>$1/index.html</to>
+        </rule>
+        <rule>
+                <from>^((?![\w/\-]*partials)[\w/\-]*)/create/[\w/]*</from>
+                <to>$1/index.html</to>
+        </rule>
+        <rule>
+                <from>^((?![\w/\-]*partials)[\w/\-]*)/results/[\w/]*</from>
+                <to>$1/index.html</to>
+        </rule>
+        <rule>
+                <from>^((?![\w/\-]*partials)[\w/\-]*)/edit/[\w/]*</from>
+                <to>$1/index.html</to>
+        </rule>
+        <rule>
+                <from>^((?![\w/\-]*partials)[\w/\-]*)/model-[\w/\-]*</from>
+                <to>$1/index.html</to>
+        </rule>
+</urlrewrite>

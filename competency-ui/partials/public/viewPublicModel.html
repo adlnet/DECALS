@@ -1,0 +1,100 @@
+<div id="compDetails" class="overlay active scroll" ng-escape="goBack()">
+	<div class="content">
+		<span class="exit close-overlay" title="Cancel" ng-click="goBack()">
+			<i class="fa fa-times fa-5x"></i>
+		</span>
+		<div class="row">
+			<div class="small-8 columns small-centered">
+
+				<h3 class="info-title">
+					{{appCache.currentItem.name}}
+				</h3>
+				<h4 class="subheader info-description">
+					{{appCache.currentItem.description}}
+				</h4>
+				<p>
+					<span class="info-id-entry">
+						{{appCache.currentItem.uri}}
+					</span>
+				</p>
+				
+				<hr>
+				
+				<div>
+					<h5 style='font-weight:bold'>Default Levels:</h5> 
+					<div style='margin-bottom: 10px;'	 
+						ng-hide="appCache.currentItem.levels[objectKeys(appCache.currentItem.levels)[0]].name != undefined">
+						<i class="fa fa-circle-o-notch fa-spin"></i> Loading Levels
+					</div>
+					<div style='margin-bottom: 10px;'
+						ng-hide="appCache.currentItem.levels[objectKeys(appCache.currentItem.levels)[0]].name == undefined"
+						ng-repeat="(i,levelObj) in appCache.currentItem.levels | orderByObj:'rank'"
+						title="[{{levelObj.id}}] (Rank {{levelObj.rank}})">
+						{{levelObj.name}} <span ng-hide="true">- {{levelObj.description}}</span> <br />
+					</div>
+
+				</div>
+				
+				<hr ng-hide="competencies.length == 0">
+					
+				<div>
+					<h5 style='font-weight:bold;'>Competencies:</h5>
+					<div ng-hide="competencies != undefined || objectLength(competencies) > 0" style="padding-left:10px;">
+						<i class="fa fa-spin fa-circle-o-notch"></i>
+						Loading Competencies
+					</div>
+					<div ng-hide="competencies == undefined || objectLength(competencies) > 0">
+						No Competencies Defined Yet
+					</div>
+					<ul ng-hide="competencies == undefined || objectLength(competencies) == 0">
+						<li ng-repeat="(i, competency) in competencies | orderByObj:'title'" style="white-space:nowrap;width:100%;overflow:hidden;text-overflow:ellipsis;">
+							<a ng-click="toggleDetails(competency.id)" id="{{fixId(competency.id)}}" title="View More">{{competency.title}}</a>
+							<span ng-hide="competency.description == '' || competency.description == undefined">
+								: <small>{{competency.description}}</small>
+							</span>
+							<div style="font-size:0.8rem;" ng-hide="hideDetails[competency.id]" >
+								<div ng-repeat="(relationshipName, relatedArray) in competency.relationships" style="padding-left:10px;">
+									<strong>{{relationshipName}}:</strong>
+									<ul>
+										<li ng-repeat="id in relatedArray" style="font-size:0.8rem;max-widt:100%; overflow:hidden; text-overflow:ellipsis;">
+											<a ng-click="jumpTo(appCache.competencyCache[competency.modelId][id].modelId, appCache.competencyCache[competency.modelId][id].id)" title="Jump To This Competency">
+												{{appCache.competencyCache[competency.modelId][id].title}}
+											</a>
+										</li>
+									</ul>
+								</div>
+								<span style="font-size:0.6rem"'>{{competency.uri}}</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				
+				<hr ng-hide="appCache.currentItem.imports.length == 0">
+				
+				<div ng-hide="appCache.currentItem.imports.length == 0">
+					<strong>Imported Models:</strong> 
+					<br /> 
+					<span
+						ng-repeat="modelId in appCache.currentItem.imports"
+						title="{{modelId}}">
+						<a ng-click="showPublicModelPage(modelId)">{{appCache.modelCache[modelId].name}}</a><span ng-hide="$last">,</span>
+					</span>
+
+				</div>
+
+				<hr ng-hide="appCache.currentItem.sourceInfo == undefined">
+				<p ng-hide="appCache.currentItem.sourceInfo == undefined">
+					<strong>External Source:</strong> <br /> <span
+						class="info-source-description">
+						{{appCache.currentItem.sourceInfo}} </span> ( <span
+						class="info-source-structure"> {{appCache.currentModel.id}}
+					</span> ) <br /> <span class="info-source-id-url">
+						{{appCache.currentModel.uri}} </span>
+				</p>
+
+				<hr>
+
+			</div>
+		</div>
+	</div>
+</div>

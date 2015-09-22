@@ -1,0 +1,274 @@
+
+
+getMultipartPostDataObject = #getFileFromPost(name="@field").fileToString().toObject();
+
+postedCompetencyObject = getMultipartPostDataObject.call(field="competency");
+
+postedUserId = postedCompetencyObject.cget(userId="");
+postedPassword = postedCompetencyObject.cget(password="");
+postedSessionId = postedCompetencyObject.cget(sessionId="");   
+
+//==============
+// RETRIEVE Competency User Ids
+//==============
+
+getUserIds = #competencyGetUserIds().displayJson(_collapse="true");
+/competency/user/ids = getUserIds;
+
+//-----API-------
+
+API_GetUserIds = #object(
+	levr-service="#competencyGetUserIds",
+	web-service="/competency/user/ids",
+	description="Retrieves an array containing all of the userIds",
+	params=#object()
+);
+displayGetUserIdsAPI = API_GetUserIds.displayJson(_collapse="true");
+/competency/user/ids/api = displayGetUserIdsAPI;
+
+
+//==============
+// CREATE Competency User
+//==============
+
+createUser = #execute(service="competencyCreateUser", paramObj=postedCompetencyObject).displayJson(_collapse="true");
+
+/competency/user/create = createUser;
+
+//-----API-------
+
+API_CreateUser = #object(
+	levr-service="#competencyCreateUser",
+	web-service="/competency/user/create",
+	description=#add(
+		a="Creates a new user in the user DB with <userId> and <password> specified and creates a personal competency model, with a filename/id of the format 'user-<userId>'. ",
+		b="To perform this programmatically with LEVR, two LEVR calls need to be made in order (#createCompetencyUser THEN #createCompetencyUserModel) ",
+		c="to create the user in the DB then create the user competency model"
+	),
+	params=#object(
+		userId="unique user identifier",
+		password="password for the new user",
+	)
+);
+displayCreateUserAPI = API_DeleteModel.displayJson(_collapse="true");
+/competency/user/create/api = displayCreateUserAPI;
+
+
+//==============
+// READ Competency User
+//==============
+
+read = #competencyReadUser(userId=postedUserId);
+
+readUser = #competencySessionUser(
+				sessionId=postedSessionId
+			).toParameter(
+				op=read, 
+				paramName="currentUser"
+			).displayJson(_collapse="true");
+
+/competency/user/read = readUser;
+
+//-----API-------
+
+API_ReadUser = #object(
+	levr-service="#competencyReadUser",
+	web-service="/competency/user/read",
+	description="Returns an object containing the user DB metadata for the specified <userId>",
+	params=#object(
+		userId="user identifier of the user to retrieve metadata for"
+	)
+);
+displayReadUserAPI = API_ReadUser.displayJson(_collapse="true");
+/competency/user/read/api = displayReadUserAPI;
+
+
+//==============
+// READ ALL Competency Users
+//==============
+
+readAll = #competencyReadAllUsers().displayJson(_collapse="true");
+
+/competency/user/all = readAll;
+
+//-----API-------
+
+API_ReadAllUsers = #object(
+	levr-service="#competencyReadAllUsers",
+	web-service="/competency/user/all",
+	description="Returns an object containing the user DB metadata for the all users, indexed by <userId>",
+	params=#object()
+);
+displayReadAllUsersAPI = API_ReadAllUsers.displayJson(_collapse="true");
+/competency/user/all/api = displayReadAllUsersAPI;
+
+//==============
+// UPDATE Competency User
+//==============
+
+update = #execute(service="competencyUpdateUser", paramObj=#removeFromObject(obj=postedCompetencyObject, password="", currentUser=""));
+
+checkLoginBeforeUpdate = #object(
+								a=#competencyErrorLogin(),
+								b=update
+						).get(b="");
+
+updateUser = #competencySessionUser(
+				sessionId=postedSessionId
+			).toParameter(
+				op=checkLoginBeforeUpdate, 
+				paramName="currentUser"
+			).displayJson(_collapse="true");
+
+/competency/user/update = updateUser;
+
+//-----API-------
+
+API_UpdateUser = #object(
+	levr-service="#competencyUpdateUser",
+	web-service="/competency/user/update",
+	description="Updates the user metadata for the specified <userId>",
+	params=#object(
+		userId="user identifier",
+		other="any other parameter given will be saved as user metadata",
+	)
+);
+displayUpdateUserAPI = API_UpdateUser.displayJson(_collapse="true");
+/competency/user/update/api = displayUpdateUserAPI;
+
+
+//==============
+// RESET Competency User Password
+//==============
+
+resetPassword = #competencyResetUserPassword(userId=postedUserId, password=postedPassword);
+
+checkLoginBeforeResetPassword = #object(
+										a=#competencyErrorLogin(),
+										b=resetPassword
+								).get(b="");
+
+resetPass = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=checkLoginBeforeResetPassword, 
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/user/resetPassword = resetPass;
+
+API_ResetPassword = #object(
+	levr-service="#competencyResetUserPassword",
+	web-service="/competency/user/resetPassword",
+	description="Updates the user password for the specified <userId>",
+	params=#object(
+		userId="user identifier",
+		password="new password",
+	)
+);
+displayResetPasswordAPI = API_ResetPassword.displayJson(_collapse="true");
+/competency/user/resetPassword/api = displayResetPasswordAPI;
+
+
+//==============
+// RESET Competency User Model
+//==============
+
+resetMod = #competencyResetUserModel(userId=postedUserId);
+
+checkLoginBeforeResetModel = #object(
+										a=#competencyErrorLogin(),
+										b=resetMod
+								).get(b="");
+
+resetModel = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=checkLoginBeforeResetModel, 
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/user/resetModel = resetModel;
+
+API_ResetModel = #object(
+	levr-service="#competencyResetUserModel",
+	web-service="/competency/user/resetModel",
+	description="Erases the user record model and creates a new empty one for the specified <userId>",
+	params=#object(
+		userId="user identifier",
+	)
+);
+displayResetModelAPI = API_ResetModel.displayJson(_collapse="true");
+/competency/user/resetModel/api = displayResetModelAPI;
+
+//==============
+// DELETE Competency User 
+//==============
+
+delete = #competencyDeleteUser(userId=postedUserId, password=postedPassword);
+
+checkLoginBeforeDelete = #object(
+							a=#competencyErrorLogin(),
+							b=delete
+						).get(b="");
+
+deleteUser = #competencySessionUser(
+						sessionId=postedSessionId
+				).toParameter(
+						op=checkLoginBeforeDelete,
+						paramName="currentUser"
+				);
+
+/competency/user/delete = deleteUser;
+
+//-----API-------
+
+API_DeleteUser = #object(
+	levr-service="#competencyDeleteUser",
+	web-service="/competency/user/delete",
+	description="Deletes the user specified by <userId> from the user DB metadata if <password> matches the user's password",
+	params=#object(
+		userId="user identifier of the user to delete",
+		password="password, to verify delete, for the user to be deleted",
+	)
+);
+displayDeleteUserAPI = API_DeleteUser.displayJson(_collapse="true");
+/competency/user/delete/api = displayDeleteUserAPI;
+
+//==============
+// API for Manipulating Competency Users
+//==============
+
+
+API_User = #object().putInObject(
+	dest="/competency/user/create",
+	item=API_CreateUser
+).putInObject(
+	dest="/competency/user/read",
+	item=API_ReadUser
+).putInObject(
+	dest="/competency/user/all",
+	item=API_ReadAllUsers	
+).putInObject(
+	dest="/competency/user/update",
+	item=API_UpdateUser
+).putInObject(
+	dest="/competency/user/resetPassword",
+	item=API_ResetPassword
+).putInObject(
+	dest="/competency/user/resetModel",
+	item=API_ResetModel
+).putInObject(
+	dest="/competency/user/delete",
+	item=API_DeleteUser
+).putInObject(
+	dest="/competency/user/ids",
+	item=API_GetUserIds
+);
+					
+				
+					
+#api_User = API_User;
+
+displayUserAPI = #displayJson(obj=API_User);
+/competency/user/api = displayUserAPI;

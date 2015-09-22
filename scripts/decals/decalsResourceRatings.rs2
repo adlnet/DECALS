@@ -1,0 +1,100 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+ratingDb={
+	indexDir=#decalsRatingDbDirectory(),
+	databaseName=#decalsRatingDbName(),
+	index=#decalsRatingDbIndexName() 
+};
+
+ratingObj=#idxGet(ratingDb,key="@resourceUrl").toObject();
+allRatingObj=#idxKeys(ratingDb).cforEach(paramName="resourceUrl",op=ratingObj);
+
+//============================
+//Rating
+//============================
+
+//--------------------------
+//Show all ratings
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllRatings=allRatingObj.displayJson();
+/decalsShowAllRatings=getAllRatings;
+
+//--------------------------
+//Rating information
+
+ratingsForFile=ratingObj.ccall(resourceUrl="@resourceUrl").cget(ratings="");
+#decalsRatingsForFile = ratingsForFile;
+
+averageRating=ratingsForFile.cforEach(
+	paramName="ratingIt",
+    op=#toObject(obj="@ratingIt").cget(rating="")
+).valueSet().average().round(_places="2");
+
+ratingInfo=#if(
+	operator=ratingObj,
+	operand="",
+    eq=#object(
+		resourceUrl="@resourceUrl",
+		averageRating=#add(a="0"),
+		numberOfRatings=#add(a="0")
+	),
+    ne=#object(
+		resourceUrl="@resourceUrl",
+		averageRating=averageRating,
+		numberOfRatings=ratingsForFile.count()
+	)
+);
+#decalsRatingInfo = ratingInfo;
+
+getRatingInfoForUrl=#object(
+	b=ratingInfo.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+).cget(b="").displayJson();
+
+/decalsGetRatingInfoForUrl=getRatingInfoForUrl;
+
+getRatingInfoForUrlGroup=#object(
+	b=#toArray(obj=decalsPostData.cget(resourceUrls="")).cforEach(
+																threaded="false",
+																paramName="rurl",
+																op=ratingInfo.ccall(resourceUrl="@rurl")
+	)
+).cget(b="").displayJson();
+
+/decalsGetRatingInfoForUrlGroup=getRatingInfoForUrlGroup;
+
+//--------------------------
+//Add rating
+
+nonUserRatings=ratingsForFile.cforEach(
+	paramName="ratingIt",
+    op=#if(
+    	operator=#toObject(obj="@ratingIt").cget(userId=""),
+    	operand=#decalsSessionUserId(),
+    	ne=#toObject(obj="@ratingIt")
+    )   
+).valueSet().removeDuplicates();
+
+addRatingObj=#object(
+	resourceUrl="@resourceUrl",
+	ratings=#listAdd(
+		a=nonUserRatings,
+		b=#object(
+			rating="@rating",
+			createDate=#date(_raw="true"),
+			userId=#decalsSessionUserId()
+		)
+	)
+);
+
+addRatingToDb=addRatingObj.idxSet(ratingDb,key="@resourceUrl");
+
+addRating=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=addRatingToDb.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""),
+		sessionId=decalsPostData.cget(sessionId=""),
+		rating=decalsPostData.cget(rating="")),
+	c=ratingInfo.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+).cget(c="").displayJson();
+
+/decalsAddRating=addRating;

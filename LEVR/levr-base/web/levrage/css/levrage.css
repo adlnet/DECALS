@@ -1,0 +1,259 @@
+div{
+}
+body,html{
+}
+
+.variableReference,
+.parameter,
+.function{
+    padding: 2px;
+    margin: 0px;
+    font-weight: normal;
+    font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    display: table;
+    position: relative;
+    margin-bottom: inherit;
+    font-size: 1rem;
+}
+.variableReference, .function, .function .parameter{
+    color: white;
+}
+
+#resolverList,#servlets{
+    word-wrap:normal;
+    overflow-y:scroll;
+    height:100vh;
+    display:block;    
+}
+
+.description br{
+    display:block;
+    margin-top:10px;
+    line-height:22px;
+}
+
+.literal{
+    min-width:50px;
+}
+
+.functionalSpec .function .parameter{
+    display:none;
+}
+.functionalSpec .dot{
+    display:none;
+}
+.functionalSpec .function.hovered .parameter{
+    display:block;
+}
+.functionalSpec .function:hover .parameter{
+    display: flex;
+}
+.functionalSpec .function .description{
+    display:none;
+}
+.functionalSpec .function .anotherParameter{
+    display:none;
+}
+.function .anotherParameter{
+    float:right;
+    display:block;
+    margin-left:5px;
+}
+.functionalSpec .function .removeFunction{
+    display:none;
+}
+.function .removeFunction{
+    float:right;
+    display:block;
+    margin-left:5px;
+}
+.functionalSpec .function .removeParameter{
+    display:none;
+}
+.function .removeParameter{
+    float:left;
+    margin-right: 3px;
+}
+.function .functionName{
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+.functionalSpec .function.hovered .description{
+    display:inline;
+    white-space: pre-wrap;
+}
+.functionalSpec .function:hover .description{
+    display:inline;
+    white-space: pre-wrap;
+}
+.functionalSpec .function .parameter .parameterContainer{
+    display:none;
+}
+#mainPanel .function .type{
+    display:none;
+}
+#mainPanel .function .description{
+    display:none;
+}
+
+.webservice{
+    margin-left:20px;
+}
+.rs2function{
+    margin-left:30px;
+    overflow:hidden;
+}
+
+.mainPanel .function{
+    float:left;
+}
+
+#servlets .rs2function div{
+    display:none;
+}
+#servlets .dot{
+    display:none;
+}
+#servlets textarea{
+    display:none;
+}
+#servlets .fileSave{
+    float:right;
+}
+#mainPanel textarea{
+    width:100%;
+    height:100vh;
+}
+#servlets .rs2function{
+    display: flex;
+}
+#servlets .webservice{
+    display: flex;
+}
+#servlets .parameterContainer{
+    display:none;
+}
+.addVariable{
+    float:left;
+    background-color:#e9e9e9;
+}
+
+.addWebService{
+    float:right;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color:#2ba6cb;
+}
+
+.removeWebService{
+    float:left;
+    background-color:#2ba6cb;
+}
+
+.removeVariable{
+    float:left;
+    margin-left: 2px;
+    background-color:#e9e9e9;
+}
+.removeVariableReference
+{
+    margin-left: 2px;
+    float:right;
+    background-color:black;
+    color:white;
+}
+
+.function{
+    text-align:left;
+}
+
+.parameter{
+    display: table;
+    width:100%;
+}
+
+.parameterName{
+    float:left;
+    padding: 4px;
+    border-style:solid;
+    border-width:1px;
+    border-radius:5px;
+    border-color:inherit;
+    margin-right:10px;
+}
+
+.parameterContainer{
+    float:right;
+    padding: 4px;
+    border-style:solid;
+    border-width:1px;
+    border-radius:5px;
+    border-color:inherit;
+}
+#mainPanel .variableName{
+    display:none;
+}
+.variableReference
+{
+    color:black;
+}
+.variableReference{
+    border-style:solid;
+    border-width:1px;
+    border-radius:5px;
+    border-color:black;
+    background-color:white;
+}
+.variableGroupReference
+{
+    color:black;
+}
+.variableGroupReference{
+    border-style:solid;
+    border-width:1px;
+    border-radius:5px;
+    border-color:black;
+    text-align:center;
+    width:100%;
+    background-color:white;
+}
+.webService
+{
+    color:black;
+}
+.webService .parameterName:after{
+    content:" =";
+}
+.webService .parameterName{
+    border-style:solid;
+    background-color:lightgreen;
+    border-width:1px;
+    border-radius:5px;
+    border-color:black;
+}
+.function .parameterName:after{
+    content:"";
+}
+.function .parameterName{
+    content:"";
+    border-color:white;
+}
+.function
+{
+    background-color: #222222;
+}
+.function .function
+{
+    background-color: #444444;
+}
+.function .function .function
+{
+    background-color: #666666;
+}
+.function .function .function .function
+{
+    background-color: #888888;
+}

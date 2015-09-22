@@ -1,0 +1,31 @@
+<header style="margin: 10px; text-align: center;">
+	<h4>Add Permission</h4>
+</header>
+<div class="row">
+	<div class="small-8 columns">
+		User: 
+		<input type="text" ng-model="typeaheadDummyText" ng-enter="addPermission()"
+			placeholder="Enter User Id, Name or Email"
+			typeahead="user.id as (user.firstName + ' ' + user.lastName + ' [' + user.id+']') for user in userItem.searchUsersPromise($viewValue)"
+			typeahead-min-length="2"
+			typeahead-loading="permission.id == ''"
+			typeahead-on-select="userSelected($item, $model, $label)"
+			typeahead-wait-ms="300" /></input>
+	</div>
+	<div class="small-4 columns">
+		Role: 
+		<select ng-model="permission.role">
+			<option value="admin">Admin</option>
+			<option value="user">User</option>
+			<option value="agent">Agent</option>
+		</select>
+	</div>
+</div>
+
+<div class="row">
+	<div class="small-12 columns">
+		<button style='float: right;margin-left:20px;' ng-click="add()" >Add</button>
+		<button style='float: right;' ng-click="cancel()">Cancel</button>
+	</div>
+</div>
+

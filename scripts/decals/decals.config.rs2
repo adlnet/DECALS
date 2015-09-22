@@ -1,0 +1,235 @@
+//============================
+// Admin User Password
+//============================
+initialAdminPassword=#add(a="TestTest2");
+
+//============================
+// File Download config
+//============================
+fileDownloadUrlPrefix  = #string(str="http://127.0.0.1:9722/api/custom/decalsFileDownload?fileId=");
+
+//============================
+// Access Keys
+//============================
+lrSearchApiKey = #string(str="<LR SEARCH API KEY>");
+lrSearchApiKey = #error(msg="Need to Set the LR Search API Key");			// FIXME
+
+mashapeKey = #string(str="<MASHAPE KEY>");
+mashapeKey = #error(msg="Need to set the MashapeKey");						// FIXME
+
+//============================
+// SOLR Configs
+//============================
+darSolrUrl = #string(str="http://127.0.0.1:8080/solr/");
+registrySolrUrl = #string(str="http://127.0.0.1:8080/solr/");
+
+//============================
+// Service URLs
+//============================
+//TODO retest metadata generation with mashape
+generateMetadataServiceUrl = #string(str="<Generate Metadata URL>");
+
+textKeywordsServiceUrl = #string(str="https://eduworks-metaglance-v1.p.mashape.com/decals/text/keywords");
+wordDefineServiceUrl = #string(str="https://eduworks-metaglance-v1.p.mashape.com/decals/text/define");
+wikiInfoServiceUrl = #string(str="https://eduworks-metaglance-v1.p.mashape.com/decals/text/wikiInfo");
+textNounsServiceUrl = #string(str="https://eduworks-metaglance-v1.p.mashape.com/decals/text/nouns");
+basicLrSearchUrl = #string(str="http://search.learningregistry.net/api/search");
+
+//============================
+// LR config
+//============================
+lrPublishNode = #string(str="http://sandbox.learningregistry.org/");
+lrPublishSubmitter = #string(str="ADL DECALS");
+lrPublishCurator = #string(str="ADL DECALS");
+lrPublishFromNode = #string(str="DECALS");
+lrPublishParadataActor = #string(str="ADL DECALS User Community");
+lrPublishToken = #string(str="<PUBLISH TOKEN>");
+
+lrParaPubDocVersion=#string(str="0.49.0"); 
+
+//============================
+// Roles
+//============================
+adminRoleId = #string(str="admin");
+userManagerRoleId = #string(str="user manager");
+
+//============================
+// Access types
+//============================
+viewAccess = #string(str="view");
+modifyAccess = #string(str="modify");
+
+//============================
+// Group types
+//============================
+publicGroup = #string(str="public");
+privateGroup = #string(str="private");
+
+//============================
+// DECALS Base Directory
+//============================
+
+defaultDirectory = #string(str="../decalsAppInfo/");
+
+//============================
+// DECALS Subdirectory Names 
+//
+// These directories are relative to the decalsDefaultDirectory
+//============================
+rootDbDirectory = #string(str="db/");
+
+tempDbDirectoryName = #string(str="dbTemp");
+fullTempDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=tempDbDirectoryName);
+
+collectionDbDirectoryName = #string(str="dbCollections");
+fullCollectionDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=collectionDbDirectoryName);
+
+ratingDbDirectoryName = #string(str="dbRatings");
+fullRatingDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=ratingDbDirectoryName);
+
+paraTrackDbDirectoryName = #string(str="dbParadataTracking");
+fullParaTrackDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=paraTrackDbDirectoryName);
+
+paradataDbDirectoryName = #string(str="dbParadataCounts");
+fullParadataDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=paradatakDbDirectoryName);
+
+commentDbDirectoryName = #string(str="dbComments");
+fullCommentDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=commentDbDirectoryName);
+
+userDbDirectoryName = #string(str="dbUsers");
+fullUserDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=userDbDirectoryName);
+
+sessionDbDirectoryName = #string(str="dbSession");
+fullSessionDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=sessionDbDirectoryName);
+
+fileDbDirectoryName = #string(str="dbFile");
+fullFileDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=fileDbDirectoryName);
+
+fileMetadataDbDirectoryName = #string(str="dbFileMetadata");
+fullFileMetadataDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=fileMetadataDbDirectoryName);
+
+groupDbDirectoryName = #string(str="dbGroups");
+fullGroupDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=groupDbDirectoryName);
+
+//============================
+// IDX Database Names
+//
+// Names of the IDX Databases that contain the DECALS info
+//============================
+tempDbName = #string(str="temps");
+ratingDbName = #string(str="ratings");
+paraTrackDbName = #string(str="paraTrackings");
+paradataDbName = #string(str="paradata");
+commentDbName = #string(str="comments");
+userDbName = #string(str="users");
+learningObjectiveDbName = #string(str="learningObjectives");
+sessionDbName = #string(str="sessions");
+fileDbName = #string(str="files");
+fileMetadataDbName = #string(str="fileMetadatas");
+collectionDbName = #string(str="collections");
+groupDbName = #string(str="groups");
+
+//============================
+// IDX Index Names
+//
+// Names of the IDX database indexes that contain the DECALS info
+//============================
+
+tempDbIndex = #string(str="temp");
+ratingDbIndex = #string(str="rating");
+paraTrackDbIndex = #string(str="paraTrack");
+paradataDbIndex = #string(str="paradata");
+commentDbIndex = #string(str="comment");
+userDbIndex = #string(str="user");
+learningObjectiveDbIndex = #string(str="learningObjectives");
+sessionDbIndex = #string(str="session");
+fileDbIndex = #string(str="file");
+fileMetadataDbIndex = #string(str="fileMetadata");
+collectionDbIndex = #string(str="collection");
+groupDbIndex = #string(str="group");
+
+//============================
+// LEVR Service Calls exposing the config settings
+//============================
+
+#decalsInitialAdminPassword = initialAdminPassword;
+
+#decalsLrSearchApiKey = lrSearchApiKey;
+#decalsMashapeKey = mashapeKey;
+
+#decalsTextKeywordsServiceUrl = textKeywordsServiceUrl;
+#decalsWordDefineServiceUrl = wordDefineServiceUrl;
+#decalsWikiInfoServiceUrl = wikiInfoServiceUrl;
+#decalsTextNounsServiceUrl = textNounsServiceUrl;
+#decalsGenerateMetadataServiceUrl = generateMetadataServiceUrl;
+#decalsBasicLrSearchUrl = basicLrSearchUrl;
+
+#decalsFileDownloadUrlPrefix = fileDownloadUrlPrefix;
+#decalsLrPublishNode = lrPublishNode;
+#decalsLrPublishSubmitter = lrPublishSubmitter;
+#decalsLrPublishCurator = lrPublishCurator;
+#decalsLrPublishFromNode = lrPublishFromNode;
+#decalsLrPublishParadataActor = lrPublishParadataActor;
+#decalsLrPublishToken = lrPublishToken;
+#decalsLrParaPubDocVersion = lrParaPubDocVersion;
+
+#decalsDarSolrUrl = darSolrUrl;
+#decalsRegistrySolrUrl = registrySolrUrl;
+
+#decalsBaseDirectoryName = defaultDirectory;
+
+#decalsTempDbDirectory = fullTempDbDirectory;
+#decalsTempDbName = tempDbName;
+#decalsTempDbIndexName = tempDbIndex;
+
+#decalsCollectionDbDirectory = fullCollectionDbDirectory;
+#decalsCollectionDbName = collectionDbName;
+#decalsCollectionDbIndexName = collectionDbIndex;
+
+#decalsRatingDbDirectory = fullRatingDbDirectory;
+#decalsRatingDbName = ratingDbName;
+#decalsRatingDbIndexName = ratingDbIndex;
+
+#decalsParaTrackDbDirectory = fullParaTrackDbDirectory;
+#decalsParaTrackDbName = paraTrackDbName;
+#decalsParaTrackDbIndexName = paraTrackDbIndex;
+
+#decalsParadataDbDirectory = fullParadataDbDirectory;
+#decalsParadataDbName = paradataDbName;
+#decalsParadataDbIndexName = paradataDbIndex;
+  
+#decalsCommentDbDirectory = fullCommentDbDirectory;
+#decalsCommentDbName = commentDbName;
+#decalsCommentDbIndexName = commentDbIndex;
+
+#decalsUserDbDirectory = fullUserDbDirectory;
+#decalsUserDbName = userDbName;
+#decalsUserDbIndexName = userDbIndex;
+
+#decalsLearningObjectiveDbName = learningObjectiveDbName;
+#decalsLearningObjectiveDbIndexName = learningObjectiveDbIndex;
+
+#decalsSessionDbDirectory = fullSessionDbDirectory;
+#decalsSessionDbName = sessionDbName;
+#decalsSessionDbIndexName = sessionDbIndex;
+
+#decalsFileDbDirectory = fullFileDbDirectory;
+#decalsFileDbName = fileDbName;
+#decalsFileDbIndexName = fileDbIndex;
+
+#decalsFileMetadataDbDirectory = fullFileMetadataDbDirectory;
+#decalsFileMetadataDbName = fileMetadataDbName;
+#decalsFileMetadataDbIndexName = fileMetadataDbIndex;
+
+#decalsGroupDbDirectory = fullGroupDbDirectory;
+#decalsGroupDbName = groupDbName;
+#decalsGroupDbIndexName = groupDbIndex;
+
+#decalsAdminRoleId = adminRoleId;
+#decalsUserManagerRoleId = userManagerRoleId;
+
+#decalsViewAccess = viewAccess;
+#decalsModifyAccess = modifyAccess;
+
+#decalsPublicGroupType = publicGroup;
+#decalsPrivateGroupType = privateGroup;

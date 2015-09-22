@@ -1,0 +1,266 @@
+
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+postDataText=decalsPostData.cget(text="");
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+fileMdObj = #decalsFileMdObj();
+
+PRIMARY_ENVIRONMENT = #string(str="Primary Education");
+SECONDARY_ENVIRONMENT = #string(str="Secondary Education");
+HIGHER_ED_ENVIRONMENT = #string(str="Higher Education");
+VOCATIONAL_ENVIRONMENT = #string(str="Vocational");
+
+#decals_PRIMARY_ENVIRONMENT = PRIMARY_ENVIRONMENT;
+#decals_SECONDARY_ENVIRONMENT = SECONDARY_ENVIRONMENT;
+#decals_HIGHER_ED_ENVIRONMENT = HIGHER_ED_ENVIRONMENT;
+#decals_VOCATIONAL_ENVIRONMENT = VOCATIONAL_ENVIRONMENT;
+
+//============================
+//Grade Level
+//============================
+
+//--------------------------
+//Normalize grade level into something DECALS recognizes
+
+gradeLevel=fileMdObj.cget(gradeLevel_t="");
+
+normalizeGradeLevel=#if(
+	operator=gradeLevel,
+	operand="",
+	eq="",
+	ne=#if(
+		operator=gradeLevel,
+		operand="5",
+		lt="ES",
+		gt=#if(
+			operator=gradeLevel,
+			operand="9",
+			lt="MS",
+			gt=#if(
+				operator=gradeLevel,
+				operand="13",
+				lt="HS",
+				gt="HE"
+			)
+		)
+	)
+).ccall(fileId="@fileId");
+#decalsNormalizeGradeLevel = normalizeGradeLevel;
+
+normalizeGradeLevelDj=normalizeGradeLevel.displayJson();
+
+/decalsNormalizeGradeLevel=normalizeGradeLevelDj;
+
+
+//============================
+//Nouns
+
+getTextNouns=#httpPost(
+        obj=postDataText,
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsTextNounsServiceUrl()
+);
+
+getTextNounsDisplay=getTextNouns.displayJson();
+
+/decalsGetTextNouns=getTextNounsDisplay;
+
+//============================
+//Text Highlights
+
+getTextKeywords=#httpPost(
+        obj=postDataText,
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsTextKeywordsServiceUrl()
+);
+
+getTextKeywordsDisplay=getTextKeywords.displayJson();
+
+/decalsGetTextKeywords=getTextKeywordsDisplay;
+
+getTextHighlights=#object(
+    text=postDataText,
+	nouns=getTextNouns.valueSet().cgetIndex(index="0"),
+	keywords=getTextKeywords.valueSet().cgetIndex(index="0")
+).displayJson();
+
+/decalsGetTextHighlights=getTextHighlights;
+
+//============================
+//Word Definition
+
+getWordDefinition=#httpPost(
+        obj=decalsPostData.cget(word=""),
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsWordDefineServiceUrl()
+);
+
+
+getWordDefinitionDisplay=getWordDefinition.valueSet().cgetIndex(index="0").displayJson();
+
+/decalsDefineWord=getWordDefinitionDisplay;
+
+ 
+//============================
+//Wiki Info
+getWikiInfo=#httpPost(
+        obj=decalsPostData.cget(title=""),
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsWikiInfoServiceUrl()
+);
+
+getWikiInfoDisplay=getWikiInfo.valueSet().cgetIndex(index="0").displayJson();
+
+/decalsWikiInfo=getWikiInfoDisplay; 
+
+
+
+//============================
+//Application settings
+//============================
+
+//--------------------------
+//Get application settings
+
+appSettings=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+    b=#object(
+    	fileDownloadUrl=#decalsFileDownloadUrlPrefix(),
+    	lrPublishNode=#decalsLrPublishNode(),
+    	lrPublishSubmitter=#decalsLrPublishSubmitter(),
+    	lrPublishCurator=#decalsLrPublishCurator(),
+    	lrPublishFromNode=#decalsLrPublishFromNode(),
+    	lrPublishParadataActor=#decalsLrPublishParadataActor()
+    )   
+).cget(b="").displayJson();
+                  
+/decalsAppSettings = appSettings;
+ 
+
+//--------------------------
+// Initial user
+//
+//Should be run once and deleted.  
+//Change values as appropriate
+//--------------------------
+
+createCompetencyAdminUser = #competencyCreateUser(userId="@userId", firstName="Decals", lastName="Admin", email="@userId", password=#decalsInitialAdminPassword()); 
+ 
+putInitialUserInDb=#if(operator=#idxKeys(userDb).has(has="@userId"), operand="true",
+						ne=#object(
+								a=#object(
+										password=#bCryptHash(
+											password=#decalsInitialAdminPassword(),
+											rounds="10"
+										),
+										dateCreated=#date(_raw="true"),	
+										datePasswordUpdated=#date(_raw="true"),
+										firstName="DECALS",
+										lastName="Admin",
+										email="@userId",
+										roles=#listAdd(a=#decalsAdminRoleId())
+									).idxSet(userDb,key="@userId"),
+								b=createCompetencyAdminUser
+							)
+					);
+
+
+createFirstAdminUser=#object(
+	a=putInitialUserInDb,
+	b=#idxGet(userDb,key="@userId")
+).ccall(userId="decalsadmin@decals.com").cget(a="").displayJson();
+ 
+#createFirstAdminAutoExecute = createFirstAdminUser;
+ 
+/decalsInitAdminUser=createFirstAdminUser;
+
+
+//============================
+//Tracking DB config
+
+trackingDb={
+	indexDir="..%2Fdb",
+	databaseName="dbTracking",
+	index="tracking"
+};
+
+
+//============================
+//Tracking - For DECALS qualtrics/AMT integration
+//============================
+
+
+trackObj=#idxGet(trackingDb,key="@trackingId").toObject();
+allTrackingObj=#idxKeys(trackingDb).cforEach(paramName="trackingId",op=trackObj);
+
+//==============
+//Show all tracking data
+
+allTrackGet=allTrackingObj.displayJson();
+
+/decalsShowAllTracking=allTrackGet;
+
+//============================
+//Add tracking data
+newKey=#generateUUID();
+
+addTestTrackMn=#object(assignmentId="@assignmentId",
+                       timestamp=#date(dateFormat="yyyy-MM-dd'T'HH:mm:ss.SSSZ"),
+                       message="@message").idxSet(trackingDb,key=newKey);
+
+addTestTrack=#object(
+	a=addTestTrackMn.ccall(assignmentId=decalsPostData.cget(assignmentId=""),message=decalsPostData.cget(message="")),
+	b="true"
+).cget(b="").displayJson();
+
+/decalsAddTracking=addTestTrack;
+
+
+//============================
+//Tracking by assignment ID
+
+assignmentIdTracking=allTrackingObj.cforEach(paramName="trackingId",
+                                             op=#if(operator=trackObj.cget(assignmentId=""),
+                                                    operand="@assignmentId",
+                                                    eq=trackObj));
+
+getAssignmentIdTracking=assignmentIdTracking.displayJson();
+
+/decalsGetTrackingByAssignmentId=getAssignmentIdTracking;
+
+//============================
+//Delete tracking data by tracking ID
+deleteTrackingObj=#object(a=#idxDelete(trackingDb,key="@trackingId"),
+                          b="true").cget(b="");
+
+deleteTrackingById=deleteTrackingByIdObj.displayJson();
+
+/decalsDeleteTrackingById=deleteTrackingById;
+
+
+//============================
+//Delete tracking data by assignment ID
+
+deleteTrackingByAssignmentIdObj=#object(a=allTrackingObj.cforEach(paramName="trackingId",
+                                                                  op=#if(operator=trackObj.cget(assignmentId=""),
+                                                                         operand="@assignmentId",
+                                                                         eq=#idxDelete(trackingDb,key="@trackingId"))
+                                                                  ),
+                                        b="true").cget(b="");
+
+deleteTrackingByAssignmentId=deleteTrackingByAssignmentIdObj.displayJson();
+
+/decalsDeleteTrackingByAssignmentId=deleteTrackingByAssignmentId;

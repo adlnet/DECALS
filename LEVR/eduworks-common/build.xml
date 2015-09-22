@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+
+<project name="eduworks-common" basedir="../eduworks-common" default="eduworks-common-usage" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<!--Workspace wide settings-->
+	
+	<property name="antcontrib.jar.dir" value="${ant.library.dir}/antcontrib" />
+	<property name="antcontrib.jar.file" value="${antcontrib.jar.dir}/ant-contrib-1.0b3.jar" />
+
+	<property name="ivy.install.version" value="2.2.0" />
+	<property name="ivy.jar.dir" value="${ant.library.dir}/ivy" />
+	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+	<property name="ivy.local.default.root" value="${repository.dir}/local" />
+	<property name="ivy.shared.default.root" value="${repository.dir}/shared" />
+
+	<!-- eduworks-common wide settings -->
+	<property name="eduworks.common.src.dir" value="../eduworks-common/src" />
+	<property name="eduworks.common.build.dir" value="../eduworks-common/bin" />
+	<property name="eduworks.common.lib.dir" value="../eduworks-common/lib" />
+	<property name="eduworks.common.name" value="eduworks-common" />
+	<property name="eduworks.common.dist" value="../eduworks-common/dist" />
+	
+	<macrodef name="echo-path">
+		<attribute name="pathref" />
+		<sequential>
+			<echo>echoing path=@{pathref}</echo>
+			<for param="fromfile">
+				<path refid="@{pathref}"  />
+				<sequential>
+					<echo>@{fromfile}</echo>ns
+				</sequential>
+			</for>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="echo-fileset">
+		<attribute name="filesetref" />
+		<sequential>
+			<pathconvert pathsep="" property="@{filesetref}.echopath">
+				<path>
+					<fileset refid="@{filesetref}" />
+				</path>
+			</pathconvert>
+			<echo>   ------- echoing fileset @{filesetref} -------</echo>
+			<echo>${@{filesetref}.echopath}</echo>
+		</sequential>
+	</macrodef>
+
+	<target name="check-ivy">
+	    <available file="${ivy.jar.file}" property="ivy.present"/>
+	</target>
+	
+	<target name="ant-download-ivy" depends="check-ivy" unless="ivy.present">
+		<mkdir dir="${ivy.jar.dir}" />
+		<echo message="Downloading ivy..." />
+		<get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true" />
+	</target>
+
+	<target name="ant-install-ivy" depends="ant-download-ivy" unless="ivy.installed" description="--> install ivy">
+		<path id="ivy.lib.path"> 
+			<fileset dir="${ivy.jar.dir}" includes="*.jar" />
+		</path>
+		<property name="ivy.installed" value="true"/>
+		<echo message="Installing ivy..." />
+		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path" />
+	</target>
+
+	<target name="ant-install-antcontrib" depends="eduworks-common-versions" unless="antcontrib.installed">
+		<mkdir dir="${antcontrib.jar.dir}" />
+		<echo message="Downloading antcontrib..." />
+		<get src="http://repo1.maven.org/maven2/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar" dest="${antcontrib.jar.file}" usetimestamp="true"/>
+		<path id="antcontrib.lib.path">
+			<fileset dir="${antcontrib.jar.dir}" includes="${antcontrib.jar.file}" />
+		</path>
+		<echo message="Installing antcontrib..." />
+		<taskdef onerror="fail" resource="net/sf/antcontrib/antcontrib.properties">
+			<classpath>
+				<path location="${antcontrib.jar.file}" />
+				<pathelement location="${antcontrib.jar.path}"/>
+			</classpath> 
+		</taskdef>
+		<property name="antcontrib.installed" value="true"/>
+	</target>
+
+	<target name="eduworks-common-versions">
+		
+	    <condition property="eduworks.common.version" value="${eduworks.common.version}" else="testing">
+	       	<isset property="eduworks.common.version"/>
+		</condition>
+		<echo message="${eduworks.common.version}"/>
+		
+	    <condition property="levr.core.version" value="${levr.core.version}" else="testing">
+	       	<isset property="levr.core.version"/>
+		</condition>
+		<echo message="${levr.core.version}"/>
+		
+	    <condition property="levr.base.version" value="${levr.base.version}" else="testing">
+	       	<isset property="levr.base.version"/>
+		</condition>
+		<echo message="${levr.base.version}"/>
+		
+	</target>
+
+	<target name="eduworks-common-usage">
+		<echo message="" />
+		<echo message="${eduworks.common.name} build file" />
+		<echo message="-----------------------------------" />
+		<echo message="" />
+		<echo message="General targets:" />
+		<echo message="eduworks-common-jar     --> Build the jar file" />
+		<echo message="" />
+	</target>
+
+	<target name="eduworks-common-jar" depends="eduworks-common-build" description="Build a deployable jar file">
+		<mkdir dir="${eduworks.common.dist}" />
+		<jar destfile="${eduworks.common.dist}/${eduworks.common.name}-${eduworks.common.version}.jar">
+			<fileset dir="${eduworks.common.build.dir}" excludes="/models/*" />
+		</jar><jar destfile="${eduworks.common.dist}/${eduworks.common.name}.jar">
+			<fileset dir="${eduworks.common.build.dir}" excludes="/models/*" />
+		</jar>
+	</target>
+
+	<path id="eduworks-common-classpath">
+		<fileset dir="${eduworks.common.lib.dir}">
+			<include name="**/**/lib/*.jar" />
+			<include name="**/**/jars/*.jar" />
+			<include name="**/**/bundles/*.jar" />
+		</fileset>
+		<pathelement path="${eduworks.common.build.dir}" />
+		<pathelement path="${eduworks.common.build-models.dir}" />
+	</path>
+
+	<target name="eduworks-common-libs" depends="ant-install-ivy,ant-install-antcontrib">
+		<ivy:settings file="../eduworks-common/ivysettings.xml" id="ivy.instance" />
+		<ivy:retrieve type="jar,bundle" settingsref="ivy.instance" haltonfailure="yes" refresh="true" pattern="${eduworks.common.lib.dir}/[organisation]/[module]/[type]s/[artifact]-[revision].[ext]" />
+		<!-- Heal classpath from using 'absolute' paths relative to the workspace.
+		<replace file=".classpath" token="classpathentry kind=&quot;lib&quot; path=&quot;/" value="classpathentry kind=&quot;lib&quot; path=&quot;../" />
+		 -->
+		<!-- Create classpath from eclipse file. -->
+		<antclipse produce="classpath" idcontainer="eduworks-common-custom-libs" verbose="true"/>
+		<!-- Copy libraries into lib folder. -->
+		<path id="cp" refid="eduworks-common-custom-libs"/>
+		<pathtofileset name="foo" dir=".." pathrefid="cp"/>
+		<copy todir="${eduworks.common.lib.dir}/eduworks">
+			<fileset refid="foo"/>
+		</copy>
+	</target>
+
+	<target name="eduworks-common-build" depends="eduworks-common-libs" description="Compile main source tree java files">
+		<mkdir dir="${eduworks.common.build.dir}" />
+		<javac destdir="${eduworks.common.build.dir}" encoding="8859_1" target="1.5" debug="true" deprecation="false" optimize="false" failonerror="true">
+			<src path="src" />
+			<classpath refid="eduworks-common-classpath" />
+		</javac>
+		<copy todir="${eduworks.common.build.dir}" preservelastmodified="true">
+			<fileset dir="src">
+				<include name="**/*.xsl" />
+				<include name="**/*.xml" />
+				<include name="**/*.wsdl" />
+				<include name="**/*.xsd" />
+				<include name="**/*.gz" />
+				<include name="**/*.ccf" />
+				<include name="**/*.version" />
+				<include name="**/*.jar" />
+				<include name="**/*.dta" />
+				<include name="**/*.dat" />
+				<include name="**/*.properties" />
+				<include name="**/*.txt" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="eduworks-common-clean" description="Compile main source tree java files">
+		<delete dir="${eduworks.common.build.dir}" />
+		<delete dir="${eduworks.common.build-models.dir}" />
+		<delete dir="${antcontrib.jar.dir}"  failonerror="off"/>
+		<delete dir="${ivy.jar.dir}" failonerror="off"/>
+		<delete dir="${eduworks.common.lib.dir}" />
+		<delete dir="${eduworks.common.dist}">
+			<include name="**/*.jar" />
+		</delete>
+		<delete dir="etc" />
+	</target>
+
+	<target name="eduworks-common-test" depends="eduworks-common-build" description="Run JUnit Tests">
+		<deltree dir="junit" />
+		<mkdir dir="junit" />
+		<junit printsummary="on" newenvironment="true" maxmemory="1024m" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
+			<classpath refid="master-classpath" />
+			<batchtest todir="junit">
+				<formatter type="brief" usefile="false" />
+				<formatter type="xml" usefile="true" />
+				<fileset dir="${eduworks.common.build.dir}">
+					<include name="**/*Test.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+</project>

@@ -1,0 +1,40 @@
+<div style="margine-top: 10px;"
+	ng-hide="validObj.evidences[evidenceId] != undefined" class="row">
+	<div class="small-12 columns" style='font-size: 15pt;'>
+		<i class="fa fa-circle-o-notch fa-spin"></i> Loading
+	</div>
+</div>
+<div style='margin-top: 10px;'
+	ng-hide="validObj.evidences[evidenceId] == undefined" class="row">
+	<div class="small-12 columns">
+		<div class="row">
+			<span class="small-6 columns"> <strong>Evidence Type:</strong>
+				<input type="text" ng-model="validObj.evidences[evidenceId].type"></input>
+			</span> <span class="small-4 columns"> <strong style="display: block">Date:</strong>
+				<span style="display: block; margin-top: 10px;">{{validObj.evidences[evidenceId].date
+					| date}}</span>
+			</span>
+		</div>
+
+		<div class="row">
+			<span class="small-9 columns"> <strong>Evidence
+					Description</strong> <input type="text"
+				ng-model="validObj.evidences[evidenceId].description"></input>
+			</span> <span class="small-3 columns"> <strong
+				style="display: block;">Evidence Result</strong> <span
+				style="display: block; margin-top: 10px;">{{validObj.evidences[evidenceId].result}}</span>
+			</span>
+		</div>
+
+		<div class="row">
+			<span class="small-6 columns"> <strong style="display: block;">Resource
+					Type:</strong> <span style="display: block; margin-top: 10px;">{{validObj.evidences[evidenceId].valueType}}</span>
+			</span> <span class="small-5 columns"> <strong
+				style="display: block;">Resource:</strong> <span
+				style="display: block; margin-top: 10px;">{{validObj.evidences[evidenceId].value}}</span>
+				<span>{{validObj.evidences[evidenceId].file}}</span>
+			</span>
+		</div>
+		<hr ng-hide="$last" />
+	</div>
+</div>

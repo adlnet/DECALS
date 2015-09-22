@@ -1,0 +1,611 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+collectionDb={
+	indexDir=#decalsCollectionDbDirectory(),
+	databaseName=#decalsCollectionDbName(),
+	index=#decalsCollectionDbIndexName() 
+};
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+fileMetadataDb={
+	indexDir=#decalsFileMetadataDbDirectory(),
+	databaseName=#decalsFileMetadataDbName(),
+	index=#decalsFileMetadataDbIndexName() 
+};
+
+collectionObj=#idxGet(collectionDb,key="@collectionId").toObject();
+allCollectionObj=#idxKeys(collectionDb).cforEach(paramName="collectionId",op=collectionObj);
+
+invalidAccessError=#error(code="401",msg=#object(error="Invalid access for task"));
+
+//------------------------------------
+// Remove Group From All Collections
+
+groupsForCollection=collectionObj.cget(groups="");
+
+groupsForCollectionMinusGroup=groupsForCollection.cforEach(
+	paramName="cgIt",
+    op=#if(
+    	operator=#toObject(obj="@cgIt").cget(groupId=""),
+    	operand="@groupId",
+    	ne=#toObject(obj="@cgIt")
+    )   
+).valueSet();
+
+collectionHasGroup = groupsForCollection.cforEach(
+	paramName="cgIt",
+    op=#toObject(obj="@cgIt").cget(groupId="")
+).valueSet().has(has="@groupId");
+
+removeGroupFromAllCollections=allCollectionObj.cforEach(
+	paramName="collectionId",
+    op=#if(
+    	operator=collectionHasGroup,
+		operand="true",
+		eq=collectionObj.putInObject(
+			dest="groups",
+			item=#listAdd(
+				a=groupsForCollectionMinusGroup
+			)
+		).idxSet(collectionDb,key="@collectionId")
+	)
+);
+#decalsRemoveGroupFromAllCollections = removeGroupFromAllCollections;
+
+//============================
+//Collections
+//============================
+
+newCollectionUserObj=#object(
+	userId="@userId",
+	firstName=#userGet(userDb,userId="@userId").cget(firstName=""),
+	lastName=#userGet(userDb,userId="@userId").cget(lastName=""),
+	access="@access"	
+);
+
+newCollectionItemObj=#object(	
+	itemIndex="@itemIndex",
+	resourceTitle="@resourceTitle",
+	resourceUrl="@resourceUrl",
+	resourceDescription="@resourceDescription"
+);
+
+itemsForCollection=collectionObj.cget(items="");
+
+itemsForCollectionMinusItem=itemsForCollection.cforEach(
+	paramName="ciIt",
+    op=#if(
+    	operator=#toObject(obj="@ciIt").cget(resourceUrl=""),
+    	operand="@resourceUrl",
+    	ne=#toObject(obj="@ciIt")
+    )   
+).valueSet();
+
+collectionHasItem = itemsForCollection.cforEach(
+	paramName="ciIt",
+    op=#toObject(obj="@ciIt").cget(resourceUrl="")
+).valueSet().has(has="@resourceUrl");
+
+usersForCollection=collectionObj.cget(users="");
+
+usersForCollectionMinusUser=usersForCollection.cforEach(
+	paramName="cuIt",
+    op=#if(
+    	operator=#toObject(obj="@cuIt").cget(userId=""),
+    	operand="@userId",
+    	ne=#toObject(obj="@cuIt")
+    )   
+).valueSet();
+
+collectionHasUser = usersForCollection.cforEach(
+	paramName="cuIt",
+    op=#toObject(obj="@cuIt").cget(userId="")
+).valueSet().has(has="@userId");
+
+collectionHasMemberGroup = #decalsUserMemberGroups().keySet().cforEach(
+    	paramName="groupId",
+    	op = collectionHasGroup.toString()
+).valueSet().has(has="true");
+
+userAccessForCollection = usersForCollection.cforEach(
+	paramName="cuIt",
+    op=#if(
+    	operator=#toObject(obj="@cuIt").cget(userId=""),
+    	operand="@userId",
+    	eq=#toObject(obj="@cuIt").cget(access="")
+    )
+).valueSet().getIndex(index="0");
+
+groupAccessForCollection = groupsForCollection.cforEach(
+	paramName="cgIt",
+    op=#if(
+    	operator=#toObject(obj="@cgIt").cget(groupId=""),
+    	operand="@groupId",
+    	eq=#toObject(obj="@cgIt").cget(access="")
+    )
+).valueSet().getIndex(index="0");
+
+userGroupAccessForCollection = #decalsUserMemberGroups().keySet().cforEach(
+    	paramName="groupId",
+    	op = groupAccessForCollection
+);
+
+userCanModifyCollection = #if(
+	operator=userAccessForCollection,
+	operand=#decalsModifyAccess(),
+	eq="true",
+	ne=#if(
+		operator=userAccessForCollection,
+		operand=#decalsViewAccess(),
+		eq="false",
+		ne=#if(
+			operator=userGroupAccessForCollection.valueSet().has(has=#decalsModifyAccess()).toString(),
+			operand="true",
+			eq="true",
+			ne="false"
+		)
+	)
+);
+
+checkHasCollectionModifyAccess = #if(	
+	operator=userCanModifyCollection, 
+	operand="false", 
+	eq=invalidAccessError
+);
+
+//--------------------------
+//Show all collections
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllCollections=allCollectionObj.displayJson();
+/decalsShowAllCollections=getAllCollections;
+
+//--------------------------
+//Collections for user
+
+userCollections=allCollectionObj.cforEach(
+	paramName="collectionId",
+    op=#if(
+    	operator=collectionHasUser,
+		operand="true",
+		eq=collectionObj,
+		ne=#if(
+			operator=collectionHasMemberGroup,
+			operand="true",
+			eq=collectionObj
+		)
+	)
+);
+
+getCollectionsForUser=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=userCollections.ccall(userId=decalsPostData.cget(userId=""))
+).cget(b="").displayJson();
+
+/decalsGetCollectionsForUser=getCollectionsForUser;
+
+//--------------------------
+//Get collection
+
+getCollection=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=collectionObj.ccall(collectionId=decalsPostData.cget(collectionId=""))
+).cget(b="").displayJson();
+
+#decalsGetCollection = collectionObj;
+
+/decalsGetCollection=getCollection;
+
+//--------------------------
+//Add collection
+
+newCollectionObj=#object(
+	collectionId="@collectionId",
+	name="@collectionName",
+	description="@collectionDescription",
+	creator="@userId",
+	createdDate=#date(_raw="true"),
+	updatedDate=#date(_raw="true"),
+	users=#listAdd(a=newCollectionUserObj.ccall(access=#decalsModifyAccess()))	
+);
+
+createCollection=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=newCollectionObj.ccall(
+		collectionName=decalsPostData.cget(collectionName=""),
+		collectionDescription=decalsPostData.cget(collectionDescription=""),
+		userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))
+	).idxSet(collectionDb,key="@collectionId"),
+	c=collectionObj
+).ccall(collectionId=#generateUUID()).cget(c="").displayJson();
+
+/decalsCreateCollection = createCollection;
+
+//--------------------------
+//Delete collection
+
+deleteCollection=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=#idxDelete(collectionDb,key="@collectionId"),
+	d=#object(msg="true")
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
+
+/decalsDeleteCollection = deleteCollection;
+
+//--------------------------
+//Add collection user
+
+addCollectionUser=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=collectionObj.putInObject(
+		dest="users",
+		item=#listAdd(
+			a=usersForCollectionMinusUser.ccall(userId=decalsPostData.cget(userId="")),
+			b=newCollectionUserObj.ccall(userId=decalsPostData.cget(userId=""),access=decalsPostData.cget(access=""))
+		)
+	).putInObject(
+		dest="updatedDate",
+		item=#date(_raw="true")
+	).idxSet(collectionDb,key="@collectionId"),
+	d=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
+
+/decalsAddCollectionUser = addCollectionUser;
+
+//--------------------------
+//Remove collection user
+
+removeCollectionUser=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=collectionObj.putInObject(
+		dest="users",
+		item=#listAdd(
+			a=usersForCollectionMinusUser.ccall(userId=decalsPostData.cget(userId=""))
+		)
+	).putInObject(
+		dest="updatedDate",
+		item=#date(_raw="true")
+	).idxSet(collectionDb,key="@collectionId"),
+	d=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
+
+/decalsRemoveCollectionUser = removeCollectionUser;
+
+//--------------------------
+//Add collection item
+
+setFileMetadata = #idxPut(
+						fileMetadataDb,
+						key="@fileId",
+		        		id="@fileId",
+		        		fileName_t=decalsPostData.cget(resourceTitle=""),
+		        		title_t=decalsPostData.cget(resourceTitle=""),
+		        		url_t=#if(operator=decalsPostData.cget(resourceId=""), operand="",
+		        					eq=#add(
+		        							a=decalsPostData.cget(resourceUrl=""),
+		        							b="#lr-copy-",
+		        							c=#generateUUID()
+		        						),
+		        					ne=decalsPostData.cget(resourceUrl=""),
+		        				),
+		        		uploadDate_l=#date(_raw="true"),
+		        		updatedDate_l=#date(_raw="true"),
+		        		published_t="false",
+		        		old_title_t=decalsPostData.cget(resourceTitle=""),
+		        	).buildArguments(key="keywords_txt", value=#toArray(obj="@keywords"),
+		        					key1="objectives_txt", value1=#toArray(obj="@objectives"),
+		        					remove="sessionId", remove1="collectionId", remove2="collectionMetadata", remove3="LRInfo",
+		        					remove4="keywords", remove5="objectives",
+		        					hard="true"
+		        	);
+
+checkAddCollectionMetadata = #object(
+							 	a=setFileMetadata.ccall(
+							 							uploadedBy_t=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),
+							 							updatedDate_l=#date(_raw="true"),
+							 							keywords=#if(operator=#decalsFileMdObj(), operand="",
+																			eq=#if(operator="@LRInfo", operand="",
+																					eq=#if(operator=#decode(obj="@collectionMetadata").cget(keywords=""), operand="",
+																							ne=#if(operator=#decode(obj="@collectionMetadata").cget(keywords="").toArray().count(), operand="0",
+																									ne=#decode(obj="@collectionMetadata").cget(keywords="").toArray()
+																								),
+																						),
+																					ne=#if(operator=#decode(obj="@LRInfo").keySet().has(has="keywords"), operand="true",
+																							eq=#decode(obj="@LRInfo").cget(keywords="").toArray().union(a=#decode(obj="@collectionMetadata").cget(keywords="").toArray()),
+																							ne=#decode(obj="@collectionMetadata").cget(keywords="").toArray()
+																						),
+																				),
+																			ne=#if(operator=#decalsFileMdObj().cget(keywords_txt="").toArray().count(), operand="0",
+																					eq=#decode(obj="@collectionMetadata").cget(keywords="").toArray(),
+																					ne=#decalsFileMdObj().cget(keywords_txt="").union(a=#decode(obj="@collectionMetadata").cget(keywords="").toArray())
+																				),
+																		),
+														objectives=#if(operator=#decalsFileMdObj(), operand="",
+																			eq=#if(operator=#decode(obj="@collectionMetadata").cget(objectives=""), operand="",
+																					ne=#if(operator=#decode(obj="@collectionMetadata").cget(objectives="").toArray().count(), operand="0",
+																							ne=#decode(obj="@collectionMetadata").cget(objectives="").toArray()
+																						),
+																				),
+																			ne=#if(operator=#decalsFileMdObj().cget(objectives_txt="").toArray().count(), operand="0",
+																					eq=#decode(obj="@collectionMetadata").cget(objectives="").toArray(),
+																					ne=#decalsFileMdObj().cget(objectives_txt="")
+																				),
+																		),
+														coverage_t=#if(operator=#decalsFileMdObj(), operand="",
+																			eq=#decode(obj="@collectionMetadata").cget(coverage=""),
+																			ne=#if(operator=#decalsFileMdObj().cget(coverage_t=""), operand="",
+																					eq=#decode(obj="@collectionMetadata").cget(coverage=""),
+																					ne=#decalsFileMdObj().cget(coverage_t="")
+																				),
+																		),
+														environment_t=#if(operator=#decalsFileMdObj(), operand="",
+																			ne=#if(operator=#decalsFileMdObj().cget(environment_t=""), operand="",
+																					eq=#decode(obj="@collectionMetadata").cget(environment=""),
+																					ne=#decalsFileMdObj().cget(environment_t="")
+																				),
+																			eq=#if(operator="@LRInfo", operand="",
+																					eq=#decode(obj="@collectionMetadata").cget(environment=""),
+																					ne=#if(operator=#decode(obj="@LRInfo").keySet().has(has="grade_levels"), operand="true",
+																							eq=#object(
+																									a=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_KINDERGARTEN_GRADE_LEVEL()), operand="true",
+																											eq=#decals_PRIMARY_ENVIRONMENT(),
+																											ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_ELEMENTARY_GRADE_LEVEL()), operand="true",
+																													eq=#decals_PRIMARY_ENVIRONMENT(),
+																													ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_MIDDLE_SCHOOL_GRADE_LEVEL()), operand="true",
+																															eq=#decals_PRIMARY_ENVIRONMENT(),
+																															ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_HIGH_SCHOOL_GRADE_LEVEL()), operand="true",
+																																	eq=#decals_SECONDARY_ENVIRONMENT(),
+																																	ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_HIGHER_ED_GRADE_LEVEL()), operand="true",
+																																			eq=#decals_HIGHER_ED_ENVIRONMENT(),
+																																			ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_VOCATIONAL_GRADE_LEVEL()), operand="true",
+																																					eq=#decals_VOCATIONAL_ENVIRONMENT(),
+																																					ne=#decode(obj="@collectionMetadata").cget(environment=""),
+																																				)
+																																		)
+																																)
+																														)
+																												)
+																										)
+																								).ccall(
+																									gradeLevels=#decode(obj="@LRInfo").cget(grade_levels="")
+																								).cget(a=""),
+																							ne=#decode(obj="@collectionMetadata").cget(environment=""),
+																						),
+																				),
+																			
+																		),
+														description_t=#if(operator=#decalsFileMdObj(), operand="",
+																			ne=#if(operator=#decalsFileMdObj().cget(description_t=""), operand="",
+																					ne=#decalsFileMdObj().cget(environment_t="")
+																				),
+																			eq=#if(operator="@LRInfo", operand="",
+																					ne=#if(operator=#decode(obj="@LRInfo").cget(description=""), operand="",
+																							ne=#decode(obj="@LRInfo").cget(description="")
+																						)
+																				)
+																		),
+														publisher_t=#if(operator=#decalsFileMdObj(), operand="",
+																			ne=#if(operator=#decalsFileMdObj().cget(publisher_t=""), operand="",
+																					ne=#decalsFileMdObj().cget(publisher_t="")
+																				),
+																			eq=#if(operator="@LRInfo", operand="",
+																					ne=#if(operator=#decode(obj="@LRInfo").cget(publisher=""), operand="",
+																							ne=#decode(obj="@LRInfo").cget(publisher="")
+																						)
+																				)
+																		),
+														language_t=#if(operator=#decalsFileMdObj(), operand="",
+																			ne=#if(operator=#decalsFileMdObj().cget(language_t=""), operand="",
+																					ne=#decalsFileMdObj().cget(language_t="")
+																				),
+																			eq=#if(operator="@LRInfo", operand="",
+																					ne=#if(operator=#decode(obj="@LRInfo").cget(language_t=""), operand="",
+																							ne=#decode(obj="@LRInfo").cget(language_t="")
+																						)
+																				)
+																		),
+														mimeType_t=#if(operator=#decalsFileMdObj(), operand="",
+																			ne=#if(operator=#decalsFileMdObj().cget(mimeType_t=""), operand="",
+																					ne=#decalsFileMdObj().cget(mimeType_t="")
+																				),
+																			eq=#if(operator="@LRInfo", operand="",
+																					ne=#if(operator=#decode(obj="@LRInfo").cget(mimetype_t=""), operand="",
+																							ne=#decode(obj="@LRInfo").cget(mimetype_t="")
+																						)
+																				)
+																		),
+														type_t=#if(operator=#decalsFileMdObj(), operand="",
+																			ne=#if(operator=#decalsFileMdObj().cget(type_t=""), operand="",
+																					ne=#decalsFileMdObj().cget(type_t="")
+																				),
+																			eq=#if(operator="@LRInfo", operand="",
+																					ne=#if(operator=#decode(obj="@LRInfo").cget(mimetype_t=""), operand="",
+																							ne=#if(operator=#indexOf(str=#decode(obj="@LRInfo").cget(mimetype_t=""), substr="application"), operand="0",
+																									ge="url",
+																									lt=#if(operator=#indexOf(str=#decode(obj="@LRInfo").cget(mimetype_t=""), substr="html"), operand="0",
+																											ge="url",
+																											lt="file"
+																										)
+																								),
+																							eq="url"
+																						),
+																					eq="url"
+																				)
+																		),
+														old_title_t=#if(operator="@LRInfo", operand="",
+																		ne=#if(operator=#decode(obj="@LRInfo").cget(title=""), operand="",
+																				ne=#decode(obj="@LRInfo").cget(title=""),
+																				eq=""
+																			),
+																		eq=""
+																	)
+							 						),
+								b=#solrAddDocs(
+										url=#decalsDarSolrUrl(),
+									    documents=#decalsFileMdObj(fileId="@fileId").putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true").putInObject(dest="collectionObj", _remove="true")
+								    )
+							).ccall(
+								fileId=#if(operator=decalsPostData.cget(resourceId=""), operand="",
+											eq=#generateUUID(),
+											ne=decalsPostData.cget(resourceId="")
+										),
+								collectionMetadata=collectionObj.cget(metadata=""),
+								LRInfo=decalsPostData.cget(itemInfo=""), 
+							);
+
+addCollectionItem=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=#decalsIncrementCollectionCount(resourceUrl=decalsPostData.cget(resourceUrl="")),
+	d=collectionObj.putInObject(
+		dest="items",
+		item=#listAdd(
+			a=itemsForCollectionMinusItem.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")),
+			b=newCollectionItemObj.ccall(
+				resourceUrl=decalsPostData.cget(resourceUrl=""),
+				resourceTitle=decalsPostData.cget(resourceTitle=""),
+				resourceDescription=decalsPostData.cget(resourceDescription=""),
+				itemIndex=#if(
+					operator=decalsPostData.cget(itemIndex=""),
+					operand="",
+					ne=decalsPostData.cget(itemIndex=""),
+					eq="999999"
+				)
+			)
+		)
+	).putInObject(
+		dest="updatedDate",
+		item=#date(_raw="true")
+	).idxSet(collectionDb,key="@collectionId"),
+	e=checkAddCollectionMetadata,
+	f=collectionObj,
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(f="").displayJson();
+
+/decalsAddCollectionItem = addCollectionItem;
+
+//--------------------------
+//Remove collection item
+
+removeCollectionItem=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=#decalsDecrementCollectionCount(resourceUrl=decalsPostData.cget(resourceUrl="")),
+	d=collectionObj.putInObject(
+		dest="items",
+		item=#listAdd(
+			a=itemsForCollectionMinusItem.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+		)
+	).putInObject(
+		dest="updatedDate",
+		item=#date(_raw="true")
+	).idxSet(collectionDb,key="@collectionId"),
+	e=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(e="").displayJson();
+
+/decalsRemoveCollectionItem = removeCollectionItem;
+
+//--------------------------
+//Remove user from all collections
+
+removeUserFromAllCollections=allCollectionObj.cforEach(
+	paramName="collectionId",
+    op=#if(
+    	operator=collectionHasUser,
+		operand="true",
+		eq=collectionObj.putInObject(
+			dest="users",
+			item=#listAdd(
+				a=usersForCollectionMinusUser
+			)
+		).idxSet(collectionDb,key="@collectionId")
+	)
+);
+#decalsRemoveUserFromAllCollections = removeUserFromAllCollections;
+
+//--------------------------
+//Remove item from all collections
+
+removeItemFromAllCollections=allCollectionObj.cforEach(
+	paramName="collectionId",
+    op=#if(
+    	operator=collectionHasItem,
+		operand="true",
+		eq=collectionObj.putInObject(
+			dest="items",
+			item=#listAdd(
+				a=itemsForCollectionMinusItem
+			)
+		).idxSet(collectionDb,key="@collectionId")
+	)
+);
+#decalsRemoveItemFromAllCollections = removeItemFromAllCollections;
+
+//--------------------------
+//Update collection
+
+checkNotInCollection = #if(operator=#cacheGet(obj="newResourceUrls").toArray().has(has="@resourceUrl"), operand="true",
+							ne=#decalsDecrementCollectionCount().string(str="dec"),
+							eq="nothing"
+						);
+
+checkInCollection = #if(operator=#cacheGet(obj="oldResourceUrls").toArray().has(has="@resourceUrl"), operand="true",
+						ne=#decalsIncrementCollectionCount().string(str="inc"),
+						eq="nothing"
+					);
+
+getURL = #decode(obj="@item").cget(resourceUrl="");
+
+compareResources = #object(
+						a=collectionObj.cget(items="").decode().cforEach(op=getURL, paramName="item", array="true").variableSet(key=#add(a="@ip", b="-oldResourceUrls")),
+						b=decalsPostData.cget(collectionData="").cget(items="").decode().cforEach(op=getURL, paramName="item", array="true").variableSet(key=#add(a="@ip", b="-newResourceUrls")),
+						c=#variableGet(key=#add(a="@ip", b="-newResourceUrls")).cforEach(op=checkInCollection, paramName="resourceUrl"),
+						d=#variableGet(key=#add(a="@ip", b="-oldResourceUrls")).cforEach(op=checkNotInCollection, paramName="resourceUrl")
+					);
+ 
+updateCollectionDb=collectionObj.putInObject(
+	dest="description",
+	item=decalsPostData.cget(collectionData="").cget(description="")
+).putInObject(
+	dest="name",
+	item=decalsPostData.cget(collectionData="").cget(name="")
+).putInObject(
+	dest="groups",
+	item=decalsPostData.cget(collectionData="").cget(groups="")
+).putInObject(
+	dest="users",
+	item=decalsPostData.cget(collectionData="").cget(users="")
+).putInObject(
+	dest="items",
+	item=decalsPostData.cget(collectionData="").cget(items="")
+).putInObject(
+	dest="metadata",
+	item=#object(
+				keywords=decalsPostData.cget(collectionData="").cget(keywords=""),
+				objectives=decalsPostData.cget(collectionData="").cget(objectives=""),
+				coverage=decalsPostData.cget(collectionData="").cget(coverage=""),
+				environment=decalsPostData.cget(collectionData="").cget(environment="")
+			)
+).putInObject(
+	dest="updatedDate",
+	item=#date(_raw="true")
+).idxSet(collectionDb,key="@collectionId");
+
+updateCollection=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=compareResources,
+	d=updateCollectionDb,	
+	z=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(z="").displayJson();
+
+/decalsUpdateCollection = updateCollection;
+
+

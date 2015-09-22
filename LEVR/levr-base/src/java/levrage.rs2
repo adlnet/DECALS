@@ -1,0 +1,13 @@
+security=#if(operator="@security",operand="ASDF1234",ne=#error(msg="Insufficient privileges."));
+
+resolvers=#reflectionManifest().displayJson(_a=security,_collapse="true");
+/levrage/resolvers=resolvers;
+
+files=#reflectionFiles().displayJson(_a=security,_collapse="true");
+/levrage/files=files;
+
+save=#fileFromDatastream().getIndex(index="0").fileToString().reflectionCommit(filename="@filename").displayJson(_a=security);
+/levrage/save=save;
+
+foo=#doSomething().displayJson();  
+/test/invocation=foo;

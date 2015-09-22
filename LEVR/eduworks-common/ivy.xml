@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ivy-module version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+  <info
+   organisation="com.eduworks"
+   module="eduworks-common"
+   status="integration">
+  </info>
+  <dependencies>
+  	<!-- HTTP Components -->
+    <dependency org="oauth.signpost" name="oauth-signpost" rev="1.2.1"/>
+    <dependency org="org.apache.httpcomponents" name="httpclient" rev="4.3.1"/>
+	
+	<!-- Logging -->
+    <dependency org="log4j" name="log4j" rev="1.2.16"/>
+    <dependency org="junit" name="junit" rev="4.8.2"/> 
+	
+	<!-- Apache Utilities -->
+	<dependency org="commons-io" name="commons-io" rev="1.4"/>
+	<dependency org="commons-lang" name="commons-lang" rev="2.6"/>
+	<dependency org="commons-codec" name="commons-codec" rev="1.6"/>
+	<dependency org="org.apache.commons" name="commons-math" rev="2.0"/>
+	<dependency org="net.sourceforge.collections" name="collections-generic" rev="4.01"/>
+	<dependency org="org.mapdb" name="mapdb" rev="1.0.8"/>
+    <dependency org="org.reflections" name="reflections" rev="0.9.9"/>
+    <dependency org="org.apache.commons" name="commons-exec" rev="1.3"/>
+	
+	<!-- Generic data formats -->
+	<dependency org="dom4j" name="dom4j" rev="1.6.1"/>
+	<dependency org="org.json" name="json" rev="20090211"/>
+    <dependency org="org.semanticdesktop.aperture" name="aperture-runtime-onejar" rev="1.4.0"/>
+    <dependency org="org.semweb4j" name="rdf2go.api" rev="4.7.2"/>
+    <dependency org="com.google.guava" name="guava" rev="18.0"/>
+	
+	<!-- Ontology -->
+	<dependency org="com.hermit-reasoner" name="org.semanticweb.hermit" rev="1.3.8.1"/>
+    <dependency org="net.sourceforge.owlapi" name="owlapi-distribution" rev="3.5.0"/>
+    <dependency org="org.apache.jena" name="jena-core" rev="2.11.1">
+		<exclude org="org.apache.httpcomponents"/>
+    </dependency>
+    <dependency org="org.apache.jena" name="jena-arq" rev="2.11.1">
+		<exclude org="org.apache.httpcomponents"/>
+    </dependency>
+    <dependency org="org.apache.jena" name="jena-iri" rev="1.0.1">
+		<exclude org="org.apache.httpcomponents"/>
+    </dependency>
+    <dependency org="org.apache.jena" name="jena-tdb" rev="1.0.1">
+		<exclude org="org.apache.httpcomponents"/>
+    </dependency>
+            	
+	<!-- Broken dependencies -->
+	<exclude org="*velocity"/>
+	<exclude org="velocity"/>
+	<exclude module="slf4j-log4j12"/>
+	<exclude module="slf4j-simple"/>
+	<exclude org="javax.sql"/>
+	<exclude org="javax.servlet"/>
+	<exclude org="javax.transaction"/>
+	<exclude module="google-collections"/>
+	<exclude org="com.google.collections"/>
+     
+  </dependencies>
+</ivy-module>

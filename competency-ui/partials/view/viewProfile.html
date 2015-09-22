@@ -1,0 +1,121 @@
+<div id="compDetails" class="overlay active scroll" ng-escape="goBack()">
+	<div class="content">
+		<span class="exit close-overlay" title="Cancel" ng-click="goBack()">
+			<i class="fa fa-times fa-5x"></i>
+		</span>
+		<div class="row">
+			<div class="small-8 columns small-centered">
+
+				<h3 class="info-title">{{appCache.currentItem.id}}</h3>
+				<h4>{{appCache.currentItem.email}}</h4>
+
+				<p>
+					<span class="info-id-entry"> <strong>Name:</strong>
+						{{appCache.currentItem.firstName + " " +
+						appCache.currentItem.lastName}}
+					</span> </span> <br /> <strong>Date Profile Created:</strong> <span
+						title="{{appCache.currentItem.dateCreated | date:'MMM dd, yyyy (HH:mm:ss)'}}">
+						{{appCache.currentItem.dateCreated | date:'MMM dd, yyyy'}} </span>
+				</p>
+				<hr>
+				<div>
+					<h4 style="float:left;">
+						<span> 
+							Competency Records: 
+						</span>
+					</h4>
+					
+					{{test}}
+
+					<button class="secondary small"
+						style='float: right; margin-bottom: 0px; clear:right;'
+						ng-click="showCreate('record')"
+						ng-hide="session.currentUser.id == session.guestUser.id">
+						<i class="fa fa-plus"></i> Add Record
+					</button>
+
+					<input type="text" style="width: 50%; clear: both; display: inline;"
+						placeholder="Search {{appCache.currentItem.firstName}}'s Records"
+						ng-hide="appCache.loading || objectLength(appCache.currentItem.records) <= viewRecordLength"
+						ng-model="recordQuery"></input> <br style="clear: both;"
+						ng-hide="!appCache.loading && objectLength(appCache.currentItem.records) > viewRecordLength" />
+
+					<div ng-hide="!appCache.loading" class="large"
+						style='font-size: 18pt; margin-bottom: 28px;'>
+						<i class="fa fa-circle-o-notch fa-spin"></i> Loading...
+					</div>
+
+					<div
+						ng-hide="appCache.loading || objectLength(viewableRecords) != 0">
+						This user has no competency records yet..</div>
+
+					<p id="recordContainer"
+						style="margin-top: 5px;"
+						ng-repeat="(id, recordObj) in viewableRecords"
+						ng-hide="recordQuery != ''"
+						ng-include="'partials/result/profileRecord.html'"></p>
+
+					<p style="margin-top: 5px;"
+						ng-repeat="(id, recordObj) in appCache.currentItem.records | filterObj:searchRecords"
+						ng-hide="recordQuery == ''"
+						ng-include="'partials/result/profileRecord.html'"></p>
+				</div>
+
+				<div class="pagination-centered">
+					<ul class="pagination"
+						ng-hide="appCache.loading || objectLength(appCache.currentItem.records) <= viewRecordLength || recordQuery != '' ">
+						<li class="arrow"
+							ng-hide="viewRecordStart ==  0"
+							ng-click="changeViewable(-viewRecordLength)"><a>«</a></li>
+						<li ng-hide="viewRecordStart <= viewRecordLength"
+							ng-click="changeViewable(-viewRecordStart)"><a>1</a></li>
+						<li ng-hide="viewRecordStart <= viewRecordLength || allRecords.length <= 3*viewRecordLength"
+							class="unavailable"><a>…</a></li>
+						<li ng-click="changeViewable(-viewRecordLength)"
+							ng-hide="viewRecordStart < viewRecordLength"><a>{{mathCeil(viewRecordStart/viewRecordLength)}}</a>
+						</li>
+						<li class="current"><a>{{mathCeil(viewRecordStart/viewRecordLength)+1}}</a>
+						</li>
+						<li ng-click="changeViewable(viewRecordLength)"
+							ng-hide="(viewRecordStart + viewRecordLength) >= allRecords.length">
+							<a>{{mathCeil(viewRecordStart/viewRecordLength)+2}}</a>
+						</li>
+						<li
+							ng-hide="mathCeil(objectLength(appCache.currentItem.records)/ viewRecordLength) < viewRecordLength || 
+							(viewRecordStart + viewRecordLength) >= allRecords.length || (viewRecordStart + 2*viewRecordLength) >= allRecords.length ||
+							allRecords.length <= 3*viewRecordLength"
+							class="unavailable"><a>…</a></li>
+						<li
+							ng-click="changeViewable(allRecords.length - viewRecordStart - viewRecordLength)"
+							ng-hide="mathCeil(objectLength(appCache.currentItem.records)/ viewRecordLength) < viewRecordLength || 
+							(viewRecordStart + viewRecordLength) >= allRecords.length || (viewRecordStart + 2*viewRecordLength) >= allRecords.length">
+							<a>{{mathCeil(objectLength(appCache.currentItem.records)/
+								3)}} </a>
+						</li>
+						<li class="arrow"
+							ng-hide="(viewRecordStart + viewRecordLength) >= allRecords.length"
+							ng-class="{'unavailable':viewRecordStart + viewRecordLength > allRecords.length}"
+							ng-click="changeViewable(viewRecordLength)"><a>»</a></li>
+					</ul>
+				</div>
+				
+				<hr ng-hide="appCache.loading || objectLength(appCache.currentItem.records) <= viewRecordLength || recordQuery != ''" />
+	
+				<span style="float:right;">
+					Viewable Records: 
+					<select style="width:75px;" ng-model="viewRecordLength" ng-change="changeViewable(-viewRecordStart)" ng-disabled="objectLength(appCache.currentItem.records) < 3">
+						<option value="3" ng-hide="objectLength(appCache.currentItem.records) < 3">3</option>
+						<option value="10" ng-hide="objectLength(appCache.currentItem.records) < 10">10</option>
+						<option value="{{allRecords.length}}" ng-selected="viewRecordLength == allRecords.length">All</option>
+					</select> 
+				</span>
+
+				<button class="secondary small"
+					ng-click="showEdit(appCache.context, appCache.currentItemId)"
+					ng-hide="session.currentUser.id != appCache.currentItem.id || session.currentUser.id == session.guestUser.id">
+					<i class="fa fa-pencil"></i> Edit
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

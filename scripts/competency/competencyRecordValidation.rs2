@@ -1,0 +1,819 @@
+  //---------------------------------------//---------------------------------------
+//---------------Helpers
+//==============
+
+agentDB = {
+	indexDir = #competencyAgentDirectory(),
+	databaseName = #competencyAgentDBName(),
+	index = "0"
+};
+
+evidenceDB = {
+	indexDir = #competencyEvidenceDirectory(),
+	databaseName = #competencyEvidenceDBName(),
+	index = "0"
+};
+
+evidenceFileDB = {
+	indexDir = #competencyUserEvidenceDirectory(),
+	databaseName = #competencyEvidenceFileDBName(),
+	index = "0"
+};  
+
+userDB = {
+	indexDir = #competencyUserDirectory(),
+	databaseName = #competencyUserDBName(),
+	index = "0"
+};
+
+
+getAgentInfo = #idxGet(agentDB, key="@agentId").toObject();
+
+firstChar = #string(str="@str", op="substr", begin="0", end="1");
+
+removedFirst = #string(str="@str", op="substr", begin="1");
+simpleId = #if(operator=firstChar, operand=":", eq=removedFirst, ne="@str");
+
+
+//---------------------------------------//---------------------------------------
+//---------------Service Functions
+//==============
+//==============
+// CREATE Competency Record Validation
+//--------------
+// #competencyCreateRecordValidation
+//--------------
+// userId:
+// recordId:
+// agentId:
+// confidence:
+// evidenceType:
+// evidenceDescription:
+// evidenceDate:
+// evidenceResult:
+// evidenceURI: [One of]
+// evidenceString: [One of]
+// evidenceFileName:  [One of]
+//==============
+
+// TODO: May want to create specific evidence File DBs for each user
+
+getEvidenceWithId = #count(obj=#idxGet(evidenceDB, key="@evidenceId"));
+checkExists = #if(
+	operator=getEvidenceWithId, 
+	operand="0", 
+	eq="false", 
+	ne="true"
+);
+
+// 	1) Generate Unique UUID for Evidence ID
+generateUnique = #generateUUID();
+generateEvidenceId = #add(a="evidence-", b=generateUnique);
+recurseCheck = #execute(service="recurse", evidenceId=generateEvidenceId);
+ 
+checkAndRegen = #if(
+	operator=checkExists, 
+	operand="true", 
+	eq=recurseCheck, 
+	ne="@evidenceId"
+);
+#recurse = checkAndRegen; 
+generateAndCheckUUID = generateEvidenceId.toParameter(op=checkAndRegen, paramName="evidenceId");
+
+
+//	3) Add remaining fields to evidence object and add to Evidence DB (key:evidenceId , obj: {type, date, result, description (optional), one of: [uri, string, file] })
+createEvidenceInDB = #idxSet(evidenceDB, key=#get(obj="@evidenceInfo", evidenceId=""), obj="@evidenceInfo");
+addToDB = #decode(obj="@evidence").putInObject(
+	dest="evidenceId", 
+	item=generateAndCheckUUID
+).putInObject(
+	dest="type", 
+	item="@evidenceType"
+).putInObject(
+	dest="description", 
+	item="@evidenceDescription"
+).putInObject(
+	dest="date",
+	item=#date(input="@evidenceDate", dateFormat="yyyy-MM-dd"),
+).putInObject(
+	dest="result",
+	item="@evidenceResult",
+).toParameter(op=createEvidenceInDB, paramName="evidenceInfo");
+
+//	2) Decide Which Evidence Type this is (URI, String or File) and create evidence object to be stored in DB
+uploadFile = #fileUpload(evidenceFileDB, fileIndex="0");
+
+createStringEvidence = #object(string="@evidenceString").toParameter(op=addToDB, paramName="evidence");
+createURIEvidence = #object(uri="@evidenceURI").toParameter(op=addToDB, paramName="evidence");
+
+createFileEvidence = #object(fileId=uploadFile).toParameter(op=addToDB, paramName="evidence");
+
+tryCreateFileEvidence = #if(
+	operator="@evidenceFileName", 
+	operand="",
+	eq=#error(msg="Couldnt Find Evidence URI, String or File"),
+	ne=createFileEvidence
+);
+
+tryCreateURIEvidence = #if(
+	operator="@evidenceURI", 
+	operand="",
+	eq=tryCreateFileEvidence,
+	ne=createURIEvidence,
+);
+
+createEvidence = #if(
+	operator="@evidenceString", 
+	operand="",
+	eq=tryCreateURIEvidence, 
+	ne=createStringEvidence
+);
+											
+
+checkCreateEvidence = #object(
+	a=#competencyErrorEvidenceTypeSet(), 
+	b=#competencyErrorEvidenceResultSet(),
+	c=#competencyErrorEvidenceDateSet(),
+	d=createEvidence
+).get(d="").get(evidenceId="");
+
+
+// TODO: Change Validation_Date to Validation_Updated
+// 	4) Create or Find Matching recordValidation in User Competency Profile and Add the new Evidence to it
+validationValues = #add(
+	a="{",
+	b=#if(operator="@evidenceId", operand="", 
+				eq="", 
+				ne=#add(a="':validationEvidence': '",
+						b="@evidenceId", c="',")
+		),
+	c="':validationConfidence':",
+	d="@confidence",
+	e=", ':validationDate': '", 
+	f=#competencyNow(),
+	g="', ':validationAgent':",
+	h="@agentId",
+	i="}"
+);
+
+createValidationParams = {
+	directory=#competencyDirectory(),
+	ontologyId=#competencyUserModel(),
+	classId="RecordValidation",
+	vals=validationValues
+};
+
+recordValidations = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@recordId").getByParam(param="@recordId").getByParam(param=":recordValidation");
+
+addValidationValues = #ontologyReadInstance(
+	directory=#competencyDirectory(), 
+	ontologyId=#competencyUserModel(), 
+	instanceId="@recordId"
+).getByParam(param="@recordId").putInObject(
+	dest=":recordValidation", 
+	item=recordValidations.append(a="@validationId")
+).putInObject(
+	dest=":recordUpdated",
+	item=#toArray(obj=#competencyNow())
+).displayJson(_collapse="true");
+ 
+addValidationToRecord = #ontologyUpdateInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@recordId", vals=addValidationValues);
+
+getKeyAndAddToRecord = #decode(obj="@values").keySet().getIndex(index="0").toParameter(op=addValidationToRecord, paramName="validationId");
+
+displayObj = #object(
+	a=#decode(obj="@values"), 
+	b=#call(obj=getKeyAndAddToRecord, values="@values"),
+	c=#execute(service="competencyUpdateRecordConfidence", userId="@userId", recordId="@recordId", confidence="@confidence")
+).get(a="");
+createValidation = #ontologyCreateInstance(createValidationParams).toParameter(op=displayObj, paramName="values");
+
+findValidationQuery =  #add(
+	a="PREFIX comp: <", 
+	b=#competencyStructureURI(),
+	c="#>
+	PREFIX record: <", d=#competencyUserStructureURI(), e="#>
+	PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+	SELECT ?id
+	WHERE { ?recordId record:recordValidation ?id .
+			?id record:validationAgent '",
+	f="@agentId",
+	g="' . ",
+	h=" ?id record:validationDate ?date . ",
+	i= "FILTER( ",
+	j= "strends( str(?recordId), '",
+	k= simpleId.call(str="@recordId"),
+	l= "' )",
+	m= " && ?date >= '",
+	n= #add(a=#date(input=#competencyNow(), dateFormat="yyyy-MM-dd"), b="T00:00:00"),
+	o= "'^^xsd:dateTime && ?date <= '",
+	p= #add(a=#date(input=#competencyNow(), dateFormat="yyyy-MM-dd"), b="T23:59:59"),
+	q= "'^^xsd:dateTime ) }"
+);
+
+findValidation = #ontologyQuery(createValidationParams, query=findValidationQuery);
+
+createObject = #object(count=#toArray(obj="@result").count(), result=#decode(obj="@result")); 
+validationCountObject = findValidation.toParameter(op=createObject, paramName="result");
+
+validationEvidences = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@validationId").getByParam(param="@validationId").getByParam(param=":validationEvidence");
+
+addEvidenceValues = #ontologyReadInstance(
+	directory=#competencyDirectory(), 
+	ontologyId=#competencyUserModel(), 
+	instanceId="@validationId"
+).getByParam(
+	param="@validationId"
+).putInObject(
+	dest=":validationEvidence", 
+	item=validationEvidences.append(a="@evidenceId")
+).displayJson(_collapse="true");
+ 
+addEvidenceToValidation = #ontologyUpdateInstance(
+	directory=#competencyDirectory(), 
+	ontologyId=#competencyUserModel(), 
+	instanceId="@validationId", 
+	vals=addEvidenceValues
+).execute(
+	service="competencyUpdateRecordValidationConfidence", 
+	userId="@userId",
+	validationId="@validationId", 
+	confidence="@confidence"
+);
+
+getValidationId = #decode(obj="@countObj").get(result="").toArray().getIndex(index="0").get(id="");
+addEvidence = getValidationId.toParameter(
+	op=addEvidenceToValidation, 
+	paramName="validationId"
+);
+
+createOrAdd = #if(operator=#get(obj=#decode(obj="@countObj"), count=""), operand="1", ge=addEvidence, lt=createValidation);
+
+createOrAddToValidation = #call(obj=createOrAdd, countObj=validationCountObject);
+createEvidenceThenValidation = #call(obj=createOrAddToValidation, evidenceId=checkCreateEvidence);
+
+checkCreateValidation = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorAgentIdSet(),
+	d=#competencyErrorAgentExists(),
+	e=#competencyErrorRecordExists(),
+	f=#competencyReadRecord(),
+	g=#competencyErrorConfidenceSet(),
+	h=#competencyErrorConfidenceValue(),
+	
+	i=createEvidenceThenValidation
+).get(i="");
+
+// TODO: After Adding Evidence and Validation, need to update record confidence using #competencyDetermineRecordConfidence 
+// THIS SHOULD BE HAPPENING NOW, NEED TO DOUBLE CHECK THAT IT WORKS THOUGH
+
+#competencyCreateRecordValidation = checkCreateValidation;
+
+
+//==============
+// CREATE Competency Record Validation No Evidence
+//--------------
+// #competencyCreateRecordValidationNoEvidence
+//--------------
+// userId:
+// recordId:
+// agentId:
+// confidence:
+//==============  
+
+returnValidation = #competencyReadRecordValidation(userId="@userId", validationId=#get(obj=#decode(obj="@countObj"), result="").getIndex(index="0").get(id=""));
+
+createIfNotExists = #if(operator=#get(obj=#decode(obj="@countObj"), count=""), operand="1", lt=createValidation, ge=returnValidation);
+
+checkExistsCreateValidation = #call(obj=createIfNotExists, countObj=validationCountObject);
+
+checkCreateValidationNoEvidence = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorAgentIdSet(),
+	d=#competencyErrorAgentExists(),
+	e=#competencyErrorRecordExists(),
+	f=#competencyReadRecord(),
+	g=#competencyErrorConfidenceSet(),
+	h=#competencyErrorConfidenceValue(),
+	i=checkExistsCreateValidation
+).get(i="");
+									
+#competencyCreateRecordValidationNoEvidence = checkCreateValidationNoEvidence;
+
+//==============
+// CREATE Competency Record Validation With Evidence Ids
+//--------------
+// #competencyCreateRecordValidationWithEvidenceIds
+//--------------
+// userId:
+// recordId:
+// agentId:
+// confidence:
+// evidenceIds:
+//==============
+
+checkEvidenceExistsThenAdd = #if(operator=#competencyCheckEvidenceExists(), operand="true", eq=#call(op=addEvidenceToValidation));
+
+addEvidencesToValidation = #toArray(obj="@evidenceIds").cforEach(op=checkEvidenceExistsThenAdd, paramName="evidenceId", threaded="false");
+
+addEvidencesAndGetValidation = #object(
+	a=addEvidencesToValidation,
+	b=#competencyReadRecordValidation()
+).get(b="");
+
+checkExistsCreateValidationAndAddEvidences = #call(
+	obj=createIfNotExists, 
+	countObj=validationCountObject
+).keySet().getIndex(
+	index="0"
+).toParameter(
+	op=addEvidencesAndGetValidation, 
+	paramName="validationId"
+);
+    
+checkCreateValidationWithIds = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorAgentIdSet(),
+	d=#competencyErrorAgentExists(),
+	e=#competencyErrorRecordExists(),
+	f=#competencyReadRecord(),
+	g=#competencyErrorConfidenceSet(),
+	h=#competencyErrorConfidenceValue(),			
+	i=checkExistsCreateValidationAndAddEvidences,
+	j=#competencyUpdateRecordConfidence(),
+).get(i="");
+
+#competencyCreateRecordValidationWithEvidenceIds = checkCreateValidationWithIds;
+
+//==============
+// CREATE Unattached Competency Evidence
+//--------------
+// #competencyCreateUnattachedEvidence
+//--------------
+// userId:
+// evidenceType:
+// evidenceDescription:
+// evidenceDate:
+// evidenceResult:
+// evidenceURI: [One of]
+// evidenceString: [One of]
+// evidenceFileName:  [One of]
+//==============
+
+createUnattached = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=checkCreateEvidence
+).get(c="").toParameter(
+	op=#competencyReadEvidence(),
+	paramName="evidenceId"
+);
+
+#competencyCreateUnattachedEvidence = createUnattached;
+
+//==============
+// READ Competency Record Validation
+//--------------
+// #competencyReadRecordValidation
+//--------------
+// userId:
+// validationId:
+//==============
+
+readValidationParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	instanceId = "@validationId"
+};
+
+getValidation = #ontologyReadInstance(readValidationParams);
+
+checkGetValidation = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorValidationIdSet(),
+	d=#competencyErrorValidationExists(),
+	e=getValidation
+).get(e="");
+						
+#competencyReadRecordValidation = checkGetValidation;
+
+//==============
+// READ ALL Competency Record Validations
+//--------------
+// #competencyReadAllRecordValidations
+//--------------
+// userId:
+//==============
+
+
+readAllValidationsParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	classId="RecordValidation"
+};
+
+getValidations = #ontologyReadClassInstances(readAllValidationsParams);
+
+readAllValidations = #object(
+						a=#competencyErrorUserIdSet(),
+						b=#competencyErrorUserExists(),
+						c=getValidations
+					).cget(c="");
+#competencyReadAllRecordValidations = readAllValidations;
+
+//==============
+// UPDATE Record Validation Confidence
+//--------------
+// #competencyUpdateRecordValidationConfidence
+//--------------
+// userId:
+// validationId:
+// confidence:
+//==============
+
+determineUpdatedConfidence = #string(str="0");
+
+determineWithNewConfidence = #competencyErrorConfidenceValue();
+
+newConfidence = #paramExists(paramName="confidence", true="@confidence", false=determineUpdatedConfidence); 
+
+updateConfidenceValues = #competencyReadRecordValidation().getByParam(param="@validationId").putInObject(dest=":validationConfidence", item=#toArray(obj=newConfidence)).displayJson(_collapse="true");
+
+updateValidationConfidence = #ontologyUpdateInstance(
+	directory=#competencyDirectory(), 
+	ontologyId=#competencyUserModel(), 
+	instanceId="@validationId", 
+	vals=updateConfidenceValues
+);
+
+checkUpdateValidationConfidence = #object(
+										a=#competencyErrorUserOrAgentExists(),
+										b=#competencyErrorUserIdSet(),
+										c=#competencyErrorUserExists(),
+										d=#competencyErrorValidationIdSet(),
+										e=#competencyErrorValidationExists(),
+										f=updateValidationConfidence,
+										g=getValidation.getByParam(param="@validationId"),
+									).cget(g="");
+
+#competencyUpdateRecordValidationConfidence = checkUpdateValidationConfidence;
+
+//==============
+// DELETE Record Validation and Evidence
+//--------------
+// #competencyDeleteRecordValidation
+//--------------
+// userId:
+// validationId:
+//==============
+
+getValidationEvidences = #ontologyReadInstance(
+	directory=#competencyDirectory(), 
+	ontologyId=#competencyUserModel(), 
+	instanceId="@validationId"
+).getByParam(param="@validationId");
+
+valEv = getValidationEvidences.displayJson(_collapse="true");
+/test/valEv = valEv;
+
+callDeleteEvidence = #execute(service="competencyDeleteEvidence", userId="@userId", evidenceId="@evidenceId", leaveReferences="true");
+
+deleteEvidencesIfExist = #if(
+	operator=#decode(obj="@validation").has(has=":validationEvidence"), 
+	operand="true", 
+	eq=#decode(obj="@validation").getByParam(param=":validationEvidence").forEach(op=callDeleteEvidence, paramName="evidenceId"),
+	eq=""
+);
+
+deleteEvidences = getValidation.toParameter(op=deleteEvidencesIfExist, paramName="validation"); 
+
+removeValidation = #ontologyDeleteInstance(
+	directory=#competencyDirectory(), 
+	ontologyId=#competencyUserModel(), 
+	instanceId="@validationId"
+);
+
+deleteValidation = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorValidationIdSet(),
+	d=#competencyErrorValidationExists(),
+	e=deleteEvidences,
+	f=removeValidation
+).get(f="");
+							
+#competencyDeleteRecordValidation = deleteValidation; 
+
+// TODO: Delete Record Validation and evidence corresponding to it
+
+//==============
+// CREATE Competency Validation Agent
+//--------------
+// #competencyCreateValidationAgent
+//--------------
+// agentType:  
+// agentName:
+// agentDescription:
+// agentId: [Optional]
+//==============
+findAgentCount = #count(obj=#idxGet(indexDir = #competencyAgentDirectory(), databaseName = #competencyAgentDBName(), index = "0", key="@agentId"));
+
+checkIdExistsError = #if(
+	operator=findAgentCount, 
+	operand="0",
+	eq="@agentId",
+	ne=#error(msg="Agent Already Exists with the Id Desired")
+); 
+
+
+checkIdExists = #if(
+	operator=findAgentCount, 
+	operand="0",
+	eq="@agentId",
+	ne=#execute(service="recurseAgentId")
+); 
+
+generateName = #add(a="agent-", b=#generateUUID());
+createNewId = generateName.toParameter(op=checkIdExists, paramName="agentId");
+#recurseAgentId = createNewId;
+
+getAgentId = #if(
+	operator="@agentId", 
+	operand="",
+	eq=createNewId,
+	ne=checkIdExistsError.call(agentId="@agentId")
+);
+
+addAgentToDB = #object(
+	a=#idxSet(agentDB, key="@id", obj="@agentInfo"),
+	b="@id",
+).call(id=getAgentId).get(b="");
+					
+createAgent = #object().putInObject(
+	dest="name", 
+	item="@agentName"
+).putInObject(
+	dest="description", 
+	item="@agentDescription"
+).putInObject(
+	dest="type",
+	item="@agentType",
+).toParameter(op=addAgentToDB, paramName="agentInfo");
+
+checkCreateAgent = #object(
+	a=#competencyErrorAgentTypeSet(),
+	b=#competencyErrorAgentNameSet(),
+	c=createAgent
+).cget(c="");
+
+#competencyCreateValidationAgent = checkCreateAgent;
+
+
+//==============
+// Read Competency Validation Agent
+//--------------
+// #competencyReadValidationAgent
+//--------------
+// agentId:
+//==============
+
+readAgentDB = #idxGet(agentDB, key="@agentId");
+
+readAgent = #object(
+	a = #competencyErrorAgentIdSet(),
+	b = #competencyErrorAgentExists(),
+	c = readAgentDB
+).get(c="");
+				
+#competencyReadValidationAgent = readAgent;
+
+//==============
+// READ ALL Competency Validation Agents
+//--------------
+// #competencyReadAllValidationAgents
+//--------------
+//==============
+
+getAllAgents = #idxKeys(agentDB).forEach(op=getAgentInfo, paramName="agentId");
+#competencyReadAllValidationAgents = getAllAgents;
+
+//==============
+// READ ALL Competency Validation Agent Types
+//--------------
+// #competencyReadValidationAgentTypes
+//--------------
+//==============
+
+getAgentType = #competencyReadValidationAgent(agentId="@agentId").get(type="");
+
+agentKeys = #idxKeys(agentDB);
+getAgentTypes = agentKeys.forEach(paramName="agentId", op=getAgentType, aggregation="appendArray").removeDuplicates();
+
+#competencyAgentTypes = getAgentTypes;
+
+//==============
+// DELETE Competency Validation Agent
+//--------------
+// #competencyDeleteValidationAgent
+//--------------
+//==============
+
+// TODO: Maybe delete all of the different evidences that use this agent (Dangerous)
+
+deleteAgent = #idxDelete(agentDB, key="@agentId");
+
+checkDeleteAgent = #object(
+	a=#competencyErrorAgentIdSet(),
+	b=#competencyErrorAgentExists(),
+	c=deleteAgent
+).get(c="");
+						
+#competencyDeleteValidationAgent = checkDeleteAgent;
+
+//==============
+// Add Evidence
+//--------------
+// #competencyAddEvidence
+//--------------
+// userId
+// validationId:
+// evidenceType:
+// evidenceDescription:
+// evidenceDate:
+// evidenceResult:
+// evidenceURI: [One of]
+// evidenceString: [One of]
+// evidenceFileName:  [One of]
+//==============
+
+addNewEvidence = #object(
+	a="@evidenceId",
+	b=addEvidenceToValidation
+).get(a="");
+
+getEvidence = #idxGet(evidenceDB,key="@evidenceId").toObject();
+
+checkAddEvidence = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorValidationIdSet(),
+	d=#competencyErrorValidationExists()
+).get(c="").toParameter(
+	op=checkCreateEvidence,
+	paramName="validationId"
+).toParameter(
+	op=addNewEvidence, 
+	paramName="evidenceId"
+).toParameter(
+	op=getEvidence,
+	paramName="evidenceId"
+);
+
+#competencyAddEvidence = checkAddEvidence;
+
+
+//==============
+// READ Evidence
+//--------------
+// #competencyReadEvidence
+//--------------
+// evidenceId:
+//==============
+
+getEvidence = #idxGet(evidenceDB,key="@evidenceId");
+
+checkGetEvidence = #object(
+	a=#competencyErrorEvidenceIdSet(),
+	b=getEvidence
+).get(b="").toObject();
+
+#competencyReadEvidence = checkGetEvidence;
+
+
+//==============
+// READ Evidence File
+//--------------
+// #competencyReadEvidenceFile
+//--------------
+// evidenceId:
+//==============
+
+checkGetEvidenceFile = #if(operator="@fileId", operand="",
+							ne=#fileGet(evidenceFileDB, id="@fileId"),
+							eq=#error(msg="")
+						).ccall(fileId=getEvidence.ccall(evidenceId="@evidenceId").toObject().cget(fileId=""));
+
+#competencyReadEvidenceFile = checkGetEvidenceFile;
+
+//==============
+// READ ALL Evidence Types
+//--------------
+// #competencyReadEvidenceTypes
+//--------------
+//==============
+
+getEvidenceType = #competencyReadEvidence(evidenceId="@evidenceId").get(type="");
+
+evidenceKeys = #idxKeys(evidenceDB);
+getTypes = evidenceKeys.forEach(paramName="evidenceId", op=getEvidenceType, aggregation="appendArray").removeDuplicates();
+
+#competencyEvidenceTypes = getTypes;
+
+//==============
+// Update Evidence
+//--------------
+// #competencyDeleteEvidence
+//--------------
+// evidenceId:
+// evidenceDescription:
+// evidenceType:
+//==============
+
+evidenceDescription = #if(operator="@evidenceDescription", operand="", eq=#get(obj="@obj", description=""), ne="@evidenceDescription");
+evidenceType = #if(operator="@evidenceType", operand="", eq=#get(obj="@obj", type=""), ne="@evidenceType");
+
+evidenceUpdates = #idxGet(
+	evidenceDB, 
+	key="@evidenceId"
+).putInObject(
+	dest="description", 
+	item=evidenceDescription,
+).putInObject(
+	dest="type", 
+	item=evidenceType,
+);
+
+updateEvidence = #idxSet(evidenceDB, key="@evidenceId", obj=evidenceUpdates);
+
+checkUpdateEvidence = #object(
+	a=#competencyErrorEvidenceIdSet(),
+	b=#competencyErrorEvidenceExists(),
+	c=updateEvidence
+).get(c="").displayJson(_collapse="true");
+
+#competencyUpdateEvidence = checkUpdateEvidence;
+
+//==============
+// DELETE Evidence
+//--------------
+// #competencyDeleteEvidence
+//--------------
+// evidenceId:
+// leaveReferences:
+//==============
+
+getEvidences = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@validationId").getByParam(param="@validationId").getByParam(param=":validationEvidence");
+
+updatedEvidences = getEvidences.removeFromArray(item="@evidenceId");
+
+removeReferencesValues = #object().putInObject(dest=":validationEvidence", item=updatedEvidences).displayJson(_collapse="true"); 
+
+removeReference = #ontologyUpdateInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@validationId", vals=removeReferencesValues);
+
+removeEvidence = #decode(obj="@validationIdObj").get(id="").toParameter(op=removeReference, paramName="validationId");
+
+findEvidenceValidationsQuery = #add(
+	a="PREFIX comp: <",
+	b=#competencyStructureURI(),
+	c="#>
+	PREFIX record: <",
+	d=#competencyUserStructureURI(),
+	e="#>
+	SELECT ?id
+	WHERE { ?id record:validationEvidence '",
+	f="@evidenceId",
+	g="' . }"
+);
+
+findValidations = #ontologyQuery(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), query=findEvidenceValidationsQuery);
+
+removeFromValidations = findValidations.forEach(op=removeEvidence, paramName="validationIdObj");
+
+removeValidationReferences = #competencyGetUserIds().forEach(op=removeFromValidations, paramName="userId");
+
+ifNotSetRemoveReferences = #if(operator="@leaveReferences", operand="true", nei=removeValidationReferences);
+
+evidenceFileId = #idxGet(evidenceDB, key="@evidenceId").toObject().get(fileId="");
+
+deleteEvidence = #idxDelete(evidenceDB, key="@evidenceId");
+deleteFileThenEvidence = #object(
+	a=#fileDeleteFile(evidenceFileDB, id="@fileId"),
+	b=deleteEvidence
+);
+
+checkEvidenceFile = #if(operator="@fileId", operand="", eq=deleteEvidence, ne=deleteFileThenEvidence);
+
+checkForFile = #call(obj=checkEvidenceFile, fileId=evidenceFileId); 
+
+delete = #object(
+	a=#competencyErrorEvidenceIdSet(),
+	b=#competencyErrorEvidenceExists(),
+	c=checkForFile,
+	d=ifNotSetRemoveReferences
+).string(str="true");
+
+#competencyDeleteEvidence = delete;

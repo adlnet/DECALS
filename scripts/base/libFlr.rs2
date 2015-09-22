@@ -1,0 +1,24 @@
+
+//---------------------------------------//---------------------------------------
+//---------------FLR helper functions
+//==============
+
+flrPublishUrl=#object(url="http://sandbox.learningregistry.org/publish").cget(url="");
+flrPublishToken=#object(token="b2ZmaWNlQGVkdXdvcmtzLmNvbTplZHUyMDEzd29ya3M=").cget(token="");
+
+//---------------------------------------//---------------------------------------
+//--------------Service calls
+//==============
+
+//==============
+//publish the given document to the FLR
+
+flrPublish=#object(documents=#listAdd(item=#toObject(obj="@flrData"))).httpPost(
+	url=flrPublishUrl,
+	contentType="application/json;charset=UTF-8",
+	name="something",
+	multipart="false",
+	authToken=flrPublishToken
+);
+
+#flrPublish=flrPublish;

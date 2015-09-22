@@ -1,0 +1,389 @@
+getMultipartPostDataObject = #getFileFromPost(name="@field").fileToString().toObject();
+
+postedCompetencyObject = getMultipartPostDataObject.call(field="competency");
+
+postedSessionId = postedCompetencyObject.cget(sessionId="");
+
+postedModelId = postedCompetencyObject.cget(modelId="");
+postedQuery = postedCompetencyObject.cget(query="");
+
+postedUserId = postedCompetencyObject.cget(userId="");
+postedRecordId = postedCompetencyObject.cget(recordId="");
+postedCompetencyId = postedCompetencyObject.cget(competencyId="");
+postedCompetencyIds = postedCompetencyObject.cget(competencyIds="");
+
+postedPathRelationships = postedCompetencyObject.cget(pathRelationships="");
+
+//==============
+// SEARCH Competency
+//==============
+
+search = #competencySearch(modelId=postedModelId, query=postedQuery);
+
+searchCompetencies = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=search,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/query/searchCompetencies = searchCompetencies;
+
+//-----API-------
+
+API_SearchCompetency = #object(
+	levr-service="#competencySearch",
+	web-service="/competency/query/searchCompetencies",
+	description="Searches through the competency model(s) specified for competencies with a name or description related to the query string",
+	params=#object(
+		query="Query string used to search with",
+		modelId="(optional) identifier of the model within which to search (at some point should be an array of ids that we could search through each of), if not set searches through all models"
+	)
+);
+displaySearchAPI = API_SearchCompetency.displayJson(_collapse="true");
+/competency/query/searchCompetencies/api = displaySearchAPI;
+
+//==============
+// SEARCH Competency Models
+//==============
+
+searchModels = #competencySearchModels(query=postedQuery).displayJson(_collapse="true");
+
+loginSearchModels = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=searchModels,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/query/searchModels = loginSearchModels;
+
+//-----API-------
+
+API_SearchCompetencyModels = #object(
+	levr-service="#competencySearchModels",
+	web-service="/competency/query/searchModels",
+	description="Searches for competency models with a name or description related to the query string",
+	params=#object(
+		query="Query string used to search with",
+	)
+);
+displaySearchModelsAPI = API_SearchCompetencyModels.displayJson(_collapse="true");
+/competency/query/searchModels/api = displaySearchModelsAPI;
+
+//==============
+// SEARCH Competency Users
+//==============
+searchUsers = #competencySearchUsers(query=postedQuery).displayJson(_collapse="true");
+/competency/query/searchUsers = searchUsers;
+
+//-----API-------
+
+API_SearchCompetencyUsers = #object(
+	levr-service="#competencySearchUsers",
+	web-service="/competency/query/searchUsers",
+	description="Searches for competency users with a name or other meta-data related to the query string",
+	params=#object(
+		query="Query string used to search with",
+	)
+);
+displaySearchUsersAPI = API_SearchCompetencyUsers.displayJson(_collapse="true");
+/competency/query/searchUsers/api = displaySearchUsersAPI;
+  
+//==============
+// Read Competency Levels of Competency
+//==============
+
+readCompLevels = #competencyReadCompetencyLevels(modelId=postedModelId, competencyId=postedCompetencyId).displayJson(_collapse="true");
+
+readLevels = #competencySessionUser(
+				sessionId=postedSessionId
+			).toParameter(
+				op=readCompLevels,
+				paramName="currentUser"
+			).displayJson(_collapse="true");
+
+/competency/query/competencyLevels = readLevels;
+
+//-----API-------
+
+API_ReadCompetencyLevels = #object(
+	levr-service="#competencyReadCompetencyLevels",
+	web-service="/competency/query/competencyLevels",
+	description="Retrieves the competency levels that a record of the specified competency can be recorded at",
+	params=#object(
+		modelId="identifier of the model that defines the competency",
+		competencyId="identifier of the competency whose possible levels should be retrieved",
+	)
+);
+displayReadCompetencyLevelsAPI = API_ReadCompetencyLevels.displayJson(_collapse="true");
+/competency/query/competencyLevels/api = displayReadCompetencyLevelsAPI;
+
+
+//==============
+// READ Competency Validations of Record
+//==============
+
+readRecordValidations = #competencyReadRecordValidationsOfRecord(
+	userId=postedUserId,
+	recordId=postedRecordId
+);
+
+readValidations = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=readRecordValidations,
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/query/recordValidations = readValidations;
+
+
+//-----API-------
+
+API_ReadRecordValidations = #object(
+	levr-service="#competencyReadRecordValidationsOfRecord",
+	web-service="/competency/query/recordValidations",
+	description="Retrieves all of the validations for the specified record",
+	params=#object(
+		userId="identifier of the user who holds the record",
+		recordId="identifier of the record for which to retrieve every validation for"
+	)
+);
+displayReadRecordValidationsAPI = API_ReadRecordValidations.displayJson(_collapse="true");
+/competency/query/recordValidations/api = displayReadRecordValidationsAPI;
+
+
+//==============
+// Find User Competency Records for Competency
+//==============
+
+findRecords = #competencyFindUserRecordsForCompetency(
+	userId=postedUserId,
+	competencyId=postedCompetencyId, 
+	modelId=postedModelId,
+);
+
+findUserRecords = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=findRecords,
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/query/userRecords = findUserRecords;
+
+
+//-----API-------
+
+API_FindUserRecordsForCompetency = #object(
+	levr-service="#competencyFindUserRecordsForCompetency",
+	web-service="/competency/query/userRecords",
+	description="Retrieves the different competency record (if it exists) of a user for competency, specified by <competencyId>, and the user specified by <userId>",
+	params=#object(
+		userId="Identifier of the User who holds the new competency record",
+		competencyId="Identifier of the Competency we want to find a record of",
+		modelId="",
+	)
+);
+displayFindRecordAPI = API_FindUserRecordsForCompetency.displayJson(_collapse="true");
+/competency/query/userRecords/api = displayFindRecordAPI;
+
+//==============
+// List User's Competencies
+//==============
+
+list = #competencyListUserCompetencies(userId=postedUserId);
+
+listCompetencies = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=list,
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/query/userCompetencies = listCompetencies;
+
+//-----API-------
+
+API_ListUserCompetencies = #object(
+	levr-service="#competencyListUserCompetencies",
+	web-service="/competency/query/userCompetencies",
+	description="Returns an array containing the identifier's of all of the competencies a user holds at a rank greater than 0",
+	params=#object(
+		userId="identifier of the user for which to read the competency list"
+	)
+);
+displayListAPI = API_ListUserCompetencies.displayJson(_collapse="true");
+/competency/query/userCompetencies/api = displayListPI;
+
+
+//==============
+// Find Competency Path From Record
+//==============
+
+path = #competencyFindPathFromRecord(userId=postedUserId, recordId=postedRecordId, competencyId=postedCompetencyId, pathRelationships=postedPathRelationships).displayJson(_collapse="true");
+/competency/query/pathFromRecord = path;
+
+//-----API-------
+
+API_FindPathCompetency = #object(
+	levr-service="#competencyFindPathFromRecord",
+	web-service="/competency/query/pathFromRecord",
+	description="returns a path representation in the form of an array containing each path step of the form {subject: <stepStartId>, property:<stepRelationshipId>, value:<stepEndId>}",
+	params=#object(
+		userId="identifer of the user who holds the record that we will be starting at",
+		recordId="identifer of the record to start the path at",
+		competencyId="identifier of the competency to finish the path at",
+		pathRelationships = "array of relationship (object property) ids that are allowed in the path"
+	)
+);
+displayFindPathAPI = API_FindPathCompetency.displayJson(_collapse="true");
+/competency/query/pathFromRecord/api = displayFindPathAPI;
+
+
+//==============
+// Find Users with a Competency
+//==============
+
+findUsers = #competencyFindUsersWithCompetency(competencyId=postedCompetencyId);
+
+findCompetencyUsers = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=findUsers,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/query/findUsers = findCompetencyUsers;
+
+//-----API-------
+
+API_FindUsersCompetency = #object(
+	levr-service="#competencyFindUsersWithCompetency",
+	web-service="/competency/query/findUsers",
+	description="Returns a map of userIds to arrays of simple record objects containing the recordId, level and confidence of every record for the competency that the user holds",
+	params=#object(
+		competencyId="identifier of the competency to check users for",
+	)
+);
+displayFindUsersAPI = API_FindUsersCompetency.displayJson(_collapse="true");
+/competency/query/findUsers/api = displayFindUsersAPI;
+
+
+//==============
+// Compare User to a Set of Competencies
+//==============
+
+compareUser = #competencyCompareUserToCompetencySet(competencyIds=postedCompetencyIds, userId=postedUserId).displayJson(_collapse="true");
+/competency/query/compareToSet = compareUser;
+
+//-----API-------
+
+API_CompareUserCompetencySet = #object(
+	levr-service="#competencyCompareUserToCompetencySet",
+	web-service="/competency/query/compareToSet",
+	description="compares the records of the user specified by <userId> to the array of competency Ids specified by <competencyId>. For each competency, returns the record Id for each level and the confidence of that record.",
+	params=#object(
+		userId="identifier of the user to run the comparison against",
+		competencyIds="array of competency Ids that we want to compare the user's records to",
+	)
+);
+displayCompareAPI = API_CompareUserCompetencySet.displayJson(_collapse="true");
+/competency/query/compareToSet/api = displayCompareAPI;
+
+//==============
+// Find Users matching a Set of Competencies
+//==============
+
+matchSet = #competencyFindUsersMatchingCompetencySet(competencyIds=postedCompetencyIds).displayJson(_collapse="true");
+/competency/query/matchSet = matchSet;
+
+//-----API-------
+
+API_MatchCompetencySet = #object(
+	levr-service="#competencyFindUsersMatchingCompetencySet",
+	web-service="/competency/query/matchSet",
+	description="Creates a map from each userId to the comparison object that is created by compareUserToCompetencySet",
+	params=#object(
+		competencyIds="array of competency Ids that we want to find users who have a similar skill set to",
+	)
+);
+displayMatchSetAPI = API_MatchCompetencySet.displayJson(_collapse="true");
+/competency/query/matchSet/api = displayMatchSetAPI;
+
+
+//==============
+// Run User defined SPARQL Query
+//==============
+
+sparql = #competencySPARQLQuery(query=postedQuery);
+
+sparqlQuery = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=sparql,
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/query/sparql = sparqlQuery;
+
+//-----API-------
+
+API_SPARQLQueryCompetency = #object(
+	levr-service="#competencySPARQLQuery",
+	web-service="/competency/query/sparql",
+	description="Run a user defined SPARQL Query and retrieve the raw result (array of json objects with the parameters selected in the query)",
+	params=#object(
+		query="user defined SPARQL Query, in order to write one it is necessary to understand the ontology structures",
+	)
+);
+displaySPARQLAPI = API_SPARQLQueryCompetency.displayJson(_collapse="true");
+/competency/query/sparql/api = displaySPARQLAPI;
+
+
+//==============
+// API for Competency Queries
+//==============
+
+
+API_Query = #object().putInObject(
+	dest="/competency/query/searchCompetencies",
+	item=API_SearchCompetency
+).putInObject(
+	dest="/competency/query/searchModels",
+	item=API_SearchCompetencyModels
+).putInObject(
+	dest="/competency/query/competencyLevels",
+	item=API_ReadCompetencyLevels
+).putInObject(
+	dest="/competency/query/recordValidations",
+	item=API_ReadRecordValidations
+).putInObject(
+	dest="/competency/query/userRecords",
+	item=API_FindUserRecordsForCompetency
+).putInObject(
+	dest="/competency/query/userCompetencies",
+	item=API_ListUserCompetencies
+).putInObject(
+	dest="/competency/query/pathFromRecord",
+	item=API_FindPathCompetency
+).putInObject(
+	dest="/competency/query/findUsers",
+	item=API_FindUsersCompetency
+).putInObject(
+	dest="/competency/query/compareToSet",
+	item=API_CompareUserCompetencySet
+).putInObject(
+	dest="/competency/query/matchSet",
+	item=API_MatchCompetencySet
+).putInObject(
+	dest="/competency/query/sparql",
+	item=API_SPARQLQueryCompetency
+);
+					
+										
+#api_Query = API_Query;
+
+displayQueryAPI = #displayJson(obj=API_Query);
+/competency/query/api = displayQueryAPI;

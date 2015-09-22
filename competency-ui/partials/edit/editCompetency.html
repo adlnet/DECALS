@@ -1,0 +1,149 @@
+<div id="edit-competency" class="screen left editor">
+	<div class="row">
+		<div class="small-10 columns small-offset-2">
+			<h2 style="float: left;">
+				<i class="fa fa-pencil"></i> <span ng-hide="!create">Create</span> <span
+					ng-hide="create">Edit</span> Competency
+			</h2>
+
+			<span style="float: right;"
+				ng-bind-template="(ID: {{appCache.editedItem.id}})"> (ID:) </span>
+		</div>
+	</div>
+	<div class="row">
+		<div class="small-2 columns panel">
+			<h4>Options</h4>
+			<ul class="side-nav">
+				<li><a ng-click="addDescription()"> <i class="fa fa-plus"></i>
+						Description
+				</a></li>
+				<li><a ng-click="addRelationship()"> <i class="fa fa-plus"></i>
+						Relationship
+				</a></li>
+			</ul>
+		</div>
+
+		<div class="small-10 columns">
+			<label ng-hide="appCache.currentModelId != undefined"> Model
+				<small>required</small> <select id="modelSelect"
+				ng-model="appCache.editedItem.modelId"
+				ng-change="updateDefaultLevels();">
+					<option ng-repeat="(modelId, modelObj) in selectableModels"
+						value="{{modelObj.id}}" title="{{modelObj.uri}}"
+						ng-selected="modelObj.id=='model-default'">{{modelObj.name}}
+						- {{modelObj.uri}}</option>
+			</select>
+			</label> <label ng-hide="appCache.currentModelId == undefined"> Model
+				<small>required</small> <input type="text"
+				placeholder="Competency Model" disabled="disabled"
+				value="{{appCache.currentModel.name + ' - ' + appCache.currentModel.uri}}" />
+			</label> <label> Title <small>required</small> <input type="text"
+				placeholder="Please enter a title"
+				ng-model="appCache.editedItem.title" />
+			</label>
+
+			<div id="description-block" class="block" data-minRequired="0">
+				<div class="row description"
+					ng-repeat="(i, description) in appCache.editedItem['descriptions']">
+					<div class="small-11 columns">
+						<label> Description <input type="text"
+							placeholder="Enter a description for this competency"
+							ng-model="description.text" />
+						</label>
+					</div>
+					<div class="small-1 columns">
+						<a class="delete-clone" title="Delete this description"
+							ng-click="removeField('descriptions', i)"> <i
+							class="fa fa-trash-o"></i>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div id="level-block" class="block" data-minRequired="1">
+				<div class="row">
+					<div id="levels" class="small-12 columns">
+						<label> Levels: <small>required</small> <select
+							ng-change="showLevelOverlay();" ng-model="levelType"
+							ng-options="val as text for (val, text) in levelOptions">
+						</select>
+
+							<div ng-click="showLevelOverlay()"
+								ng-hide="levelType == 'TorF' || appCache.editedItem.levels == undefined || objectLength(appCache.editedItem.levels) == 0"
+								style="width: 90%; margin: auto; cursor: pointer;">
+								<span style="width: 80%;"> Name: </span> <span
+									style="width: 15%; float: right;"> Rank: </span> <span
+									ng-repeat="(id, levelObj) in appCache.editedItem.levels | orderByObj:'rank'">
+									<input type="text" disabled="disabled"
+									style="width: 80%; float: left; cursor: pointer;"
+									value="{{levelObj.name}}" ng-title="{{levelObj.id}}"></input>
+									<input type="text" disabled="disabled"
+									style="width: 15%; float: right; cursor: pointer;"
+									value="{{levelObj.rank}}"></input>
+								</span>
+							</div>
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<!--div id="condition-block" class="block" data-minRequired="0">
+      </div-->
+			<fieldset id="relationship-block" class="block" data-minRequired="0">
+				<legend>
+					Relationships <small
+						ng-hide="objectLength(appCache.editedItem.relationships) == 0">(Hover
+						Over Related Competency Name to See Details)</small>
+				</legend>
+				<div class="row relationship"
+					ng-repeat="(name, id) in competencyRelationships">
+					<div class="small-11 columns">
+						<label
+							ng-repeat="(relId, compId) in appCache.editedItem.relationships[name]">
+							<div class="row">
+								<div class="small-3 columns"
+									style="position: relative; top: 10px;">
+									<p>This competency</p>
+								</div>
+								<div class="small-4 columns">
+									<select id="{{name + '-' + compId}}"
+										ng-model="selectorHelper[name][relId]"
+										ng-change="moveRelationship(name, compId, selectorHelper[name][relId])">
+										<option
+											ng-repeat="(optName, optId) in $parent.competencyRelationships"
+											value="{{optName}}" ng-selected="optId == id">{{optName}}</option>
+									</select>
+								</div>
+								<div class="small-4 columns">
+									<input type="text" ng-model="typeaheadDummy[name][relId]"
+										placeholder="Enter a competency title or ID"
+										typeahead="comp.title as comp.title + ' (' + comp.id + ')' for comp in competencyItem.searchCompetencyPromise($viewValue)"
+										title="{{relatedCompetencies[compId].modelId + '\n ' + compId}}"
+										typeahead-min-length="2"
+										typeahead-loading="typeaheadSearching[name][relId]"
+										typeahead-on-select="relationshipCompetencySelected($item, $model, $label, name, relId)"
+										typeahead-wait-ms="300" /> {{searchLoading[name][relId]}}
+								</div>
+								<div class="small-1 columns">
+									<i class="fa fa-spinner fa-spin"
+										style="position: relative; top: 10px; right: 55px;"
+										ng-hide="!typeaheadSearching[name][relId]" title="loading"></i>
+									<a class="delete-clone" style="position: relative; top: 10px;"
+										title="Delete this relationship"
+										ng-click="removeRelationship(name, compId)"> <i
+										class="fa fa-trash-o"></i>
+									</a>
+								</div>
+							</div>
+						</label>
+					</div>
+				</div>
+				<div ng-hide="objectLength(appCache.editedItem.relationships) != 0">
+					This Competency has no Relationships yet!</div>
+			</fieldset>
+
+			<button ng-click="saveChanges();" ng-disabled="saving">Save</button>
+			<button class="secondary" ng-click="goBack();">Cancel</button>
+		</div>
+	</div>
+</div>

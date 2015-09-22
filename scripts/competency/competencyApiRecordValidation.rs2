@@ -1,0 +1,616 @@
+getMultipartPostDataObject = #getFileFromPost(name="@field").fileToString().toObject();
+
+postedCompetencyObject = getMultipartPostDataObject.call(field="competency");
+
+postedSessionId = postedCompetencyObject.cget(sessionId="");
+
+postedUserId = postedCompetencyObject.cget(userId="");
+postedRecordId = postedCompetencyObject.cget(recordId="");
+postedValidationId = postedCompetencyObject.cget(validationId="");
+postedEvidenceId = postedCompetencyObject.cget(evidenceId="");
+
+postedAgentId = postedCompetencyObject.cget(agentId="");
+postedAgentType = postedCompetencyObject.cget(agentType="");
+postedAgentName = postedCompetencyObject.cget(agentName="");
+postedAgentDescription = postedCompetencyObject.cget(agentDescription="");
+
+postedConfidence = postedCompetencyObject.cget(confidence="");
+
+postedEvidenceIds = postedCompetencyObject.cget(evidenceIds="");
+
+postedEvidenceType = postedCompetencyObject.cget(evidenceType="");
+postedEvidenceDescription = postedCompetencyObject.cget(evidenceDescription="");
+postedEvidenceDate = postedCompetencyObject.cget(evidenceDate="");
+postedEvidenceResult = postedCompetencyObject.cget(evidenceResult="");
+
+postedEvidenceURI = postedCompetencyObject.cget(evidenceURI="");
+postedEvidenceString = postedCompetencyObject.cget(evidenceString="");
+postedEvidenceFileName = postedCompetencyObject.cget(evidenceFileName="");
+
+postedDate = postedCompetencyObject.cget(date="");
+
+//==============
+// CREATE Competency Record Validation
+//==============
+
+createValidation = #competencyCreateRecordValidation(
+	userId=postedUserId, 
+	recordId=postedRecordId,
+	agentId=postedAgentId,
+	confidence=postedConfidence,
+	evidenceType=postedEvidenceType,
+	evidenceDescription=postedEvidenceDescription,
+	evidenceDate=postedEvidenceDate,
+	evidenceResult=postedEvidenceResult,
+	evidenceURI=postedEvidenceURI,
+	evidenceString=postedEvidenceString,
+	evidenceFileName=postedEvidenceFileName
+).displayJson(_collapse="true");
+
+checkLoginBeforeCreateValidation = #object(
+										a=#competencyErrorLogin(),
+										b=createValidation
+									).cget(b="");
+
+getUserCreateValidation =  #competencySessionUser(
+								sessionId=postedSessionId
+							).toParameter(
+								op=checkLoginBeforeCreateValidation,
+								paramName="currentUser"
+							).displayJson(_collapse="true");
+
+
+/competency/record/validation/create = getUserCreateValidation;
+
+
+//-----API-------
+
+API_CreateValidation = #object(
+	levr-service="#competencyCreateRecordValidation",
+	web-service="/competency/record/validation/create",
+	description="Create a new Record Validation with a new Evidence as proof of the validation",
+	params=#object(
+		userId="identifier of the User who holds the competency record and validation evidence",
+		recordId="identifier of record for which the new validation will be created for",
+		agentId="identifier of the validating agent of the evidence",
+		confidence="confidence value for the validation performed by this agent on the date specified",
+		evidenceType="Type value of the evidence to be stored for the validation",
+		evidenceDescription="[Optional] Description of the evidence to be stored for the validation",
+		evidenceDate="(YYYY-mm-dd) Date of the evidence and validation record, all validations for a record that are performed by the same agent, on the the same date are combined into one validation",
+		evidenceResult="String describing the result of the evidence",
+		evidenceURI="[choice] URI that locates the evidence stored on an external service",
+		evidenceString="[choice] String that defines the evidence",
+		evidenceFileName="[choice] Name of the file object that is also included to be uploaded to the competency manager to be stored as evidence",
+	)
+);
+displayCreateValidationAPI = API_CreateValidation.displayJson(_collapse="true");
+/competency/record/validation/create/api = displayCreateValidationAPI;
+
+
+//==============
+// READ Competency Validation
+//==============
+
+readValidation = #competencyReadRecordValidation(
+	userId=postedUserId,
+	validationId=postedValidationId
+).displayJson(_collapse="true");
+/competency/record/validation/read = readValidation;
+
+
+//-----API-------
+
+API_ReadValidation = #object(
+	levr-service="#competencyReadRecordValidation",
+	web-service="/competency/record/validation/read",
+	description="Displays a JSON Object representing the record validation specified with <validationId>",
+	params=#object(
+		userId="identifier of the user whose record the validation belongs to",
+		validationId="identifier of the validation to be displayed"
+	)
+);
+displayReadValidationAPI = API_ReadValidation.displayJson(_collapse="true");
+/competency/record/validation/read/api = displayReadValidationAPI;
+
+//==============
+// READ ALL Competency Validations
+//==============
+
+readAllValidations = #competencyReadAllRecordValidations(
+	userId=postedUserId,
+).displayJson(_collapse="true");
+/competency/record/validation/all = readAllValidations;
+
+
+//-----API-------
+
+API_ReadAllValidations = #object(
+	levr-service="#competencyReadAllRecordValidations",
+	web-service="/competency/record/validation/all",
+	description="Displays JSON Objects for every Record Validation that a User, specified by <userId>, has",
+	params=#object(
+		userId="identifier of the user whose validations will be displayed"
+	)
+);
+displayReadAllValidationsAPI = API_ReadAllValidations.displayJson(_collapse="true");
+/competency/record/validation/all/api = displayReadAllValidationsAPI;
+
+
+//==============
+// Update Competency Validation Confidence
+//==============
+
+updateValidationConfidence = #competencyUpdateRecordValidationConfidence(
+	userId=postedUserId,
+	validationId=postedValidationId,
+	confidence=postedConfidence,
+);
+
+checkLoginBeforeUpdateValidationConfidence = #object(
+												a=#competencyErrorLogin(),
+												b=updateValidationConfidence
+											).cget(b="");
+
+getUserUpdateValidationConfidence =  #competencySessionUser(
+										sessionId=postedSessionId
+									).toParameter(
+										op=checkLoginBeforeUpdateValidationConfidence,
+										paramName="currentUser"
+									).displayJson(_collapse="true");
+
+/competency/record/validation/updateConfidence = getUserUpdateValidationConfidence;
+
+
+//-----API-------
+
+API_UpdateValidationConfidence = #object(
+	levr-service="#competencyUpdateRecordValidationConfidence",
+	web-service="/competency/record/validation/updateConfidence",
+	description="Updates the <confidence> of the Record Validation specified by <validationId>, of the user specified by <userId>",
+	params=#object(
+		userId="identifier of the user whose validations will be displayed",
+		validationId="",
+		confidence="",
+	)
+);
+displayUpdateValidationConfidenceAPI = API_UpdateValidationConfidence.displayJson(_collapse="true");
+/competency/record/validation/updateConfidence/api = displayUpdateValidationConfidenceAPI;
+
+
+
+
+
+//==============
+// DELETE Competency Validation
+//==============
+
+deleteRecordValidation = #competencyDeleteRecordValidation(
+	userId=postedUserId,
+	validationId=postedValidationId
+).displayJson(_collapse="true");
+/competency/record/validation/delete = deleteRecordValidation;
+
+
+//-----API-------
+
+API_DeleteRecordValidation = #object(
+	levr-service="#competencyDeleteRecordValidation",
+	web-service="/competency/record/validation/delete",
+	description="Deletes the specified validation and any evidences that it maintains",
+	params=#object(
+		userId="identifier of the user whose record validation will be deleted",
+		validationId="identifer of the validation to be deleted"
+	)
+);
+displayDeleteRecordValidationAPI = API_DeleteRecordValidation.displayJson(_collapse="true");
+/competency/record/validation/delete/api = displayDeleteRecordValidationAPI;
+
+
+
+//==============
+// CREATE Competency Validation Agent
+//==============
+
+createValidationAgent = #competencyCreateValidationAgent(
+	agentId=postedAgentId,
+	agentName=postedAgentName,
+	agentDescription=postedAgentDescription,
+	agentType=postedAgentType
+).displayJson(_collapse="true");
+/competency/record/validation/agent/create = createValidationAgent;
+
+
+//-----API-------
+
+API_CreateValidationAgent = #object(
+	levr-service="#competencyCreateValidationAgent",
+	web-service="/competency/record/validation/agent/create",
+	description="Creates a new Agent (can even specify the agentId) that can perform and record validations",
+	params=#object(
+		agentId="[optional] Desired identifier for the new agent",
+		agentType="Type value of the new agent (e.g. University, Person, Agency, etc)",
+		agentName="Name of the new agent",
+		agentDescription="Description of the new agent that will help identify it if two agents have the same name",
+	)
+);
+displayCreateValidationAgentAPI = API_CreateValidationAgent.displayJson(_collapse="true");
+/competency/record/validation/agent/create/api = displayCreateValidationAgentAPI;
+
+
+//==============
+// READ Competency Validation Agent
+//==============
+
+readValidationAgent = #competencyReadValidationAgent(
+	agentId=postedAgentId,
+).displayJson(_collapse="true");
+/competency/record/validation/agent/read = readValidationAgent;
+
+
+//-----API-------
+
+API_ReadValidationAgent = #object(
+	levr-service="#competencyReadValidationAgent",
+	web-service="/competency/record/validation/agent/read",
+	description="Displays a JSON Object containing the name, description, type and Id of the agent specified by <agentId>",
+	params=#object(
+		agentId="identifier of the agent to be displayed",
+	)
+);
+displayReadValidationAgentAPI = API_ReadValidationAgent.displayJson(_collapse="true");
+/competency/record/validation/agent/read/api = displayReadValidationAgentAPI;
+
+//==============
+// READ ALL Competency Validation Agent
+//==============
+
+readAllAgents = #competencyReadAllValidationAgents().displayJson(_collapse="true");
+/competency/record/validation/agent/all = readAllAgents;
+
+
+//-----API-------
+
+API_ReadAllAgents = #object(
+	levr-service="#competencyReadAllValidationAgents",
+	web-service="/competency/record/validation/agent/all",
+	description="Returns a map of all agents from AgentID to the JSON Object returned by readAgent",
+	params=#object()
+);
+displayReadAllAgentsAPI = API_ReadAllAgents.displayJson(_collapse="true");
+/competency/record/validation/agent/all/api = displayReadAllAgentsAPI;
+
+
+//==============
+// DELETE Competency Validation Agent
+//==============
+
+deleteValidationAgent = #competencyDeleteValidationAgent(
+	agentId=postedAgentId,
+).displayJson(_collapse="true");
+/competency/record/validation/agent/delete = deleteValidationAgent;
+
+
+//-----API-------
+
+API_DeleteValidationAgent = #object(
+	levr-service="#competencyDeleteValidationAgent",
+	web-service="/competency/record/validation/agent/delete",
+	description="Removes an agent and all of it's identifying/descriptive information from the agent database so it can no longer be used to validate records",
+	params=#object(
+		agentId="identifier of the agent to be removed",
+	)
+);
+displayDeleteValidationAgentAPI = API_DeleteValidationAgent.displayJson(_collapse="true");
+/competency/record/validation/agent/delete/api = displayDeleteValidationAgentAPI;
+
+
+
+//==============
+// READ Competency Validation Evidence
+//==============
+
+readEvidence = #competencyReadEvidence(
+	evidenceId=postedEvidenceId,
+).displayJson(_collapse="true");
+/competency/record/validation/evidence/read = readEvidence;
+
+
+//-----API-------
+
+API_ReadEvidence = #object(
+	levr-service="#competencyReadEvidence",
+	web-service="/competency/record/validation/evidence/read",
+	description="Displays the information stored for a specific piece of evidence, identified by <evidenceId>",
+	params=#object(
+		evidenceId="identifier of the evidence to be displayed",
+	)
+);
+displayReadEvidenceAPI = API_ReadEvidence.displayJson(_collapse="true");
+/competency/record/validation/evidence/read/api = displayReadEvidenceAPI;
+
+
+//==============
+// ADD Competency Validation Evidence
+//==============
+
+addEvidence = #competencyAddEvidence(
+	userId=postedUserId, 
+	validationId=postedValidationId,
+	evidenceType=postedEvidenceType,
+	evidenceDescription=postedEvidenceDescription,
+	evidenceDate=postedEvidenceDate,
+	evidenceResult=postedEvidenceResult,
+	evidenceURI=postedEvidenceURI,
+	evidenceString=postedEvidenceString,
+	evidenceFileName=postedEvidenceFileName
+).displayJson(_collapse="true");
+/competency/record/validation/evidence/add = addEvidence;
+
+
+//-----API-------
+
+API_AddEvidence = #object(
+	levr-service="#competencyAddEvidence",
+	web-service="/competency/record/validation/evidence/add",
+	description="",
+	params=#object(
+		userId="identifier of the User who holds the competency record and validation evidence",
+		validationId="",
+		evidenceType="Type value of the evidence to be stored for the validation",
+		evidenceDescription="[Optional] Description of the evidence to be stored for the validation",
+		evidenceDate="(YYYY-mm-dd) Date of the evidence and validation record, all validations for a record that are performed by the same agent, on the the same date are combined into one validation",
+		evidenceResult="String describing the result of the evidence",
+		evidenceURI="[choice] URI that locates the evidence stored on an external service",
+		evidenceString="[choice] String that defines the evidence",
+		evidenceFileName="[choice] Name of the file object that is also included to be uploaded to the competency manager to be stored as evidence",
+	)
+);
+displayAddEvidenceAPI = API_AddEvidence.displayJson(_collapse="true");
+/competency/record/validation/evidence/add/api = displayAddEvidenceAPI;
+
+//==============
+// ADD Competency Validation Evidence
+//==============
+
+updateEvidence = #competencyUpdateEvidence(
+	evidenceType=postedEvidenceType,
+	evidenceDescription=postedEvidenceDescription,
+	evidenceId=postedEvidenceId,
+).displayJson(_collapse="true");
+/competency/record/validation/evidence/update = updateEvidence;
+
+
+//-----API-------
+
+API_UpdateEvidence = #object(
+	levr-service="#competencyUpdateEvidence",
+	web-service="/competency/record/validation/evidence/update",
+	description="",
+	params=#object(
+		userId="identifier of the User who holds the competency record and validation evidence",
+		evidenceId="",
+		evidenceType="Type value of the evidence to be stored for the validation",
+		evidenceDescription="[Optional] Description of the evidence to be stored for the validation",
+	)
+);
+displayUpdateEvidenceAPI = API_UpdateEvidence.displayJson(_collapse="true");
+/competency/record/validation/evidence/update/api = displayUpdateEvidenceAPI;
+
+
+
+//==============
+// Create Competency Record Validation No Evidence
+//==============
+
+createValidationNoEvidence = #competencyCreateRecordValidationNoEvidence(
+	userId=postedUserId, 
+	recordId=postedRecordId,
+	agentId=postedAgentId,
+	confidence=postedConfidence,
+).displayJson(_collapse="true");
+
+
+checkLoginBeforeCreateValidationNoEvidence = #object(
+												a=#competencyErrorLogin(),
+												b=createValidationNoEvidence
+											).cget(b="");
+
+createValNoEv= #competencySessionUser(
+										sessionId=postedSessionId
+									).toParameter(
+										op=checkLoginBeforeCreateValidationNoEvidence,
+										paramName="currentUser"
+									).displayJson(_collapse="true");
+
+/competency/record/validation/createNoEvidence = createValNoEv;
+
+
+//-----API-------
+
+API_CreateValidationNoEvidence = #object(
+	levr-service="#competencyCreateRecordValidationNoEvidence",
+	web-service="/competency/record/validation/createNoEvidence",
+	description="",
+	params=#object(
+		userId="identifier of the User who holds the competency record and validation",
+		recordId="identifier of record for which the new validation will be created for",
+		agentId="identifier of the validating agent of the validation",
+		confidence="confidence value for the validation performed by this agent on the date specified",
+	)
+);
+displayCreateValidationNoEvidenceAPI = API_CreateValidationNoEvidence.displayJson(_collapse="true");
+/competency/record/validation/createNoEvidence/api = displayCreateValidationNoEvidenceAPI;
+
+//==============
+// Create Competency Record Validation With Evidence Ids
+//==============
+
+createValidationWithIds = #competencyCreateRecordValidationWithEvidenceIds(
+	userId=postedUserId, 
+	recordId=postedRecordId,
+	agentId=postedAgentId,
+	confidence=postedConfidence,
+	evidenceIds=postedEvidenceIds,
+).displayJson(_collapse="true");
+
+checkLoginBeforeCreateValidationWithIds = #object(
+												a=#competencyErrorLogin(),
+												b=createValidationWithIds
+											).cget(b="");
+
+createValWithIds = #competencySessionUser(
+										sessionId=postedSessionId
+									).toParameter(
+										op=checkLoginBeforeCreateValidationWithIds,
+										paramName="currentUser"
+									).displayJson(_collapse="true");
+
+/competency/record/validation/createWithEvidenceIds = createValWithIds;
+
+
+//-----API-------
+
+API_CreateValidationWithIds = #object(
+	levr-service="#competencyCreateRecordValidationWithEvidenceIds",
+	web-service="/competency/record/validation/createWithEvidenceIds",
+	description="",
+	params=#object(
+		userId="identifier of the User who holds the competency record and validation",
+		recordId="identifier of record for which the new validation will be created for",
+		agentId="identifier of the validating agent of the validation",
+		confidence="confidence value for the validation performed by this agent on the date specified",
+		evidenceIds="JSON Array of evidence Ids",
+	)
+);
+displayCreateValidationWithIds = API_CreateValidationWithIds.displayJson(_collapse="true");
+/competency/record/validation/createWithEvidenceIds/api = displayCreateValidationWithIds;
+
+
+//==============
+// Create Unattached Evidence
+//==============
+
+createUnattachedEvidence = #competencyCreateUnattachedEvidence(
+	userId=postedUserId, 
+	evidenceType=postedEvidenceType,
+	evidenceDescription=postedEvidenceDescription,
+	evidenceDate=postedEvidenceDate,
+	evidenceResult=postedEvidenceResult,
+	evidenceURI=postedEvidenceURI,
+	evidenceString=postedEvidenceString,
+	evidenceFileName=postedEvidenceFileName
+).displayJson(_collapse="true");
+/competency/record/validation/evidence/create = createUnattachedEvidence;
+
+
+//-----API-------
+
+API_CreateUnattachedEvidence = #object(
+	levr-service="#competencyCreateUnattachedEvidence",
+	web-service="/competency/record/validation/evidence/create",
+	description="",
+	params=#object(
+		userId="identifier of the User who holds the competency record and validation evidence",
+		evidenceType="Type value of the evidence to be stored for the validation",
+		evidenceDescription="[Optional] Description of the evidence to be stored for the validation",
+		evidenceDate="(YYYY-mm-dd) Date of the evidence and validation record, all validations for a record that are performed by the same agent, on the the same date are combined into one validation",
+		evidenceResult="String describing the result of the evidence",
+		evidenceURI="[choice] URI that locates the evidence stored on an external service",
+		evidenceString="[choice] String that defines the evidence",
+		evidenceFileName="[choice] Name of the file object that is also included to be uploaded to the competency manager to be stored as evidence",
+	)
+);
+displayCreateUnattachedEvidenceAPI = API_CreateUnattachedEvidence.displayJson(_collapse="true");
+/competency/record/validation/evidence/create/api = displayCreateUnattachedEvidenceAPI;
+
+
+//==============
+// READ Competency Validation Evidence File
+//==============
+//postedEvidenceId,
+readEvidenceFile = #competencyReadEvidenceFile(
+	evidenceId="@evidenceId",
+	userId="@userId",
+).displayJson(_collapse="true");
+/competency/record/validation/evidence/readFile = readEvidenceFile;
+
+
+//-----API-------
+
+API_ReadEvidenceFile = #object(
+	levr-service="#competencyReadEvidenceFile",
+	web-service="/competency/record/validation/evidence/readFile",
+	description="Returns the file stored for a specific piece of evidence, identified by <evidenceId>",
+	params=#object(
+		evidenceId="identifier of the evidence to be displayed",
+	)
+);
+displayReadEvidenceFileAPI = API_ReadEvidenceFile.displayJson(_collapse="true");
+/competency/record/validation/evidence/readFile/api = displayReadEvidenceFileAPI;
+
+
+
+
+
+//==============
+// API for Manipulating Competency Record Validations
+//==============
+
+API_Validation = #object().putInObject(
+	dest="/competency/record/validation/create",
+	item=API_CreateValidation
+).putInObject(
+	dest="/competency/record/validation/read",
+	item=API_ReadValidation
+).putInObject(
+	dest="/competency/record/validation/all",
+	item=API_ReadAllValidations
+).putInObject(
+	dest="/competency/record/validation/updateConfidence",
+	item=API_UpdateValidationConfidence,
+).putInObject(
+	dest="/competency/record/validation/forRecord",
+	item=API_ReadRecordValidations
+).putInObject(
+	dest="/competency/record/validation/delete",
+	item=API_DeleteRecordValidation
+).putInObject(
+	dest="/competency/record/validation/agent/create",
+	item=API_CreateValidationAgent
+).putInObject(
+	dest="/competency/record/validation/agent/read",
+	item=API_ReadValidationAgent
+).putInObject(
+	dest="/competency/record/validation/agent/all",
+	item=API_ReadAllAgents
+).putInObject(
+	dest="/competency/record/validation/agent/delete",
+	item=API_DeleteValidationAgent
+).putInObject(
+	dest="/competency/record/validation/evidence/read",
+	item=API_ReadEvidence
+).putInObject(
+	dest="/competency/record/validation/evidence/readFile",
+	item=API_ReadEvidenceFile
+).putInObject(
+	dest="/competency/record/validation/evidence/update",
+	item=API_UpdateEvidence
+).putInObject(
+	dest="/competency/record/validation/evidence/add",
+	item=API_AddEvidence
+).putInObject(
+	dest="/competency/record/validation/createNoEvidence",
+	item=API_CreateValidationNoEvidence
+).putInObject(
+	dest="/competency/record/validation/createWithEvidenceIds",
+	item=API_CreateValidationWithIds
+).putInObject(
+	dest="/competency/record/validation/evidence/createUnattached",
+	item=API_CreateUnattachedEvidence
+);
+					
+#api_Validation = API_Validation;
+
+displayValidationAPI = #displayJson(obj=API_Validation);
+/competency/record/validation/api = displayValidationAPI;
+

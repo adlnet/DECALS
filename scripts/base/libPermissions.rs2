@@ -1,0 +1,93 @@
+//---------------------------------------
+//Permission database path
+//
+//For permissions, I am making the permission ID the unique key.  Was thinking it should be the name since there should not be multiple permissions with the same name.
+
+//---------------------------------------//---------------------------------------
+//---------------Permission helper functions
+//==============
+permission=#idxGet(key="@permissionId").buildArguments().toObject();
+allPermissions=#idxKeys().buildArguments().cforEach(paramName="permissionId",op=permission);
+
+//==============
+permissionExists=#if(
+	operator=permission.ccall(permissionId="@permissionId"), 
+	operand="",
+	eq="false",
+	ne="true"
+);
+
+#permissionExists=permissionExists;
+
+//---------------------------------------//---------------------------------------
+//--------------Basic Service calls
+//==============
+
+//==============
+//Creates a permission with the given ID (the ID should be a descriptive name)
+//Returns the key of the created permission entry
+
+permissionCreate=#if(
+	operator=permissionExists,
+	operand="false",
+	eq=#object(
+		a=#object(
+			name="@permissionId",
+			description="@permissionId",
+			createdDate=#date(_raw="true")
+		).idxSet(key="@permissionId").buildArguments(),
+		b="@permissionId").cget(b=""),
+	ne="false"
+);
+
+#permissionCreate=permissionCreate;
+
+//==============
+//Returns a list of all permissions in the database
+
+permissionsGet=allPermissions;
+
+#permissionsGet=permissionsGet;
+
+//==============
+//Returns a permission with the given permissionId
+
+permissionGet = #if(
+	operator=permissionExists,
+	operand="true",
+	eq=permission,
+	ne="false"
+);
+
+#permissionGet=permissionGet;
+
+//==============
+//Deletes a permission with the given permissionId
+
+permissionDelete=#if(
+	operator=permissionExists,
+	operand="true",
+	eq=#object(
+		a=#idxDelete(key="@permissionId").buildArguments(),             		           
+		b="true"
+	).cget(b=""),
+	ne="false"
+);
+
+#permissionDelete=permissionDelete;
+
+//==============
+//Returns true if the given permission is contained in the given array of permissions, false if it does not
+//This won't work until we can pass Arrays as values across files...
+
+isValidPermission=#if(
+	operator=#object(a="@permissionSet").cget(a="").toArray().has(has="@permissionId"),
+	operand="true",
+	eq="true",
+	ne="false"
+);
+
+//isValidPermission=#object(a="@permissionSet");                      
+
+#permissionIsValid=isValidPermission;
+

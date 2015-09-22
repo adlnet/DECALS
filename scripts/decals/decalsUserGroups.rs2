@@ -1,0 +1,250 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+groupDb={
+	indexDir=#decalsGroupDbDirectory(),
+	databaseName=#decalsGroupDbName(),
+	index=#decalsGroupDbIndexName() 
+};
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+
+groupObj=#idxGet(groupDb,key="@groupId").toObject();
+allGroupObj=#idxKeys(groupDb).cforEach(paramName="groupId",op=groupObj);
+
+invalidAccessError=#error(code="401",msg=#object(error="Invalid access for task"));
+
+//============================
+//Groups
+//============================
+
+userCanModifyGroup = #if(
+	operator=groupObj.cget(type=""),
+	operand=#decalsPublicGroupType(),
+	eq=#if(
+		operator=#decalsHasUserManagerPrivileges(),
+		operand="true",
+		eq="true",
+		ne="false"
+	),
+	ne=#if(
+		operator=groupObj.cget(creator=""),
+		operand="@userId",
+		eq="true",
+		ne="false"
+	)
+);
+
+checkUserCanModifyGroup = #if(	
+	operator=userCanModifyGroup, 
+	operand="false", 
+	eq=invalidAccessError
+);
+
+usersForGroup=groupObj.cget(users="");
+
+usersForGroupMinusUser=usersForGroup.cforEach(
+	paramName="guIt",
+    op=#if(
+    	operator=#toObject(obj="@guIt").cget(userId=""),
+    	operand="@userId",
+    	ne=#toObject(obj="@guIt")
+    )   
+).valueSet();
+
+groupHasUser = usersForGroup.cforEach(
+	paramName="guIt",
+    op=#toObject(obj="@guIt").cget(userId="")
+).valueSet().has(has="@userId");
+
+//--------------------------
+//Show all groups
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllGroups=allGroupObj.displayJson();
+/decalsShowAllGroups=getAllGroups;
+
+//--------------------------
+//Add group
+
+newGroupObj=#object(
+	groupId="@groupId",
+	name="@groupName",
+	creator="@userId",
+	type="@groupType",
+	createdDate=#date(_raw="true"),
+	updatedDate=#date(_raw="true")	
+);
+
+createGroup=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=newGroupObj.ccall(
+		groupName=decalsPostData.cget(groupName=""),
+		groupType=decalsPostData.cget(groupType=""),
+		userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))
+	).idxSet(groupDb,key="@groupId"),
+	d=groupObj
+).ccall(groupId=#generateUUID()).cget(d="").displayJson();
+
+/decalsCreateGroup = createGroup;
+
+//--------------------------
+//Delete group
+
+
+
+deleteGroup=#object(
+	a=#decalsRemoveGroupFromAllCollections(),
+	z=#idxDelete(groupDb,key="@groupId")
+);
+
+deleteGroupFromApp=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkUserCanModifyGroup.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=deleteGroup,
+	d=#object(msg="true")
+).ccall(groupId=decalsPostData.cget(groupId="")).cget(d="").displayJson();
+
+/decalsDeleteGroup = deleteGroupFromApp;
+
+//--------------------------
+//Add users to group
+
+addGroupUsersToDb=groupObj.putInObject(
+	dest="users",
+	item=#listAdd(
+			a=groupObj.cget(users=""),
+			b=decalsPostData.cget(users="")
+	).removeDuplicates()
+).putInObject(
+	dest="updatedDate",
+	item=#date(_raw="true")
+).idxSet(groupDb,key="@groupId");
+
+addGroupUsers=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkUserCanModifyGroup.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=addGroupUsersToDb,
+	d=groupObj
+).ccall(groupId=decalsPostData.cget(groupId="")).cget(d="").displayJson();
+
+/decalsAddGroupUsers = addGroupUsers;
+
+//--------------------------
+//Remove user from group
+
+removeGroupUserFromDb=groupObj.putInObject(
+	dest="users",
+	item=usersForGroupMinusUser
+).putInObject(
+	dest="updatedDate",
+	item=#date(_raw="true")
+).idxSet(groupDb,key="@groupId");
+
+removeGroupUser=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkUserCanModifyGroup.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=removeGroupUserFromDb.ccall(userId=decalsPostData.cget(userId="")),
+	d=groupObj
+).ccall(groupId=decalsPostData.cget(groupId="")).cget(d="").displayJson();
+
+/decalsRemoveGroupUser = removeGroupUser;
+
+//--------------------------
+//Remove user from all groups
+
+removeUserFromAllGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupHasUser,
+		operand="true",
+		eq=groupObj.putInObject(
+			dest="users",
+			item=#listAdd(
+				a=usersForGroupMinusUser
+			)
+		).idxSet(groupDb,key="@groupId")
+	)
+);
+#decalsRemoveUserFromAllGroups = removeUserFromAllGroups;
+
+//--------------------------
+//Get public groups
+
+publicGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupObj.cget(type=""),
+		operand=#decalsPublicGroupType(),
+		eq=groupObj
+	)
+);
+
+getPublicGroups=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=publicGroups
+).cget(b="").displayJson();
+
+/decalsGetPublicGroups=getPublicGroups;
+
+//--------------------------
+//Get user private groups
+
+userPrivateGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupObj.cget(type=""),
+		operand=#decalsPrivateGroupType(),
+		eq=#if(
+    		operator=groupObj.cget(creator=""),
+			operand="@userId",
+			eq=groupObj
+		)
+	)
+);
+
+getUserPrivateGroups=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=userPrivateGroups.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId="")))
+).cget(b="").displayJson();
+
+/decalsGetUserPrivateGroups=getUserPrivateGroups;
+
+//--------------------------
+//Get user member groups
+
+userMemberGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupHasUser,
+		operand="true",
+		eq=groupObj
+	)
+);
+#decalsUserMemberGroups = userMemberGroups;
+
+getUserMemberGroups=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=userMemberGroups.ccall(userId=decalsPostData.cget(userId=""))
+).cget(b="").displayJson();
+
+/decalsGetUserMemberGroups=getUserMemberGroups;
+
+
+
+//
+// Delete User Groups
+
+deleteUserGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupObj.cget(creator=""),
+		operand="@userId",
+		eq=deleteGroup
+	)
+);
+#decalsDeleteUserGroups = deleteUserGroups;

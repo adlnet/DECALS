@@ -1,0 +1,131 @@
+//============================
+// Default Competency Model URI Prefix
+//
+// The Prefix of the URI that is created for each competency model and profile
+// model in this competency manager.
+//
+// TODO: THIS URI CANNOT BE CHANGED AFTER THE INSTANCE IS FIRST STARTED RIGHT NOW, CHANGE THIS TO MAKE IT MORE FLEXIBLE  
+// 		ALSO NOTE THAT IF YOU REINSTALL AN INSTANCE AND WANT TO USE A DIFFERENT URI, YOU WILL NEED TO USE THE DEFAULT STRUCTURE FILES
+// 		FROM THE REPOSITORY.
+//============================
+
+defaultURIPrefix = #string(str="http://www.yourcompany.com/competencies/"); 
+defaultURIPrefix = #error(msg="You need to set the default URI value.");					// FIXME
+
+//============================
+// Guest (READ-ONLY) User Settings
+//
+// If <code>createGuestUser = #true();</code> then creates a read-only user that 
+// can  be used to view the profiles and models but not modify them.
+//============================
+
+//createGuestUser = #false();														// FIXME
+createGuestUser = #true();
+
+guestUserId = #string(str="guest");
+guestUserPassword = #string(str="password");
+
+//============================
+// Competency Base Directory
+//
+// LEVR Competency Calls can include an additional @competencyDirectory parameter that
+// will override this directory if set. This defaultDirectory can be left blank, and
+// each competency call will require the @competencyDirectory parameter to be set
+//============================
+
+defaultDirectory = #string(str="competency/");
+
+//============================
+// Competency Structure File Directory 
+
+// This is the directory containing structure-competency.owl and structure-user.owl, 
+// currently contained in the competency directory in the levr-semantic project
+//============================
+
+structureDirectory = #string(str="competency/structure-files");
+
+//============================
+// Backup/Restore Keyfile Path
+//
+// Path to the keyfile used to protect backup and restoration of the profile and
+// competency models
+//============================
+
+backupRestoreKeyPath = #string(str="/competency/competency.backupRestore.key");
+backupRestoreKeyPath = #error(msg="You need to set the Backup/Restore Keyfile Path");	// FIXME
+
+// Loads Key File and exposes the Key for verification
+backupRestoreKey = #catch(try=#fileLoad(path=backupRestoreKeyPath).fileToString(), 
+						null=#error(msg="BackupRestoreKey File not found")
+					);
+
+//============================
+// Competency Subdirectory Names 
+//
+// These directories are relative to the defaultDirectory or @competencyDirectory parameter
+//============================
+
+modelDirectoryName = #string(str="models");
+userDirectoryName = #string(str="users");
+evidenceDirectoryName = #string(str="evidences");
+agentDirectoryName = #string(str="agents"); 
+backupDirectoryName = #string(str="backup");
+importDirectoryName = #string(str="imports");
+
+//============================
+// IDX Database Names
+//
+// Names of the IDX Databases that contain the competency manager info
+//============================
+
+// Model DB    
+//---------------
+
+modelDBName = #string(str="models");
+
+// User DB Name
+//---------------
+
+userDBName = #string(str="users");
+
+// Agent DB Name
+//---------------
+
+agentDBName = #string(str="agents");
+
+// Evidence DB Name
+//---------------
+
+evidenceDBName = #string(str="evidences");
+
+// Evidence File DB Name
+//---------------
+
+evidenceFileDBName = #string(str="evidence-files");
+
+//============================
+// LEVR Service Calls exposing the config settings
+//============================
+
+#competencyStructureDirectory = structureDirectory;
+
+#competencyDefaultDirectory = defaultDirectory;
+
+#competencyModelDirectoryName = modelDirectoryName;
+#competencyUserDirectoryName = userDirectoryName;
+#competencyEvidenceDirectoryName = evidenceDirectoryName;
+#competencyAgentDirectoryName = agentDirectoryName;
+#competencyBackupDirectoryName = backupDirectoryName;
+#competencyImportDirectoryName = importDirectoryName;
+
+#competencyDefaultURI = defaultURIPrefix;
+
+#competencyCreateGuestUser = createGuestUser;
+#competencyGuestUserId = guestUserId;
+#competencyGuestUserPassword = guestUserPassword;
+
+#competencyModelDBName = modelDBName;
+#competencyUserDBName = userDBName;
+#competencyAgentDBName = agentDBName;
+#competencyEvidenceDBName = evidenceDBName;
+#competencyEvidenceFileDBName = evidenceFileDBName;

@@ -1,0 +1,346 @@
+<div id="edit-record" class="screen left editor">
+	<div class="row">
+		<div class="columns small-10 small-offset-2">
+			<h2>
+				<i class="fa fa-pencil"></i> Record for <span>{{user.firstName
+					+" "+ user.lastName}}</span>
+			</h2>
+		</div>
+	</div>
+	<div class="row">
+		<div class="small-2 columns panel">
+			<h4>Options</h4>
+			<ul class="side-nav">
+				<li><a ng-click="addValidation()"> <i class="fa fa-plus"></i>
+						Validation
+				</a></li>
+				<!--li>
+          <a onclick="addClonedInput('badge')">
+            <i class="fa fa-plus"></i> 
+            Badge
+          </a>
+        </li-->
+			</ul>
+		</div>
+
+		<div class="columns small-10">
+			<div class="row">
+				<div class="small-10 columns">
+					<label ng-hide=""> Model <small>required</small> <select
+						id="modelSelect" ng-model="appCache.editedItem.competencyModelId"
+						ng-change="clearCompetency();" ng-disabled="!create">
+							<option ng-repeat="(modelId, modelObj) in appCache.modelCache"
+								value="{{modelObj.id}}" title="{{modelObj.uri}}"
+								ng-selected="modelObj.id=='model-default'">{{modelObj.name}}
+								- {{modelObj.uri}}</option>
+					</select>
+					</label>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="small-8 columns">
+					<label ng-hide=""> Competency <small>required</small> 
+					<input
+						type="text" ng-model="competencyTitle"
+						typeahead="comp.title as comp.title + ' (' + comp.id + ')' for comp in competencyItem.searchCompetencyPromise($viewValue, appCache.editedItem.competencyModelId)"
+						typeahead-min-length="2" typeahead-loading="typeaheadSearching"
+						typeahead-on-select="competencySelected($item, $model, $label)"
+						typeahead-wait-ms="300" placeholder="Enter Competency Title or ID"
+						ng-disabled="!create" ng-change="clearCompetency()"></input>
+					</label>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="small-8 columns">
+					<label> Level <small>required</small> 
+					<select id="level_select"
+						ng-model="appCache.editedItem.levelId" ng-disabled="!create">
+							<option value="{{levelObj.id}}"
+								ng-repeat="(id, levelObj) in appCache.competencyCache[appCache.editedItem.competencyModelId][appCache.editedItem.competencyId].levels | orderByObj:'rank'"
+								ng-selected="id == appCache.editedItem.levelId">
+								{{levelObj.name + ' (Rank: ' + levelObj.rank + ')'}}</option>
+							<option id='no_level_message' value=''>Select a
+								Competency Before Selecting the Recorded Level</option>
+					</select>
+					</label>
+				</div>
+			</div>
+
+			<fieldset>
+				<legend>Validations</legend>
+				<div class="row" style="padding: 10px;"
+					ng-hide="objectLength(appCache.editedItem.validations) > 0 || newValidation != undefined">
+					<span
+						ng-hide="appCache.editedItem.validationIds.length > 0 || (appCache.editedItem.id == undefined && !create)">
+						This Record has no validations yet.. </span> <span
+						ng-hide="appCache.editedItem.validationIds.length == 0"
+						style='font-size: 18pt;'> <i
+						class="fa fa-circle-o-notch fa-spin"></i> Loading
+					</span>
+				</div>
+
+				<div class="row" style="padding: 10px;"
+					ng-hide="newValidation == undefined" id="new_validation">
+					<div class="row">
+						<span class="small-6 columns"></span> <span
+							class="small-4 columns"> <a
+							style='position: relative; bottom: 0px; margin-right: 10px;'
+							ng-click="removeValidation(newValidation)"> <i
+								class="fa fa-times"></i> Cancel
+						</a> <a style='position: relative; bottom: 0px;'
+							ng-click="saveValidation(newValidationj)"> <i
+								class="fa fa-save"></i> Save Validation
+						</a>
+						</span>
+					</div>
+
+					<!--div class="row" style="margin-bottom:5px;">
+            <div class="small-6 columns" style="display:inline-block;">
+              <strong>Agent ID:</strong>
+              <input type="text" disabled ng-model="newValidation.agentId"></input>
+            </div> 
+            <div class="small-4 columns" style="display:inline-block;">
+              <strong>Date:</strong>
+              <input type="date" ng-model="newValidation.date"></input>
+            </div>
+          </div-->
+
+					<div class="row">
+						<div class="small-4 columns">
+							<strong>Confidence:</strong> <small>required</small> <input
+								type="text" ng-model="newValidation.confidence"
+								style="width: 50px;"></input>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="small-11 columns">
+							<strong>Evidences:</strong> <br />
+
+							<div ng-repeat="evidenceId in newValidation.evidenceIds"
+								style="margin-top: 5px;">
+								{{evidenceId}} <span style="float: right;"
+									ng-hide="editingEvidence != evidenceId"
+									ng-click="cancelEditEvidence()"> <a>Cancel</a>
+								</span> <span style="float: right;"
+									ng-hide="editingValidation != undefined || newValidation == undefined || editingEvidence == evidenceId"
+									ng-click="editEvidence(undefined, evidenceId)"> <a>Edit</a>
+								</span> <span style="float: right; margin-right: 10px;"
+									ng-click="viewEvidence(undefined, evidenceId)"
+									ng-hide="editingEvidence == evidenceId"> <a
+									ng-hide="viewingEvidence == evidenceId">Show</a> <a
+									ng-hide="viewingEvidence != evidenceId">Hide</a>
+								</span>
+
+								<div ng-include="'partials/view/viewEvidence.html'"
+									ng-init="validObj = newValidation"
+									ng-hide="viewingEvidence != evidenceId;"></div>
+								<div ng-include="'partials/edit/editEvidence.html'"
+									ng-init="validObj = newValidation"
+									ng-hide="editingEvidence != evidenceId;"></div>
+							</div>
+
+							<div ng-include="'partials/edit/addEvidence.html'"
+								ng-hide="editingValidation != undefined"></div>
+							<div ng-hide="editingValidation == undefined">No Evidences
+							</div>
+
+						</div>
+					</div>
+
+					<hr ng-hide="objectLength(appCache.editedItem.validations) == 0" />
+				</div>
+
+				<div class="row" style="padding: 10px; margin-bottom: 10px;"
+					ng-repeat="(validId, validObj) in appCache.editedItem.validations">
+					<div class="row" style="margin-bottom: 10px;">
+						<span class="small-8 columns"></span> <span
+							class="small-3 columns"
+							ng-hide="">
+							<a
+							style='position: relative; float: right; bottom: 0px; margin-right: 10px;'
+							ng-click="editValidation(validId)"
+							ng-hide="editingValidation == validId"> <i
+								class="fa fa-pencil"></i> Edit
+						</a> <a style="margin-right: 10px;"
+							ng-hide="editingValidation != validId"
+							ng-click="cancelEditValidation()"> <i class="fa fa-times"></i>
+								Cancel
+						</a> <a style="margin-right: 10px;"
+							ng-hide="editingValidation != validId"
+							ng-click="saveValidation()"> <i class="fa fa-save"></i> Save
+								Edit
+						</a>
+						</span>
+					</div>
+
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="small-8 columns">
+							<strong>Agent ID:</strong> {{validObj.agentId}}
+						</div>
+						<div class="small-4 columns">
+							<strong>Date:</strong> {{validObj.date | date}}
+						</div>
+					</div>
+
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="small-6 columns">
+							<strong>Confidence:</strong> <input type="text"
+								ng-model="appCache.editedItem.validations[validId].confidence"
+								ng-hide="editingValidation != validId"
+								style="width: 50px; display: inline-block; margin: 0px;"></input>
+							<span ng-hide="validId == editingValidation">
+								{{validObj.confidence}} </span>
+						</div>
+					</div>
+
+					<div class="row" style="margin-bottom: 10px;">
+						<div class="small-11 columns">
+							<strong>Evidences:</strong> <br />
+							<div
+								ng-hide="validObj.evidenceIds.length != 0 || validId == editingValidation"
+								style="margin-top: 5px;">No Evidences</div>
+
+							<div ng-repeat="evidenceId in validObj.evidenceIds"
+								style="margin-top: 5px;">
+								{{evidenceId}} <span style="float: right;"
+									ng-hide="editingEvidence != evidenceId"
+									ng-click="saveEditEvidence()"> <a> <i
+										class="fa fa-save"></i> Save
+								</a>
+								</span> <span style="float: right; margin-right: 10px;"
+									ng-hide="editingEvidence != evidenceId"
+									ng-click="cancelEditEvidence()"> <a>Cancel</a>
+								</span> <span style="float: right;"
+									ng-hide="validObj.id != editingValidation || editingEvidence == evidenceId"
+									ng-click="editEvidence(validId, evidenceId)"> <a>Edit</a>
+								</span> <span style="float: right; margin-right: 10px;"
+									ng-click="viewEvidence(validId, evidenceId)"
+									ng-hide="editingEvidence == evidenceId"> <a
+									ng-hide="viewingEvidence == evidenceId">Show</a> <a
+									ng-hide="viewingEvidence != evidenceId">Hide</a>
+								</span>
+
+
+								<div ng-include="'partials/view/viewEvidence.html'"
+									ng-hide="viewingEvidence != evidenceId"></div>
+								<div ng-include="'partials/edit/editEvidence.html'"
+									ng-hide="editingEvidence != evidenceId"></div>
+							</div>
+
+							<div new-scope ng-include="'partials/edit/addEvidence.html'"
+								ng-hide="validId != editingValidation || validObj.evidenceIds.indexOf(editingEvidence) != -1"></div>
+						</div>
+					</div>
+
+					<hr ng-hide="$last" />
+				</div>
+			</fieldset>
+
+			<div id="competency-block" class="block" data-minRequired="0">
+
+				<!--
+            <fieldset><legend>XXXXXXXX <a title="Delete competency" data-reveal-id="modalDeleteComp"><i class="fa fa-trash-o"></i></a></legend>
+                <div id="record-block" class="block" data-minRequired="0">
+                    <div class="row">
+                        <div class="small-11 columns">
+                            <a onclick="editCompetencyRecords('CompTitleHere');" title="Edit record" >Master (agent)</a>
+                        </div>
+                        <div class="small-1 columns">
+                            <a data-reveal-id="modalDeleteComp" title="Delete record"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="showOverlay('edit-record-competency');" class="tiny secondary"><i class="fa fa-plus"></i> Record</button>
+            </fieldset>
+-->
+
+			</div>
+
+			<button ng-click="saveRecord();" ng-disabled="savingRecord">Save</button>
+			<button class="secondary" ng-click="showView('profile', user.id);">Cancel</button>
+		</div>
+
+	</div>
+
+	<!--div id="edit-competencyRecord" class="overlay active scroll">
+  <div class="content">
+    <div class="row">
+      <div class="content small-10 columns small-offset-2">
+        <span class="exit close-overlay" ng-click="goBack()" title="Cancel">
+          <i class="fa fa-times fa-5x"></i>
+        </span>
+        <h4>
+          <i class="fa fa-pencil"></i> 
+          Record for 
+          <span class="profileName">
+            Jane Smith
+          </span>
+        </h4>
+        <h5>
+          Competency: 
+          <span id="competency-title">
+            XXXXXXXX
+          </span>
+        </h5>
+        <p>
+          ID#: 
+          <span id="competency-ID">
+            YYYYYYYY
+          </span>
+        </p>
+        <p>
+          Last Modified: 
+          <span id="competency-record-modified">
+            January 15, 2014
+          </span>
+        </p>
+      </div>
+    </div>
+            
+    <div class="row">
+      <div class="small-2 columns">
+        <h4>Options</h4>
+        <ul class="side-nav">
+          <li>
+            <a onclick="addClonedInput('validation')">
+              <i class="fa fa-plus"></i> 
+              Validation
+            </a>
+          </li>
+          <!--li>
+            <a onclick="addClonedInput('badge')">
+              <i class="fa fa-plus"></i> 
+              Badge
+            </a>
+          </li-->
+	<!--/ul>
+      </div>
+      
+      <div class="small-10 columns">
+        
+        <label>
+          Overall confidence: 
+          <input type="range" name="confidence" min="0" max="100">
+        </label>
+        
+        <div id="recordLevel-block" class="block" data-minRequired="1"></div>
+        <div id="validation-block" class="block" data-minRequired="0"></div>
+        
+        <br/>
+
+        <a id="saveBtn" class="button small secondary" onclick="closeOverlay()">
+          Save
+        </a>
+        <a id="addBtn" class="button small secondary" onclick="addCompetencyRecord()">
+          Add
+        </a>
+        <a class="button small secondary" ng-click="goBack()">
+          Cancel
+        </a>
+      </div>
+    </div>
+  </div>
+</div-->

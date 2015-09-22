@@ -1,0 +1,1704 @@
+html, body {
+   height: inherit; /* <-- add this to decals.css to override foundation.css */
+}
+
+.sub-nav {
+  margin: 0 0 0 0;
+}
+
+.sub-nav dd a {
+  color: white;
+}
+
+.sub-nav dd a:hover {
+  color: black;
+}
+
+.sub-nav dd.active a {
+  color: #008cba;
+  background: white;
+}
+
+.sub-nav dd.active a:hover {
+  color: #008cba;
+  background: white;
+}
+
+#colSubNav .sub-nav dd a {
+  color: #008cba;
+}
+
+#colSubNav .sub-nav dd a:hover {
+  color: black;
+}
+
+#colSubNav .sub-nav dd.active a {
+  color: white;
+  background: #008cba;
+}
+
+#colSubNav .sub-nav dd.active a:hover {
+  color: white;
+  background: #008cba;
+}
+
+#curColItemOrderMessage {
+	font-size:12px;
+	font-style:italic;
+	color:#666;
+	text-align: right;
+	padding-right: 25px;
+	padding-top: .5em;
+}
+
+#curColForm p {
+	font-size: 12px;
+	font-style: italic;
+}
+
+.curGrpButton,
+.curColButton {
+	padding: 8px 10px;	
+	font-size: 0.6875rem;
+}
+
+#currentCollectionContainer h3 {
+	font-weight: bold;
+}
+
+#curColDesc {
+	overflow-y:auto;
+	overflow-x:hidden;
+	max-height: 55px;
+}
+
+#curColItemContainer,
+#curColUserContainer {
+	overflow-y:auto;
+	overflow-x:hidden;
+	max-height: 483px;
+}
+
+.curColNonEmpty,
+.curColEmpty {
+	margin-bottom:0px;
+}
+
+.curGrpEmpty,
+.curColEmpty {
+	color: #666;
+}
+
+#curColForm hr {
+	margin:10px;	
+}
+
+#curColDescEditContainer {
+	padding-top: 5px;
+	padding-left: 15px;
+	text-align: left;
+}
+
+#curColItemList {
+	margin:0px;
+}
+
+#curColUserList li,
+#curColGroupList li {
+	padding:7px;
+}
+
+#daaAddNewAdmin,
+#daaPPubAll,
+#umAddNewUser,
+#umAddNewUserManager {
+	margin-bottom: 0px;
+}
+
+#cgrpUsers ul,
+#addToCollectionList ul,
+#addGroupUserList ul,
+#addCollectionGroupList ul,
+#addCollectionUserList ul,
+#curColItemContainer ul,
+#curColUserContainer ul,
+#curColGroupContainer ul,
+#addAdminUserList ul,
+#daaAministrators ul,
+#daaParadataPublishings ul,
+#umUserMgrList ul,
+#umUserList ul,
+#addUserMgrUserList ul,
+#duatUserList ul {
+	list-style-type: none;
+}
+
+#cgrpUsers li:hover,
+#addToCollectionList li:hover,
+#addGroupUserList li:hover,
+#addCollectionGroupList li:hover,
+#addCollectionUserList li:hover,
+#curColUserList li:hover,
+#curColGroupList li:hover,
+#addAdminUserList li:hover,
+#daaAministrators li:hover,
+#daaParadataPublishings li:hover,
+#umUserMgrList li:hover,
+#umUserList li:hover,
+#addUserMgrUserList li:hover,
+#duatUserList li:hover {
+	background:#CEE3F6;
+}
+
+.cgrpUserName,
+.daaAdminName,
+.daaPpubTitle,
+.umUserName,
+.umUserMgrName {
+	margin: 0px;
+	font-size: 16px;
+	font-weight: bold;	
+	padding-left: 5px;
+	padding-top: 5px;
+}
+
+.daaPpubId,
+.daaPpubDate,
+.daaPpubUrl,
+.cgrpUserEmail,
+.daaAdminEmail,
+.daaLastLogin,
+.umUserEmail,
+.umUserRoles,
+.umUserCreateDate,
+.umUserLastLogin,
+.umUserMgrEmail,
+.umUserMgrLastLogin {
+	font-size: 14px;
+	padding-left: 5px;
+	color: #999999;
+	font-style: italic;
+}
+
+#addToCollectionResourceUrl,
+.textWrap,
+#curColName,
+#myCollectionsSelections li,
+.curColDesc,
+.daaPpubUrl,
+.artcColName,
+.acgGroupName,
+.acuUserName,
+.aguUserName,
+.addAdminUserName,
+.acuUserId,
+.acgGroupType,
+.aguUserId,
+.addAdminUserId,
+.addUserMgrUserName,
+.duatUserName,
+.addUserMgrUserId,
+.duatUserId,
+.umUserEmail,
+.umUserRoles,
+.umUserCreateDate,
+.umUserLastLogin {
+	white-space: pre-wrap;      /* CSS3 */   
+   	white-space: -moz-pre-wrap; /* Firefox */    
+   	white-space: -pre-wrap;     /* Opera <7 */   
+   	white-space: -o-pre-wrap;   /* Opera 7 */    
+   	word-wrap: break-word;  
+}
+
+.daaPpubUrl {
+	color:green;	
+}
+
+.daaLastLogin,
+.daaPpubId,
+.umUserLastLogin,
+.umUserMgrLastLogin {
+	padding-bottom: 7px;	
+}
+
+.cgrpUserRemove,
+.daaAdminRevoke,
+.daaPPubPublish,
+.umUserTools,
+.umUserMgrRevoke {
+	padding-top: 8px;
+}
+
+.cgrpUserRemove .button,
+.artcAddBtn .button,
+.aguAddBtn .button,
+.acuAddBtn .button,
+.acgAddBtn .button,
+.addAdminAddBtn .button,
+.addUserMgrAddBtn .button,
+.duatAddBtn .button,
+.daaAdminRevoke .button,
+.daaPPubPublish .button,
+.umUserTools .button,
+.umUserMgrRevoke .button {
+	height: 24px;
+	padding: 5px 1em;
+	margin: 0;
+	font-size: 0.8rem;
+}
+
+.artcColName,
+.acgGroupName,
+.acuUserName,
+.aguUserName,
+.addAdminUserName,
+.addUserMgrUserName,
+.duatUserName {
+	font-size:16px;
+	font-weight:bold;
+	padding:8px;
+}
+
+.acuUserId,
+.acgGroupType,
+.aguUserId,
+.addAdminUserId,
+.addUserMgrUserId,
+.duatUserId {
+	font-style: italic;
+	padding:8px;
+	color: #999999;	
+}
+
+.artcAddBtn,
+.acuAddBtn,
+.acgAddBtn,
+.aguAddBtn,
+.addAdminAddBtn,
+.addUserMgrAddBtn,
+.duatAddBtn {
+	padding-top: 6px;
+}
+
+#interactiveSearchResultsWordDefinitionContainer,
+#userLRSearchResultsWordDefinitionContainer {
+	overflow-y:auto;
+	overflow-x:hidden;
+	max-height:88px;
+}
+
+.noEntries {
+    color: #999;
+    padding: 0;
+    margin: 4rem 0 0 0;
+    font-style: italic;
+}
+
+.showMoreResultsButton {
+	padding: 5px;
+}
+
+#myCollectionsSelections {
+	overflow-y:auto;
+	overflow-x:hidden;
+	max-height:550px;
+	margin-right: 30px;
+}
+
+#currentGroupDetailsContainer .list,
+#basicSearchResults, 
+#interactiveSearchResults, 
+#userLRSearchResults,
+#myContributionsSearchResults,
+#umUsersDetails .list,
+#umUserMgrDetails .list,
+#daaAdministratorsDetails .list,
+#daaParadataPublishDetails .list {
+	overflow-y:auto;
+	overflow-x:hidden;
+	height:550px;
+}
+
+#addGroupUserList .list,
+#addToCollectionList .list,
+#addCollectionGroupList .list,
+#addCollectionUserList .list,
+#addAdminUserList .list,
+#addUserMgrUserList .list,
+#duatUserList .list {
+	overflow-y:auto;
+	overflow-x:hidden;
+	max-height:320px;
+}
+
+/*#myContributionsSearchResults {
+	height:625px;
+}*/
+
+#resourceCommentsContainer {
+	overflow-y:auto;
+	overflow-x:hidden;
+	max-height:450px;
+}
+
+.commentCreator {
+	font-size: 12px;
+	font-style: italic;
+	color: #585858;	
+}
+
+.commentContents {
+	font-size: 12px;	
+}
+
+.commentCreatorContainer {
+	padding-left: 50px;
+	padding-bottom: 5px;
+	padding-top: 5px;
+	border-top: 2px solid #aaa;
+}
+
+.commentContentsContainer {
+	padding: 8px 35px;
+	background: #CEE3F6;
+	margin-bottom: 15px;
+	border-bottom: 1px solid #aaa;
+}
+
+.wordDef {
+	font-size: 14px;
+	font-style: italic;
+}
+
+.appliedGradeLevels {
+	font-size: 12px;
+	font-style: italic;
+}
+
+.advancedOptionLink {	
+ 	color: gray !important;
+    font-style: italic;	
+}
+
+.resourceWarning {
+	color:#daa520;
+	font-style: italic;
+	font-size:12px;
+}
+
+.searchBusy {
+    font-weight: bold;
+    color: #999;
+    font-size: 12px;
+    font-style:italic;        
+}
+
+#resultRecords {
+	position:relative;
+	left: 300px;
+	width: 650px;
+	top : 205px;
+}
+
+.tooltipx  {
+    border-bottom: 1px dotted #000000; color: #000000; outline: none;
+    cursor: help; text-decoration: none;
+    position: relative;
+}
+
+.tooltipx span {
+    margin-left: -999em;
+    position: absolute;
+}
+
+.tooltipx:hover span {
+    border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; 
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1); -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1); -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
+    font-family: Calibri, Tahoma, Geneva, sans-serif;
+    position: absolute; left: 1em; top: 2em; z-index: 99;
+    margin-left: 0; width: 250px;
+}
+
+.tooltipx:hover img {
+    border: 0; margin: -10px 0 0 -55px;
+    float: left; position: absolute;
+}
+.tooltipx:hover em  {
+    font-family: Candara, Tahoma, Geneva, sans-serif; font-size: 1.2em; font-weight: bold;
+    display: block; padding: 0.2em 0 0.6em 0;
+}
+
+.classic { padding: 0.8em 1em; }
+.custom { padding: 0.5em 0.8em 0.8em 2em; }
+* html a:hover { background: transparent; }
+.classic {background: #FFFFAA; border: 1px solid #FFAD33; }
+.critical { background: #FFCCAA; border: 1px solid #FF3334;	}
+.help { background: #9FDAEE; border: 1px solid #2BB0D7;	}
+.info { background: #9FDAEE; border: 1px solid #2BB0D7;	}
+.warning { background: #FFFFAA; border: 1px solid #FFAD33; }
+
+.panel {
+    border-radius: 8px;
+}
+
+/* ---- GENERAL ---- */
+
+.hidden, .hide { display: none !important; }
+
+.show { display: block !important; }
+
+.showNonImportant { display: block; }
+
+body {
+    box-sizing: border-box;
+    color: #333;
+}
+
+/* ---- TOOLBAR ---- */
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    padding: 0;
+    color: white;
+    background-color: #000;
+/*    overflow: hidden;*/
+}
+
+.header a {
+    color: white;
+}
+.header h1.logo {
+    color: #aaa;
+    white-space: nowrap;
+    font-size: 1.5rem;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.header .logo img {
+    width: 100px;
+    vertical-align: baseline;
+}
+
+.header nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background-color: #222222;
+    border-top: 1px solid #434343;
+    border-bottom: 1px solid #101010;
+    background-image: -ms-linear-gradient(top, #2c2c2c 2%, #262626 30%, #222222 95%);
+    background-image: -moz-linear-gradient(top, #2c2c2c 2%, #262626 30%, #222222 95%);
+    background-image: -o-linear-gradient(top, #2c2c2c 2%, #262626 30%, #222222 95%);
+    background-image: -webkit-gradient(linear left top, left bottom, color-stop(0.02,#2c2c2c), color-stop(0.3, #262626), color-stop(0.95, #222222));
+    background-image: -webkit-linear-gradient(top, #2c2c2c 0%,	#2c2c2c 5%, #262626 30%,#222222 95%);
+    background-image: linear-gradient(to bottom, #2c2c2c 2%, #262626 30%, #222222 95%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#2c2c2c, endColorstr=#222222);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#2c2c2c', endColorstr='#222222');
+}
+.header nav .tabs
+{
+    white-space: nowrap;
+    margin: 0;
+}
+.header nav .tab
+{
+    display: inline-block;
+    padding: 3px 2em;
+    margin-top: 5px;
+    height: 40px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    cursor: pointer;
+}
+.header nav .tab:hover
+{
+    background-color: #444;
+}
+.header nav .tab.active
+{
+    background-color: #0463a6;
+    background-image: linear-gradient(to bottom, #0085e0 2%, #0463a6 95%);
+}
+.header nav .tab a
+{
+    color: white;
+    text-shadow: black 2px 2px 2px;
+}
+.header nav .tab.active a
+{
+/*
+    color: #0099FF;
+    text-shadow: 0px 2px 0px rgba(0,0,0,.3);
+*/
+}
+
+.header #headerUserId{
+	color: rgba(255, 255, 255, 0.55);
+}
+
+/* ---- SPLASH SCREEN - Interactive Search home ---- */
+
+.userScreen, .guestScreen
+{
+    position: fixed;
+    top: 100px; /* match height of toolbar */
+    left: 0;
+    right: 0;    
+    overflow-y: scroll;
+    height: 100%;
+    padding-bottom:200px;
+    /*bottom: 0;*/
+    /*padding-top: 2rem*/;
+}
+
+.userScreen > .subheader, .guestScreen > .subheader
+{
+    margin: 0;
+    padding: 1rem;
+    background-color: #0099FF;
+    -moz-box-shadow: inset 0 0 40px #003D66;
+    -webkit-box-shadow: inset 0 0 40px #003D66;
+    box-shadow: inset 0 0 40px #003D66;
+    overflow: auto;
+    background: #0099FF url(../images/bg-header-adl.jpg) center no-repeat;
+    background-size: cover;
+    color: white;
+}
+.userScreen > .subheader h3, .guestScreen > .subheader h3
+{
+    font-family: georgia, serif;
+    font-style: italic;
+    color: white;
+    text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+}
+.userScreen > .subheader a, .guestScreen > .subheader a
+{
+    color: white;
+    padding: 0 .5em;
+}
+.userScreen > .subheader a:hover, .guestScreen > .subheader a:hover
+{
+    color: #aaa;
+}
+
+.userScreen .searchTitle, .guestScreen .searchTitle
+{
+    font-weight: bold;
+    color: #999;
+    padding: 0;
+    margin: 1rem 0 0 0;
+}
+.userScreen .searchBeta, .guestScreen .searchBeta
+{
+    float: right;
+    color: #999;
+    padding: 0;
+    margin: 0;
+}
+
+.pageHeader
+{
+	margin: 0;
+    padding: .3rem;
+    background-color: #0099FF;
+    -moz-box-shadow: inset 0 0 40px #003D66;
+    -webkit-box-shadow: inset 0 0 40px #003D66;
+    box-shadow: inset 0 0 40px #003D66;
+    overflow: auto;
+    background: #0099FF url(../images/bg-header-adl.jpg) center no-repeat;
+    background-size: cover;
+    color: white;
+}
+.pageHeader h3
+{
+    font-family: georgia, serif;
+    font-style: italic;
+    font-size: 18pt;
+    color: white;
+    text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+}
+
+/* ---- INFO BOX ---- */
+
+#whatIsThis
+{
+    position: relative;
+    margin: 2rem 0;
+}
+.infoBox > .collapsed:before
+{
+    content: url(../images/section-minimized.png);
+    padding: 0 5px 0 0;
+}
+.infoBox > .expanded:before
+{
+    content: url(../images/section-expanded.png);
+    padding: 0 5px 0 0;
+}
+.infoBox .moreInfo 
+{ 
+    margin: 1em 0;
+}
+
+/* ---- SEARCH INPUT ---- */
+.gradeLevelChoice
+{
+	color:#008cba;
+}
+
+#interactiveSearchGradeLevelsSectId,
+#userLRSearchGradeLevelsSectId
+{
+	overflow-y: auto;
+}
+
+#interactiveSearchGradeLevelsSectId input,
+#userLRSearchGradeLevelsSectId input
+{
+	margin: 0;
+}
+
+#interactiveSearchGradeLevelsSectId ul,
+#userLRSearchGradeLevelsSectId ul
+{ 
+	margin: 0;
+	padding: 0;
+	list-style-type: none; 
+}
+
+#interactiveSearchGradeLevelsSectId li,
+#userLRSearchGradeLevelsSectId li
+{ 
+	font-size: 10px; 
+}
+
+
+#basicSearchInput,
+#interactiveSearchHeaderInput,
+#interactiveSearchInput,
+#userLRSearchInput,
+#userLRSearchHeaderInput
+{
+    background-image: url(../images/icon-search-input.png);
+    background-position: center right;
+    background-repeat: no-repeat;
+}
+
+#interactiveSearchHeaderInput, 
+#userLRSearchHeaderInput 
+{
+    margin-top: .7em;
+}
+
+body.typing
+{
+    background-color: #ddd;
+}
+
+/* ---- SEARCH RESULTS ---- */
+
+#interactiveSearchDisambigSectOd h5,
+#interactiveSearchRelCatsSectOd h5,
+#interactiveSearchRelTopicsSectOd h5,
+#interactiveSearchGradeLevelsSectOd h5,
+#userLRSearchDisambigSectOd h5,
+#userLRSearchRelCatsSectOd h5,
+#userLRSearchRelTopicsSectOd h5,
+#userLRSearchGradeLevelsSectOd h5
+{
+	font-size: 16px;
+	font-style: italic;
+	color: #666;
+	font-weight: bold;
+}
+
+#interactiveSearchDisambigSectOd a,
+#interactiveSearchRelCatsSectOd a,
+#interactiveSearchRelTopicsSectOd a,
+#interactiveSearchGradeLevelsSectOd a,
+#userLRSearchDisambigSectOd a,
+#userLRSearchRelCatsSectOd a,
+#userLRSearchRelTopicsSectOd a,
+#userLRSearchGradeLevelsSectOd a
+{	
+	text-decoration: none;
+}
+
+#interactiveSearchResultsFilterTools,
+#userLRSearchResultsFilterTools
+{	
+    background-color: #fff;
+    padding-top:10px;
+}
+
+#interactiveSearchResultsFilterTools hr,
+#userLRSearchResultsFilterTools hr
+{	
+    margin:10px;
+}
+
+#interactiveSearchResultsFilterTools label,
+#userLRSearchResultsFilterTools label
+{
+    font-weight: bold;
+    
+}
+#interactiveSearchBusy,
+#userLRSearchBusy
+{
+	padding: 1em 0;
+}
+#interactiveSearchResultsFilterTools .breadcrumbs,
+#interactiveSearchResultsFilterTools p,
+#userLRSearchResultsFilterTools .breadcrumbs,
+#userLRSearchResultsFilterTools p
+{
+    margin: 2px 0;
+}
+#interactiveSearchResultsScreen,
+#userLRSearchResultsScreen
+{
+    position: fixed;
+    top: 100px;
+    padding: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+}
+.result
+{
+    margin-bottom: 1.5em !important;
+}
+.result p
+{
+    margin: 0;
+    padding: 0;
+}
+
+.resultCounter {
+    font-size: 0.8rem;
+    color: #666;
+    padding: 1em 0;
+    margin: 0 0 0.5em 0;
+}
+
+/*
+.resultCounter span
+{
+    font-weight: bold
+}
+*/
+.definition .rollover
+{
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 155px;
+    width: 300px;
+    border: 1px solid #aaa;
+    background-color: #fff;
+    padding: 0 1em 0 1em;
+    z-index: 10;
+    color: #333;
+}
+.definition .rollover p
+{
+    font-size: 12px;
+    margin-bottom: 1em;
+}
+.definition:hover .rollover 
+{
+    display: block;
+}
+.preview img
+{
+    border: 1px solid #ddd;
+}
+.preview .rollover
+{
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 155px;
+    width: 300px;
+    border: 1px solid #aaa;
+    background-color: #fff;
+    padding: 1em 1em 0 1em;
+    z-index: 10;
+    color: #333;
+}
+.preview .rollover p
+{
+    font-size: 12px;
+    margin-bottom: 1em;
+}
+.preview:hover .rollover 
+{
+    display: block;
+}
+.result .title
+{
+    position: absolute;
+    left: 1rem;
+    right: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.result .tools
+{
+    position: absolute;
+    right: 1rem;
+    white-space: nowrap;
+}
+.result .button
+{
+    height: 24px;
+    padding: 5px 1em;
+    margin: 0;
+    font-size: 0.8rem;
+}
+.result .link
+{
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: green;
+    word-break: break-all;
+    word-break: break-word;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+    width: 100%;
+}
+.result .source,
+.result .ratingInfo,
+.result .date
+{
+    position: relative;
+    font-size: 0.8rem;
+    color: #666;
+}
+.result .ratingInfo 
+{
+	font-style: italic;
+}
+
+.result .paradata p
+{
+    font-size: 0.8rem;
+    color: #666;
+}
+.reviews .stars
+{
+    position: relative;
+    display: inline-block;
+    vertical-align: text-bottom;
+    width: 100px;
+    height: 20px;
+    background: transparent url(../img/star.gif) 0 0 repeat-x;
+}
+.reviews .stars .rating
+{    
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 20px;
+    vertical-align: middle;
+    background: transparent url(../img/star.gif) 0 -20px repeat-x;
+}
+
+/* ---- STUDENT & TEACHER Screens (shared styles) */
+@media screen and (min-width : 1025px) {
+    .divider { 
+        border-left: 2px solid gray; 
+    }
+}
+@media screen and (max-width : 1024px) {
+    .divider { 
+        border-top: 2px solid gray; 
+        margin-top: 2em;
+    }
+}
+
+
+.horzList { 
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    width: 100%;
+    display: block;
+    white-space: nowrap;
+    overflow: auto; 
+}
+.horzList li { 
+    padding: 0 0 0.5em 0;
+    margin-right: 1em;
+    display: inline-block;
+    border-bottom: 2px solid transparent;
+}
+.horzList .selected { 
+    border-color: red;
+}
+.horzList li:hover { 
+    border-color: #ccc;
+}
+.showMore
+{
+    padding-bottom: 1em;
+    text-align: center;
+    display: inline-block;
+    width: 100%;
+    font-style: italic;
+    font-weight: bold;
+}
+
+/* -----------------------------------------
+   Image flipping
+	from: http://davidwalsh.name/css-flip
+----------------------------------------- */
+
+.flip-container {
+	perspective: 1000px;
+	transform-style: preserve-3d;
+}
+
+.flip-container.flip .flipBack {
+	transform: rotateY(0deg);
+}
+
+.flip-container.flip .flipFront {
+    transform: rotateY(180deg);
+}
+
+.flip-container,.flipFront, .flipBack  {
+	width: 60px;
+	height: 60px;
+}
+
+.flipper {
+	transition: 0.6s;
+	transform-style: preserve-3d;
+	position: relative;
+}
+
+.flipFront, .flipBack {
+	backface-visibility: hidden;
+	transition: 0.6s;
+	transform-style: preserve-3d;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.flipFront {
+	z-index: 2;
+	transform: rotateY(0deg);
+}
+
+.flipBack {
+	transform: rotateY(-180deg);
+}
+
+/* -----------------------------------------
+   Resource Details Screen
+----------------------------------------- */
+
+.row.meta {
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+#editContentFull {
+	border: 1px solid #DDD;
+	margin-bottom: 10px;
+	background-color: #fff;
+	padding:0px;
+}
+
+
+#editContentFull #editContentHeaderContainer {
+	padding: 1px 10px;
+	background-color: #CEE3F6;
+}
+
+#editContentFull .ecText {
+	-ms-word-wrap: break-word;
+	word-wrap: break-word;
+}
+
+#editContentFull .ecPreview {
+	color: #A4A4A4;
+	font-size: 14px;
+	font-style: italic;
+	padding: 0px;
+	height: 0px;
+	padding-left: 20px;
+}
+
+#editContentFull #editContentPreviewContainer.ecDoc{
+	border-top: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
+    padding: 10px;
+    max-height:200px;
+	overflow-x:hidden;
+}
+
+#editContentFull #editContentPreview.ecDoc p{
+	font-size:14px;
+}
+
+#editContentFull #editContentDescriptionContainer,
+#editContentFull #r-paradata,
+#editContentFull #editContentMetadataShow,
+#editContentFull #editContentMetadataHide{padding:5px;}
+
+#editContentFull .meta-value {
+		display:block; 
+		padding-right: 20px;
+		padding-top: 2px;
+		padding-bottom: 2px;	
+		overflow: hidden;
+		white-space:nowrap;
+		text-overflow: ellipsis;
+}
+
+#editContentFull .meta-label {
+	padding:2px;
+	padding-right:10px;
+	text-align:right;
+	font-weight: bold;
+}
+
+#editContentFull #editContentDescription.meta-value { overflow: normal; white-space:normal;}
+
+#editContentFull .meta-value.editable {
+	font-style: italic;
+}
+
+#editContentFull .meta-value.editable:hover {
+	cursor: pointer;
+	color: #0066cc;
+	background: url(../images/icon-edit.png) center right no-repeat;
+}
+
+/* Show full metadata */
+
+#editContentFull #editContentMetadataHide, 
+#editContentFull #editContentMetadataShow{
+	border-top: 1px solid #999;
+	border-bottom: 1px solid #999;
+	background-color: #E0E0E0;
+}
+#editContentFull #editContentMetadataHide {
+	text-align: center;
+	padding: 10px;
+	font-weight: bold;
+}
+#editContentFull #editContentMetadataShow {
+	padding: 0;
+}
+#editContentFull #editContentMetadataShow hr {width: 90%; margin: 5px auto;}
+
+#editContentFull .ecmSection {
+	border-bottom: 1px solid #E8E8E8;
+	background-color: #fff;
+	padding: 5px;
+    -moz-transition: all 0.25s linear;
+    -webkit-transition: all 0.25s linear;
+    -o-transition: all 0.25s linear;
+    transition: all 0.25s linear;
+}
+#editContentFull .ecmSection .ecmSectionHeader {
+	color: #555 !important;
+	font-weight: bold;
+	font-size: 1.15em;
+	cursor: pointer;
+	width: 100%;
+	padding-left: 20px;
+	background: url(../images/section-expanded.png) 3px center no-repeat;
+}
+#editContentFull .ecmSection a.ecmSectionHeader:hover {color: #2A85E8 !important;}
+#editContentFull .ecmSection.collapsed {background-color: #E0E0E0;}
+#editContentFull .ecmSection.collapsed .ecmSectionHeader {background: url(../images/section-minimized.png) 6px center no-repeat;}
+#editContentFull textarea {width: 100%;}
+#editContentFull input {width: 100%;}
+
+#editContentFull .ecmSection .section-content{
+	padding:10px;
+}
+
+/* I had to play with the margins because the objectives list is messed up :(  */
+#editContentFull ul{	
+	margin-top: -7px;
+	margin-bottom: 7px;
+	margin-left: 0px;
+}
+
+#editContentFull hr {
+	border: 0;
+	color: #ddd;
+	background-color: #ddd;
+	height: 1px;
+	margin: auto;
+}
+
+
+
+/* -----------------------------------------
+   Learning Objectives Editor
+----------------------------------------- */
+
+/* General Objective Framework */
+/* Objectives: Object Detail dialog Variations */
+/*DECALS isn't currently using the display-objective-list and project-objective-list but I am going to leave it in here for now*/
+
+#editContentObjectivesList li > input {width: 85%;}
+#editContentObjectivesList .delete , #curColObjectivesList .delete, #editContentCompetencyList .delete{margin-right: 20px;}
+
+#editContentObjectivesList .objective,
+#display-objective-list .objective,
+#editContentCompetencyList .competency {margin-bottom: 0;}
+
+#display-objective-list .meta-value , #editContentCompetencyList .meta-value {display:block; padding-right: 0px;}
+
+#display-objective-list .meta-value.editable:hover, #curColObjectivesList .meta-value.editable:hover , #editContentCompetencyList .meta-value.editable:hover{
+	cursor: pointer;
+	color: #2A85E8;
+	background: url(../images/icon-edit.png) top right no-repeat;
+}
+#editContentObjectivesList .objective.editable,
+#editContentObjectivesList .objective.value,
+#editContentObjectivesList .objective.meta-value, 
+#display-objective-list .objective.editable,
+#display-objective-list .objective.value,
+#display-objective-list .objective.meta-value,
+#curColObjectivesList .objective.editable, 
+#curColObjectivesList .objective.value,
+#curColObjectivesList .objective.meta-value,
+#editContentCompetencyList .competency.editable ,
+#editContentCompetencyList .competency.value, 
+#editContentCompetencyList .competency.meta-value{
+	cursor: pointer;
+	font-size: 14px;
+	padding: 0px;
+	margin: 0px;
+}
+
+#editContentObjectivesList li .delete, #curColObjectivesList li .delete, #editContentCompetencyList li .delete{
+	margin-top:7px;
+	display: none;
+	float:right;
+	width: 16px; 
+	height: 16px;
+	text-align: center;
+	cursor: pointer;
+	z-index: 60;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	background: url(../images/btn-delete-idle.png) no-repeat;
+}
+#editContentObjectivesList li:hover .delete, #curColObjectivesList li:hover .delete, #editContentCompetencyList li:hover .delete {display: block;}
+#editContentObjectivesList li .delete:hover, #curColObjectivesList li .delete:hover, #editContentCompetencyList li .delete:hover{background-image: url(../images/btn-delete-over.png); }
+
+#editContentCreateObjectiveWrapper, #editMetadataCreateObjectiveWrapper, #editContentAddCompetencyWrapper {
+	margin-top: 10px;
+	padding: 10px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	background-color: #eee;
+}
+#editContentCreateObjectiveWrapper input, #editMetadataCreateObjectiveWrapper input, #editContentAddCompetencyWrapper input{width: 100%;}
+#editContentCreateObjectiveHelp, #editMetadataCreateObjectiveHelp{float: right;}
+#editContentCreateObjectiveHelp img, #editMetadataCreateObjectiveHelp img{ vertical-align: middle; padding-right: 3px;}
+
+/* Objectives: Upload/Edit Screen Variations */
+
+#display-objective-list p {
+	text-overflow: ellipsis;
+	-o-text-overflow: ellipsis;
+	-webkit-text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+#display-objective-list li {margin-bottom: 0;}
+#display-objective-list li p.full-width,
+#display-objective-list li input{width: 92%;}
+#display-objective-list li .delete {
+	display: none;
+	margin-right: 0px;
+	float:right;
+	width: 16px; 
+	height: 16px;
+	text-align: center;
+	cursor: pointer;
+	z-index: 60;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	background: url(../images/btn-delete-idle-light.png) no-repeat; /* lighter color */
+}
+#display-objective-list li:hover .delete {display: block;}
+#display-objective-list li .delete:hover {background-image: url(../images/btn-delete-over.png); }
+
+#createObjectiveWrapper {
+	margin-top: 10px;
+	padding: 10px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	background-color: #555;
+}
+#createObjectiveWrapper input {width: 100%; background-color: #eee;}
+#createObjectiveHelp {float: right;}
+#createObjectiveHelp img { vertical-align: middle; padding-right: 3px;}
+
+/* -----------------------------------------
+   Star Ratings - based on: http://www.komodomedia.com
+----------------------------------------- */
+
+.star-rating,
+.star-rating a:hover,
+.star-rating a:active,
+.star-rating a:focus,
+.star-rating .current-rating{
+	background: url(../images/star.gif) left -1000px repeat-x;
+}
+.star-rating{
+	position:relative;
+	width:100px;
+	height:20px;
+	overflow:hidden;
+	list-style:none;
+	margin:0;
+	padding:0;
+	background-position: left top;
+	text-align: left;
+}
+.star-rating li{
+	display: inline;
+}
+.star-rating a,
+.star-rating .current-rating{
+	position:absolute;
+	top:0;
+	left:0;
+	text-indent:-1000em;
+	height:20px;
+	line-height:20px;
+	outline:none;
+	overflow:hidden;
+	border: none;
+	zoom: 1; /* -- IE Fix --*/
+	text-align: left;
+}
+.star-rating a:hover,
+.star-rating a:active,
+.star-rating a:focus{
+	background-position: left bottom;
+}
+.star-rating a.one-star{
+	width:20%;
+	z-index:6;
+}
+.star-rating a.two-stars{
+	width:40%;
+	z-index:5;
+}
+.star-rating a.three-stars{
+	width:60%;
+	z-index:4;
+}
+.star-rating a.four-stars{
+	width:80%;
+	z-index:3;
+}
+.star-rating a.five-stars{
+	width:100%;
+	z-index:2;
+}
+.star-rating .current-rating{
+	z-index:1;
+	background-position: left center;
+}
+.small-star{
+	width:50px;
+	height:10px;
+}
+.inline-rating{
+	display:-moz-inline-block;
+	display:-moz-inline-box;
+	display:inline-block;
+	vertical-align: middle;
+}
+.small-star,
+.small-star a:hover,
+.small-star a:active,
+.small-star a:focus,
+.small-star .current-rating{
+	background-image: url(../images/star_small.gif);
+	line-height: 10px;
+	height: 10px;
+}
+
+
+
+/* ---------------------
+ Preferences
+------------------------ */
+
+#userMyPreferences h6 button{
+	float:right;
+	padding: 6px 15px;
+}
+
+#userMyPreferences select{
+	height: 8rem;
+}
+
+#savePreferencesBtn{
+	float: right;
+	margin-bottom:0px;
+}
+
+#readingLevelContainer span{
+	margin-bottom: 1rem;
+	display: inline-block;
+}
+
+#readingLevelContainer span input{
+	margin-bottom: 0px;
+}
+
+#prefAddCompetencyInput{
+	width:80%;
+	display:inline-block;
+}
+
+#userMyPreferences .button.small{
+	padding-top:0.75rem;
+	padding-bottom:0.65rem;
+}
+
+#userMyPreferences ul{
+	font-size:0.9rem;
+}
+
+#userMyPreferences h6{
+	text-decoration: underline;
+}
+
+#userMyPreferences h6 a{
+	text-decoration: none;
+}
+
+#userMyPreferences .row{
+	margin-top: 1rem;
+}
+
+#userMyPreferences .row:first-of-type{
+	margin-top:0px;
+}
+
+#userObjectivesList{
+	height: 185px;
+	overflow-y: scroll;
+}
+
+#userObjectivesList li {
+	position: relative;
+}
+
+#userObjectivesList li .fa-times{
+	cursor:pointer;
+	position: absolute;
+	right:5px;
+	top:2px;
+	font-size:12pt;
+}
+
+
+#userObjectivesList li:not(:first-child):hover span{
+	border-bottom:1px dotted gray;
+}
+
+#userObjectivesList .fa-times:hover{
+	color:#008cba;
+}
+
+#prefChangedAlert{
+ 	display: inline-block;
+  	position: absolute;
+  	width: 400px;
+  	text-align: center;
+  	right: 30%;
+  	padding: 10px;
+}
+
+#heldCompetenciesList{
+	overflow-y: scroll;
+	height: 70px;
+}
+
+#desiredCompetenciesList{
+	overflow-y: scroll;
+	height: 70px;
+}
+
+#prefCompetencyLink1,#prefCompetencyLink2{
+	font-size:small; 
+	position:absolute; 
+	right:10px; 
+	top:10px;
+}
+
+#searchCompetencyInput{
+	width:75%;
+	display:inline-block;
+}
+
+#searchCompetencyBtn{
+	padding-top: 0.75rem;
+  	padding-bottom: 0.65rem;
+}
+
+#findingCompetencies p{
+	margin: auto;
+  	display: block;
+  	width: 60px;
+}
+
+#findingCompetencies img{
+	margin: auto;
+  	display: block;
+  	margin-top: 60px;
+}
+
+#competencyResultsList{
+	margin-bottom: 1rem;
+}
+
+.competencyResult{
+	padding: 0.5rem;
+	font-size: 1rem;
+	cursor: pointer;
+}
+
+.competencyResult .fa-square-o{
+	margin-right:3px;
+}
+
+.competencyResult:hover{
+	background-color:#F4FAF9	
+}
+.competencyResult:hover .fa-square-o{
+	display:inline;
+}
+
+.competencyResult .modelInfo{
+	font-size: small;
+  	color: gray;
+  	margin-left: 20px;
+}
+
+.checkWrapper{
+	float:right;
+}
+.checkWrapper .fa{
+	display:none;
+}
+.checkWrapper:hover .fa-square-o{
+	display:none;
+}
+.checkWrapper:hover .fa-check-square-o{
+	display:inline;
+}
+
+.competencyResult.selected .fa-square-o{
+	display:none;
+}
+
+.competencyResult.selected .fa-check-square-o{
+	display:inline;
+}
+
+
+.twitter-typeahead{
+	width:80%;
+	margin-bottom: 100px;
+}
+
+.typeahead,
+.tt-query,
+.tt-hint {
+  width: 396px;
+  height: 30px;
+  padding: 8px 12px;
+  font-size: 24px;
+  line-height: 30px;
+  border: 2px solid #ccc;
+  outline: none;
+}
+
+.typeahead {
+  background-color: #fff;
+  margin-bottom:0px;
+}
+
+.typeahead:focus {
+  border: 2px solid #0097cf;
+}
+
+.tt-query {
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.tt-hint {
+  color: #999
+}
+
+.tt-menu {
+  padding: 8px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  width:100%;
+  margin-bottom: 50px;
+}
+
+.tt-suggestion {
+  padding: 3px 20px;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.tt-suggestion:hover {
+  cursor: pointer;
+  color: #fff;
+  background-color: #0097cf;
+}
+
+.tt-suggestion.tt-cursor {
+  color: #fff;
+  background-color: #0097cf;
+
+}
+
+.tt-suggestion p {
+  margin: 0;
+}
+
+.gist {
+  font-size: 14px;
+}
+
+/* ---------------------
+ Learner Focused Search
+------------------------ */
+
+#openOptionsLink{
+	color: #008cba;
+	cursor: pointer;
+	font-size: 10px;
+}
+
+
+/* ----------------------
+ Collection Metadata
+ ------------------------ */
+ 
+ #curColMetadataEditContainer strong{
+ 	margin-top:7px;
+ 	display:block;
+ }
+ 
+ #curColMetadataEditContainer input, #curColMetadataEditContainer select{
+ 	margin-bottom:0px;
+ }
+ 
+ #curColMetadataEditContainer ul{
+ 	margin-bottom: 10px;
+ 	list-style: none;
+ }
+ 
+ #curColMetadataEditContainer li{
+ 	font-size:small;
+ }
+ 
+ 
+ #curColSelectEnvironment.notSelected{
+ 	color: darkgray;
+    font-size: 10.5pt;
+ }
+ 
+ #addObjectiveLink{
+ 	display: block;
+ }
+ 
+
+ 
+ #curColObjectivesList li .delete{
+	margin-top: 2px;
+	display: none;
+	float: right;
+	width: 16px;
+	height: 16px;
+	text-align: center;
+	cursor: pointer;
+	z-index: 60;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	background: url(../images/btn-delete-idle.png) no-repeat;
+ }
+ 
+ #curColObjectivesList li:hover .delete{
+ 	display:block;
+ 	float:right;
+ }
+ 
+ #curColObjectivesList li p{
+ 	margin-right:40px;
+ 	margin-bottom:0px;
+ 	display: block;
+	padding-right: 20px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+ }
+ 
+ #editMetadataCreateObjectiveWrapper button, #editMetadataCreateObjectiveHelp{
+ 	margin-top:5px;
+ 	margin-bottom:5px;
+ }
+ 
+ 
+ 
+ /**------------------------
+ 	Search Result Actions
+ --------------------------**/
+ 
+ 
+#userLRSearchResults .flip-container, #userLRSearchResults .flipFront, #userLRSearchResults .flipBack  {
+	width: 30px;
+	height: 30px;
+}
+
+
+/**-------------------------
+	Competency Stuff
+--------------------------**/
+
+#editContentAddCompetency:hover{
+	text-decoration:underline;
+}

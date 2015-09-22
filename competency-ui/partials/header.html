@@ -1,0 +1,39 @@
+<div id="header">
+	<div class="row" ng-controller="headerController">
+		<div class="large-12 columns large-centered">
+			<h3 ng-click="goHome();">
+				<i class="fa fa-graduation-cap"></i> Competency Manager
+			</h3>
+			<ul id="" class="button-group" ng-hide="session.currentUser.sessionId == undefined">
+				<li>
+					<button class="tiny" ng-click="showSearch(context.model);">
+						Models</button>
+				</li>
+				<li>
+					<button class="tiny" ng-click="showSearch(context.competency);">
+						Competencies</button>
+				</li>
+				<!--li>
+                	<button class="tiny" onclick="setContext('record');showSearch();">
+                		Organizations
+                	</button>
+                </li-->
+				<li>
+					<button class="tiny" ng-click="showSearch(context.profile);">
+						Profiles</button>
+				</li>
+				<!--li>
+                    <button class="tiny" onclick="setContext('record');showSearch();">
+                        Jobs
+                    </button>
+                </li-->
+			</ul>
+			<ul id="" class="button-group right" ng-hide="session.currentUser.sessionId == undefined">
+				<li><a class="button tiny" ng-click="showView(context.profile, session.currentUser.id)">
+						Profile: {{session.currentUser.id}} </a></li>
+				<li><span class="button tiny" ng-click="logout()">
+						Logout </span></li>
+			</ul>
+		</div>
+	</div>
+</div>

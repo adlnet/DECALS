@@ -1,0 +1,4 @@
+//get multipart JSON object record
+getMultipartPostData = #getFileFromPost(name="@field").fileToString();
+#getMultipartPostData = getMultipartPostData;
+

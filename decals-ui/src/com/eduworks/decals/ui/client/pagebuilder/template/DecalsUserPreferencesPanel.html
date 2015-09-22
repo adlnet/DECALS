@@ -1,0 +1,126 @@
+<div id="content">
+	<div id="userPrefs" class="userScreen" style="height:83%;">
+	
+		<div class="pageHeader">
+			<div class="row">
+				<div class="medium-12 columns" style="text-align:right">
+					<h3>Modify Your Search Preferences</h3>
+				</div>				
+			</div>
+		</div>	
+	
+		<!-- ********************************Preferences******************************** -->
+		<div id="userMyPreferences" class="row">
+			<div class="large-12 columns" style="padding-top:10px;">
+				<div class="row">
+					<div class="small-8 columns">
+						<h5>My Preferences:</h5>
+					</div>
+					
+					<div data-alert class="alert-box warning round hidden" id="prefChangedAlert">
+						Your preferences have changed. Don't forget to save them!
+					</div>
+					
+					<div class="small-4 columns" style="padding: 0px;">							
+ 						<button id="savePreferencesBtn" title="Save" type="button" class="tiny hidden">
+							<i class="fa fa-save"></i> <b>Save</b>
+						</button>	
+					</div>					    							
+				</div>
+				
+				<div class="row">
+					<div class="small-4 columns">												
+						<h6>Preferred Resource Type(s): <button id="clearResourceType" class="tiny">Clear</button></h6>
+						<br/>
+						<select multiple="multiple" id="prefResourceType">
+						</select>
+					</div>
+					<div class="small-4 columns">												
+						<h6>Preferred Language(s): <button id="clearLanguage" class="tiny">Clear</button></h6>
+						<br/>						
+						<select multiple="multiple" id="prefLang">
+						</select>
+					</div>
+					<div class="small-4 columns">												
+						<h6>Preferred Grade Level(s): <button id="clearGrade" class="tiny">Clear</button></h6>
+						<br/>						
+						<select multiple="multiple" id="prefGrade">
+						</select>		
+					</div>
+				</div>
+				<div class="row">
+					<div class="small-6 columns">												
+						<h6>Learning Objectives:</h6>
+						<br/>
+						<ul id="userObjectivesList">
+							<li id="noObjectivesItem"><em>No Learning Objectives Set</em></li>
+						</ul>						
+						<input type="text" id="prefAddObjectiveInput" class="typeahead" placeholder="Add Learning Objective" style="margin-bottom:0px;"/>	
+						<button id="addObjectiveBtn" class="button small">Add</button>
+					</div>
+					<div class="small-6 columns">												
+						<div id="findingCompetencies">
+							<h6>Competencies:</h6>
+							<a href="javascript:;" id="prefCompetencyLink1">Go to Competency Manager</a> 
+							<img src="images/loading.gif">
+							<p>Loading...</p>
+						</div>
+						<div id="competencyLists" class="hidden">
+							<h6>Competencies:</h6>
+							<a href="javascript:;" id="prefCompetencyLink2">Go to Competency Manager</a> 
+							<br/>
+							<u>Competencies Held</u>
+							<ul id="heldCompetenciesList">
+								<li id="noHeldCompetenciesItem"><em>No Competencies Held</em></li>
+							</ul>
+							<u>Competencies Desired</u>
+							<ul id="desiredCompetenciesList">
+								<li id="noDesiredCompetenciesItem"><em>No Competencies Desired</em></li>
+							</ul>
+							<input type="text" id="prefAddCompetencyId" style="display:none;"/>
+							<input type="text" id="prefAddCompetencyInput" placeholder="Add Desired Competency"/>
+							<button id="addCompetencyBtn" class="button small">Add</button>
+						</div>
+					</div>
+				</div>					
+			</div>			
+		</div>
+		
+	</div>
+</div>	
+
+<div id="modalConfirmCancel" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-user"></i> Unsaved Preferences</h2>
+    <p>Are you sure you don't want to save your changed preferences?</p> 
+	<div  class="row">
+		<div class="large-12 columns">			
+			<button type="button" id="confirmSavePreferences" class="small alert">Save Preferences</button>
+			<button type="button" id="confirmCancelPreferences" class="small secondary">Cancel Changes</button>
+		</div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<div id="modalCompetencySearch" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-sitemap"></i> Find Desired Competency</h2>
+    
+    <div class="row">
+    	<input type="text" placeholder="Competency Search" id="searchCompetencyInput"/>
+    	<button id="searchCompetencyBtn" class="button small">Search</button>
+    </div>
+    
+    <div class="row">
+    	<div class="large-12 columns" id="competencyResultsList">
+    		<div class="row">
+    		</div>
+    	</div>
+    </div>
+    
+	<div class="row">
+		<div class="large-12 columns">			
+			<button type="button" id="addSelectedCompetency" class="small alert">Add Competency</button>
+			<button type="button" id="cancelAddCompetency" class="small secondary">Cancel</button>
+		</div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>

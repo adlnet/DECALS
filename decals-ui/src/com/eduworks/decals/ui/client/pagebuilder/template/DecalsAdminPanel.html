@@ -1,0 +1,242 @@
+<div id="content">
+	<div id="decalsApplicationAdmin" class="userScreen">
+	
+		<!-- ********************************Header/Navigation******************************** -->
+		<div class="pageHeader">
+			<div class="row">
+				<div class="medium-5 columns" style="text-align:left;padding-top:.5em;">
+					<dl class="sub-nav">
+    					<dd id="daaAdministratorsLinkText" class="active"><a id="daaAdministratorsLink">Administrators</a></dd>
+    					<dd id="daaParaPubLinkText"><a id="daaParaPubLink">Paradata Publishing</a></dd>    					
+  					</dl>					
+				</div>
+				<div class="medium-7 columns" style="text-align:right;">
+					<h3>Application Administration</h3>
+				</div>							
+			</div>
+		</div>
+		
+		<!-- ********************************Administrators******************************** -->		
+		<div id="daaAdministratorsContainer" class="row">
+			<div class="large-4 columns" style="padding-top: 10px;">
+				<div class="row">
+					<div class="small-12 columns">												
+						<h5>Administrators:</h5>
+						<br>
+						<button style="padding:12px" id="daaAddNewAdmin" type="button" title="Add a new administrator" class="small">
+							<i class="fa fa-plus"></i> Add Administrator
+						</button>								
+					</div>
+				</div>				
+			</div>			
+			<div class="large-8 columns" style="padding-top: 10px;">
+				<div class="row">
+			    	<div class="small-12 columns">
+			    		<div class="row">
+			    			<div class="small-12 columns">
+								<h5 style="font-size:20px">Application Administrator Details</h5>
+							</div>							
+						</div>
+						<div id="daaBusy" class="row" style="display:block;text-align:center">
+                			<div class="small-12 columns">
+                    			<img src="images/loading.gif"/>
+                    			<p class="searchBusy">Loading...</p>
+                			</div>	
+           				</div>
+			        	<div class="row">
+			    			<div class="small-12 columns">
+			    				<div id="daaAdministratorsDetails"></div>
+			    			</div>
+			    		</div>
+			        </div>	
+			    </div>
+			</div>
+		</div>
+			    
+		<!-- ********************************Paradata Publishing******************************** -->			    
+		<div id="daaParadataPublishContainer"  style="display:none;" class="row">
+			<div class="large-4 columns" style="padding-top: 10px;">
+				<div class="row">
+					<div class="small-12 columns">												
+						<h5>Paradata Publishing:</h5>
+						<br>
+						<button style="padding:12px" id="daaPPubAll" type="button" title="Publish paradata for all updated resources" class="small">
+							<i class="fa fa-globe"></i> Publish All Resource Paradata
+						</button>														
+					</div>
+				</div>				
+			</div>		
+		    <div class="large-8 columns" style="padding-top: 10px;">					
+			    <div class="row">
+			    	<div class="small-12 columns">		
+			    		<div class="row">
+			    			<div class="small-12 columns">
+								<h5 style="font-size:20px">Paradata Publishing Details</h5>
+							</div>							
+						</div>	
+						<div class="row">
+			    			<div class="small-12 columns">
+			    				<div id="daaParadataPublishDetails"></div>
+			    			</div>
+			    		</div>			    
+			        </div>	
+			    </div>
+			</div>		
+		</div>			
+	</div>
+</div>	
+
+<!-- ********************************End Content DIV******************************** -->
+
+<!-- ********************************MODAL DIALOGS******************************** -->
+<!-- Add Admin Modal -->    
+<div id="modalAddAdmin" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-eye"></i> Add new administrator?</h2>
+    <div id="addAdminPickList">
+	    <p>Add new administrator:<p/>
+	    <div class="row">
+			<div class="small-12 columns">
+				<div id="addAdminUserListContainer"></div>
+			</div>
+		</div>
+		<div id="addAdminFinishedButton" class="row">
+			<div class="large-12 columns">			
+				<button type="button" onclick="$('#modalAddAdmin').foundation('reveal', 'close');" class="small secondary">Finished</button>
+			</div>
+		</div>	
+	</div>	
+	<div id="addAdminConfirm" style="display:none">
+		<p>Add <span id="addAdminConfirmName" style="font-style: italic;"></span> as an administrator?</p>
+		<form id="addAdminConfirmForm" data-abide="ajax">
+	    	<input type="hidden" id="addAdminConfirmUserId"/>
+	    	<input type="hidden" id="addAdminConfirmNameHidden"/>
+	    	<div class="row">
+				<div class="large-12 columns">			
+					<button type="submit" class="small">Add</button>
+					<button type="button" onclick="$('#modalAddAdmin').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+				</div>
+			</div>
+		</form>	
+	</div>    	
+	<div class="row">    		
+		<div id="addAdminBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+	<div class="row" id="addAdminSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				<b><span id="addAdminSuccessName"></span></b> has been added as an administrator.  Add another?			
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalAddAdmin').foundation('reveal', 'close');" class="small secondary">Finished</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Revoke Admin Modal -->    
+<div id="modalRevokeAdminConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-eye-slash"></i> Revoke admistrator privileges?</h2>
+    <p>Revoke administrator privileges from <span id="revokeAdminName" style="font-style:italic; font-weight:bold;"></span>?</p>
+    <p>Administrator privileges will be removed from the user.<p/>
+    <form id="revokeAdminForm" data-abide="ajax">
+    	<input type="hidden" id="revokeAdminUserId"/>
+    	<div id="revokeAdminSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small alert">Revoke</button>
+				<button type="button" onclick="$('#modalRevokeAdminConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+	</form>
+	<div class="row">    		
+		<div id="revokeAdminBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+	<div class="row" id="revokeAdminSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				Administrator privileges have been revoked.				
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalRevokeAdminConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+
+<!-- Publish Resource Paradata Modal -->    
+<div id="modalPublishResourceParadataConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-globe"></i> Publish to the Learning Registry?</h2>
+    <p>Publish paradata for <span id="prpTitle" style="font-style:italic; font-weight:bold;"></span>?</p>
+    <p>
+    	All paradata for the selected resource will be published to the <a href="http://learningregistry.org/" target="Learning Registry">Learning Registry</a>.
+    	<br>
+    	<br>
+    	The current <a href="http://learningregistry.org/" target="Learning Registry">Learning Registry</a> publish node is: <label id="prpNodeName"></label>
+    <p/>
+    <form id="prpForm" data-abide="ajax">
+    	<input type="hidden" id="prpResourceUrl"/>
+    	<input type="hidden" id="prpTitleHidden"/>    	
+    	<div id="prpSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button id="prpSubmitBtn" type="submit" class="small">Publish</button>
+				<button id="prpCancelBtn" type="button" onclick="$('#modalPublishResourceParadataConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>	
+	</form>  
+	<div class="row">    		
+		<div id="prpBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>	
+	<div class="row" id="prpSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				Resource paradata has been successfully published.  The learning registry ID is:
+				<br> 
+				<br>
+				<b><span id="prpSuccessLrId"></span></b>
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalPublishResourceParadataConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+	<div class="row" id="prpFail" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box warning">
+				Resource paradata could not be published.  The following error was generated: 
+				<br> 
+				<br>
+				<b><span id="prpErrorMessage"></span></b>
+			</div>	
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalPublishResourceParadataConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>	 
+    <a class="close-reveal-modal">&#215;</a>
+</div> 
+
+
+<!-- Publish All Paradata Modal -->    
+<div id="modalPublishAllParadataConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-globe"></i> Publish to the Learning Registry?</h2>
+    <p>Publish all paradata?</p>
+    <p>
+    	All paradata for resources that have been rated or commented on since the last publish date will
+    	be published to the <a href="http://learningregistry.org/" target="Learning Registry">Learning Registry</a>.
+    	<br>
+    	<br>
+    	The current <a href="http://learningregistry.org/" target="Learning Registry">Learning Registry</a> publish node is: <label id="papNodeName"></label>
+    <p/>
+   	<div id="papSubmitButtons" class="row">
+		<div class="large-12 columns">			
+			<button type="button" class="small" id="papSubmit">Publish</button>
+			<button type="button" onclick="$('#modalPublishAllParadataConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+		</div>
+	</div>	   
+	<div class="row">
+		<div id="papBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+	<div class="row" id="papSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				All paradata has been successfully published.  Check the 'Paradata Publishing Details' for further information.				
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalPublishAllParadataConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>

@@ -1,0 +1,17 @@
+<p style="margin-bottom: 5px;">
+	<span> <strong>Agent ID:</strong> {{validObj.agentId}}
+	</span> <span style='float: right;'> <strong>Date:</strong>
+		{{validObj.date | date}}
+	</span>
+</p>
+
+<p style="margin-bottom: 5px;">
+	<strong>Confidence:</strong> {{validObj.confidence}}
+</p>
+
+<p>
+	<strong>Evidences:</strong> <br /> <span
+		ng-repeat="id in validObj.evidenceIds"> {{id}} <br />
+	</span>
+</p>
+<hr ng-hide="id == appCache.editedItem.validationIds[0]" />

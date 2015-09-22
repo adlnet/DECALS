@@ -1,0 +1,10 @@
+remotingPost=#httpPost(
+	url=#add(
+		a="@remoteHost",
+		b="@remoteName"
+	),
+	contentType="application/json",
+	name="json",
+	obj=#toObject(obj="@obj")
+);
+#remotingPost=remotingPost;

@@ -1,0 +1,62 @@
+//---------------------------------------//---------------------------------------
+//---------------user helper functions
+//==============
+session=#idxGet(key="@sessionId").buildArguments().toObject();
+ 
+//==============
+//Check for session is already used
+sessionUsed=#if(
+	operator=session.ccall(sessionId="@sessionId"),
+	operand="",
+	eq="@sessionId",
+	ne=""
+).ccall(sessionId=#randomString(length="32"));
+                
+//==============
+//find free session UUID
+sessionFreeId = sessionUsed.opt(opt=#sessionFreeId());
+#psessionfindAvailableSessionId = sessionFreeId;
+
+//---------------------------------------//---------------------------------------
+//--------------Service calls
+//==============
+//Validate session token
+validateSession = #if(
+	operator=session.ccall(sessionId="@sessionId"),
+	operand="",
+	eq="false",
+	ne="true"
+);
+#sessionValidate = validateSession;
+ 
+//==============
+// Delete a user if they exist and the password is correct
+delete=#object(
+	c=#idxDelete(key="@sessionId").buildArguments(),
+	f="true"
+).cget(f="");
+#sessionDelete = delete;
+
+//==============
+//Verify session id and username before deleting session from the session table
+createSession= #object(
+	a=#idxPut(key="@sessionKey").buildArguments(),
+	b="@sessionKey"
+).ccall(sessionKey=#psessionfindAvailableSessionId()).cget(b="");
+#sessionCreate = createSession;
+
+//==============
+//Update user metadata with arbitrary fields
+//Tom stopped at the metadata for the user.
+update = #object(
+	b=#idxPut(key="@sessionId").buildArguments(arguments="@metadata"),
+	c="true"
+).cget(c="");
+#sessionUpdate = update;
+
+//==============
+//Read user metadata
+read=session.ccall(sessionId="@sessionId");
+#sessionRead = read;
+
+//---------------------------------------

@@ -1,0 +1,20 @@
+<div id="alert-bar" ng-controller="alertController" >
+	<div class="content">
+		<div class="row">
+			<div class="small-8 columns large-centered alert-box alert" ng-hide="alert.errorMessage == ''" >
+				{{alert.errorMessage}}
+				
+				<a class="close" ng-click="closeError();">
+				x
+				</a>
+			</div>
+			<div class="small-8 columns large-centered alert-box warning" ng-hide="alert.warningMessage == ''" >
+				{{alert.warningMessage}}
+				
+				<a class="close" ng-click="closeWarning()">
+				x
+				</a>
+			</div>
+		</div>
+	</div>
+</div>

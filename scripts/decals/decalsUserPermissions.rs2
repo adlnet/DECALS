@@ -1,0 +1,151 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+
+invalidRoleError=#error(code="401",msg=#object(error="Invalid role for task"));
+
+safeUserRecord=#userGet(userDb,userId="@userId").remove(
+	password="",
+	sessionId="",
+	lastIp="",	
+	datePasswordUpdated=""
+);
+
+//--------------------------
+// Check user role
+
+userHasRole=#if(
+	operator=safeUserRecord.cget(roles="").has(has="@roleId"),
+	operand="true",
+	eq="true",
+	ne="false"
+);
+
+hasUserManagerPrivileges=#if(
+	operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
+	operand="true",
+	eq="true",
+	ne=#if(
+		operator=userHasRole.ccall(roleId=#decalsUserManagerRoleId()),
+		operand="true",
+		eq="true",
+		ne="false"
+	)
+);
+#decalsHasUserManagerPrivileges = hasUserManagerPrivileges;
+
+hasAdminPrivileges=#if(
+	operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
+	operand="true",
+	eq="true",
+	ne="false"
+);
+
+checkHasAdminPrivileges = #if(	
+	operator=hasAdminPrivileges, 
+	operand="false", 
+	eq=invalidRoleError
+);
+
+checkHasUserManagerPrivileges = #if(	
+	operator=hasUserManagerPrivileges, 
+	operand="false", 
+	eq=invalidRoleError
+);
+#decalsCheckHasUserManagerPrivileges = checkHasUserManagerPrivileges;
+
+//--------------------------
+// Add user role
+
+addRoleToUser=#userGet(
+	userDb,
+	userId="@userId"
+).putInObject(
+	dest="roles",
+	item=#listAdd(
+		a=#userGet(userDb,userId="@userId").cget(roles=""),
+		b=#toLower(obj="@roleId")
+	).removeDuplicates()
+).idxSet(userDb,key="@userId");
+
+addUserRole=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=#if(
+		operator=decalsPostData.cget(roleId="").toLower(),
+		operand=#decalsAdminRoleId(),
+		eq=checkHasAdminPrivileges.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+		ne=checkHasUserManagerPrivileges.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId="")))
+	),
+	c=addRoleToUser.ccall(userId=decalsPostData.cget(userId=""),roleId=decalsPostData.cget(roleId="")),
+	d=safeUserRecord.ccall(userId=decalsPostData.cget(userId=""))
+).cget(d="").displayJson();
+
+/decalsAddUserRole=addUserRole; 
+
+//--------------------------
+// Remove user role
+
+removeRoleFromUser=#userGet(
+	userDb,
+	userId="@userId"
+).putInObject(
+	dest="roles",
+	item=#userGet(userDb,userId="@userId").cget(roles="").removeFromArray(item=decalsPostData.cget(roleId="").toLower())
+).idxSet(userDb,key="@userId");
+
+removeUserRole=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=#if(
+		operator=decalsPostData.cget(roleId="").toLower(),
+		operand=#decalsAdminRoleId(),
+		eq=checkHasAdminPrivileges.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+		ne=checkHasUserManagerPrivileges.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId="")))
+	),
+	c=removeRoleFromUser.ccall(userId=decalsPostData.cget(userId="")),
+	d=safeUserRecord.ccall(userId=decalsPostData.cget(userId=""))
+).cget(d="").displayJson();
+
+/decalsRemoveUserRole=removeUserRole;
+
+//--------------------------
+// Get admin list
+
+safeAdminList=#idxKeys(userDb).cforEach(
+	paramName="userId",
+	op=#if(
+		operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
+		operand="true",
+		eq=safeUserRecord
+	)
+);
+
+getAdminList=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=safeAdminList
+).cget(b="").displayJson();
+
+/decalsGetAdminList=getAdminList;
+
+//--------------------------
+// Get user manager list
+
+safeUserManagerList=#idxKeys(userDb).cforEach(
+	paramName="userId",
+	op=#if(
+		operator=userHasRole.ccall(roleId=#decalsUserManagerRoleId()),
+		operand="true",
+		eq=safeUserRecord
+	)
+);
+
+getUserManagerList=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=safeUserManagerList
+).cget(b="").displayJson();
+
+/decalsGetUserManagerList=getUserManagerList;

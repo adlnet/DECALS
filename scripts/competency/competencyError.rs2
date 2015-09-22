@@ -1,0 +1,959 @@
+//---------------------------------------
+//--------------- Helpers
+//---------------------------------------
+
+
+tryGetModel = #idxGet(indexDir = #competencyModelDirectory(), databaseName = #competencyModelDBName(), index = "0", key="@modelId").toObject().displayJson(_collapse="true");
+
+findAgentCount = #count(obj=#idxGet(indexDir = #competencyAgentDirectory(), databaseName = #competencyAgentDBName(), index = "0", key="@agentId"));
+
+//---------------------------------------
+//--------------- Error Messages
+//---------------------------------------
+
+//===================
+// Parameter Set Messages 
+//===================
+
+msgModelIdSet = #object(code="empty", msg="<modelId> parameter cannot be empty");
+
+msgModelNameSet = #object(code="empty", msg="<modelName> parameter cannot be empty");
+
+msgUserIdSet = #object(code="empty", msg="<userId> parameter cannot be empty");
+
+msgPasswordSet = #object(code="empty", msg="<password> parameter cannot be empty");
+
+msgLevelIdSet = #object(code="empty", msg="<levelId> parameter cannot be empty");
+
+msgLevelNameSet = #object(code="empty", msg="<levelName> parameter cannot be empty");
+
+msgLevelRankSet = #object(code="empty", msg="<levelRank> parameter cannot be empty");
+
+msgLevelDescriptionSet = #object(code="empty", msg="<levelDescription> parameter cannot be empty");
+
+msgCompetencyIdSet = #object(code="empty", msg="<competencyId> parameter cannot be empty");
+
+msgCompetencyTitleSet = #object(code="empty", msg="<competencyTitle> parameter cannot be empty");
+
+msgCompetencyLevelsSet = #object(code="empty", msg="<competencyLevels> parameter cannot be empty");
+
+msgRecordIdSet = #object(code="empty", msg="<recordId> parameter cannot be empty");
+
+msgConfidenceSet = #object(code="empty", msg="<confidence> parameter cannot be empty");
+
+msgEvidenceIdSet = #object(code="empty", msg="<evidenceId> parameter cannot be empty");
+
+msgEvidenceTypeSet = #object(code="empty", msg="<evidenceType> parameter cannot be empty");
+
+msgEvidenceDateSet = #object(code="empty", msg="<evidenceDate> parameter cannot be empty");
+
+msgEvidenceResultSet = #object(code="empty", msg="<evidenceResult> parameter cannot be empty");
+
+msgAgentIdSet = #object(code="empty", msg="<agentId> parameter cannot be empty");
+
+msgValidationIdSet = #object(code="empty", msg="<validationId> parameter cannot be empty");
+
+msgAgentTypeSet = #object(code="empty", msg="<agentType> parameter cannot be empty");
+
+msgAgentNameSet =#object(code="empty", msg="<agentName> parameter cannot be empty");
+
+//===================
+// Parameter Existence Messages 
+//===================
+
+msgModelExists = #object(code="exist", msg=#add(a="Model doesn't exist with the <modelId>: ", b="@modelId"));
+
+msgLevelExists = #object(code="exist", msg=#add(a="Level doesn't exist with the <levelId>: ", b="@levelId"));
+
+msgCompetencyExists = #object(code="exist", msg=#add(a="Competency doesn't exist with the <competencyId>: ", b="@competencyId"));
+
+msgUserExists = #object(code="exist", msg=#add(a="User doesn't exist with the <userId>: ", b="@userId"));
+#competencyMsgUserExists = msgUserExists;
+
+msgAgentExists = #object(code="exist", msg=#add(a="Agent doesn't exist with <agentId>: ", b="@agentId"));
+
+msgAlreadyImported = #object(code="exist", msg="Already <Imported>");
+
+msgRecordExists = #object(code="exist", msg=#add(a="Record doesn't exist with <recordId>: ", b="@recordId"));
+
+msgEvidenceExists = #object(code="exist", msg=#add(a="Evidence doesn't exist with the <evidenceId>: ", b="@evidenceId"));
+
+msgValidationExists = #object(code="exist", msg=#add(a="Validation doesn't exist with the <validationId>: ", b="@validationId"));
+
+//===================
+// Parameter Value Messages 
+//===================
+
+msgModelDefault = #object(code="default", msg="Cannot update <Default Model>");
+
+msgModelPrivacyValue = #object(code="value", msg="Invalid value for <modelPrivacy>");
+
+msgNoModelAdmin = #object(code="value", msg="Cannot Have Empty <modelAdmin> value");
+
+msgLevelRankValue = #object(code="value", msg="<levelRank> must be a positive value");
+
+msgLevelNotForCompetency = #object(code="value", msg="<levelId> given is not a level of the competency given");
+
+msgCompetencyLevelsValue = #object(code="value", msg="Cannot Have Empty <competencyLevels> value");
+
+msgLevelNotDefault = #object(code="default", msg="Cannot update a <Default Level>");
+
+msgConfidenceValue = #object(code="value", msg="<confidence> must be a real between 0 and 1");
+
+msgBackupRestoreKeyValue = #object(code="value", msg="<backupRestoreKey> not valid"); 
+
+//===================
+// Access Control Messages 
+//===================
+
+msgLogin = #object(code="login", msg="Cannot Perform that Action Unless Logged In");
+
+msgBadPassword = #object(code="login", msg="Unable to Login: <password>");
+#competencyMsgBadPassword = msgBadPassword;
+
+msgBadSessionId = #object(code="login", msg="<sessionId> is not valid");
+
+msgFailedLogin = #object(code="login", msg="Unable to Login: <unknown>");
+
+msgSessionExpired = #object(code="login", msg="<sessionId> has expired");
+
+msgNoUserOrAgent = #object(code="login", msg="Cannot Perform That Action Unless <currentUser> or <currentAgent> are set and exist");
+
+msgUserOrAgentWriteAccess = #object(code="access", msg=#add(a="<Write> Access not granted to User or Agent with Id: ", b="@currentUser", c="@currentAgent"));
+
+msgUserOrAgentReadAccess = #object(code="access", msg=#add(a="<Read> Access not granted to User or Agent with Id: ", b="@currentUser", c="@currentAgent"));
+#competencyMsgUserOrAgentReadAccess = msgUserOrAgentReadAccess;
+
+//---------------------------------------
+//--------------- Error Throws
+//---------------------------------------
+
+//===================
+// Parameter Set Errors
+//===================
+
+throwModelIdSet = #error(msg=msgModelIdSet);
+
+throwModelNameSet = #error(msg=msgModelNameSet);
+
+throwUserIdSet = #error(msg=msgUserIdSet);
+
+throwPasswordSet = #error(msg=msgPasswordSet);
+
+throwLevelIdSet = #error(msg=msgLevelIdSet);
+
+throwLevelNameSet = #error(msg=msgLevelNameSet);
+
+throwLevelRankSet = #error(msg=msgLevelRankSet);
+
+throwLevelDescriptionSet = #error(msg=msgLevelDescriptionSet);
+
+throwCompetencyIdSet = #error(msg=msgCompetencyIdSet);
+
+throwCompetencyTitleSet = #error(msg=msgCompetencyTitleSet);
+
+throwCompetencyLevelsSet = #error(msg=msgCompetencyLevelsSet);
+
+throwRecordIdSet = #error(msg=msgRecordIdSet);
+
+throwConfidenceSet = #error(msg=msgConfidenceSet);
+
+throwEvidenceIdSet = #error(msg=msgEvidenceIdSet);
+
+throwEvidenceTypeSet = #error(msg=msgEvidenceTypeSet);
+
+throwEvidenceDateSet = #error(msg=msgEvidenceDateSet);
+
+throwEvidenceResultSet = #error(msg=msgEvidenceResultSet);
+
+throwAgentIdSet = #error(msg=msgAgentIdSet);
+
+throwValidationIdSet = #error(msg=msgValidationIdSet);
+
+throwAgentTypeSet = #error(msg=msgAgentTypeSet);
+
+throwAgentNameSet = #error(msg=msgAgentNameSet);
+
+//===================
+// Parameter Existence Errors
+//===================
+
+throwModelExists = #error(msg=msgModelExists); 
+
+throwLevelExists = #error(msg=msgLevelExists);
+
+throwCompetencyExists = #error(msg=msgCompetencyExists);
+
+throwUserExists = #error(msg=msgUserExists);
+
+throwAgentExists = #error(msg=msgAgentExists);
+
+throwAlreadyImported = #error(msg=msgAlreadyImported);
+#competencyThrowAlreadyImported = throwAlreadyImported;
+
+throwRecordExists = #error(msg=msgRecordExists);
+
+throwEvidenceExists = #error(msg=msgEvidenceExists);
+
+throwValidationExists = #error(msg=msgValidationExists);
+
+//===================
+// Parameter Value Errors
+//===================
+
+throwModelDefault = #error(msg=msgModelDefault);
+#competencyThrowModelDefault = throwModelDefault;
+
+throwModelPrivacyValue = #error(msg=msgModelPrivacyValue);
+#competencyThrowModelPrivacyValue = throwModelPrivacyValue;
+
+throwNoModelAdmin = #error(msg=msgNoModelAdmin);
+
+throwLevelRankValue = #error(msg=msgLevelRankValue);
+
+throwLevelNotForCompetency = #error(msg=msgLevelNotForCompetency);
+
+throwCompetencyLevelsValue = #error(msg=msgCompetencyLevelsValue);
+
+throwLevelNotDefault = #error(msg=msgLevelNotDefault);
+
+throwConfidenceValue = #error(msg=msgConfidenceValue);
+
+throwBackupRestoreKeyValue = #error(msg=msgBackupRestoreKeyValue);
+
+//===================
+// Access Control Errors
+//===================
+
+throwLogin = #error(msg=msgLogin);
+
+throwBadPassword = #error(msg=msgBadPassword);
+#competencyThrowBadPassword = throwBadPassword;
+
+throwBadSessionId = #error(msg=msgBadSessionId);
+#competencyThrowBadSessionId = throwBadSessionId;
+
+throwFailedLogin = #error(msg=msgFailedLogin);
+#competencyThrowFailedLogin = throwFailedLogin;
+
+throwSessionExpired = #error(msg=msgSessionExpired);
+#competencyThrowSessionExpired = throwSessionExpired;
+
+throwNoUserOrAgent = #error(msg=msgNoUserOrAgent);
+
+throwUserOrAgentWriteAccess = #error(msg=msgUserOrAgentWriteAccess);
+ 
+throwUserOrAgentReadAccess = #error(msg=msgUserOrAgentReadAccess);
+
+//---------------------------------------
+//--------------- Parameter Set Calls
+//---------------------------------------
+
+//===================
+// Check (T/F) Calls 
+//===================
+
+// Model
+//------------
+
+checkModelIdSet = #if(operator="@modelId", operand="",
+							eq="false",
+							ne="true"
+					);
+
+checkModelNameSet = #if(operator="@modelName", operand="",
+							eq="false",
+							ne="true"
+					);
+
+	
+// Level
+//------------	
+					
+checkLevelIdSet = #if(operator="@levelId", operand="",
+							eq="false",
+							ne="true"
+					);
+
+checkLevelNameSet = #if(operator="@levelName", operand="",
+							eq="false",
+							ne="true"
+					);
+					
+checkLevelRankSet = #if(operator="@levelRank", operand="",
+							eq="false",
+							ne="true"
+						);
+						
+checkLevelDescriptionSet = #if(operator="@levelDescription", operand="",
+								eq="false",
+								ne="true"
+							);
+
+
+// Competency
+//------------
+
+checkCompetencyIdSet = #if(operator="@competencyId", operand="",
+							eq="false",
+							ne="true"
+						);
+
+checkCompetencyTitleSet = #if(operator="@competencyTitle", operand="",
+								eq="false",
+								ne="true"
+							);
+
+checkCompetencyLevelsSet = #if(operator="@competencyLevels", operand="",
+								eq="false",
+								ne="true"
+							);
+
+// User
+//------------
+
+checkUserIdSet = #if(operator="@userId", operand="", 
+						eq="false",
+						ne="true"
+					);
+					
+checkPasswordSet = #if(operator="@password", operand="", 
+						eq="false",
+						ne="true"
+					);
+
+
+checkCurrentUserSet = #if(operator="@currentUser", operand="",
+							eq="false",
+							ne="true"
+						);
+
+checkCurrentAgentSet = #if(operator="@currentAgent", operand="",
+							eq="false",
+							ne="true"
+						);
+
+
+// Competency Record
+//------------------
+
+checkRecordIdSet = #if(operator="@recordId", operand="",
+						eq="false",
+						ne="true"
+					);
+
+checkConfidenceSet = #if(operator="@confidence", operand="",
+							eq="false",
+							ne="true"
+						);
+
+checkEvidenceIdSet = #if(operator="@evidenceId", operand="",
+							eq="false",
+							ne="true"
+						);
+						
+checkEvidenceTypeSet = #if(operator="@evidenceType", operand="",
+							eq="false",
+							ne="true"
+						);
+
+checkEvidenceDateSet = #if(operator="@evidenceDate", operand="",
+							eq="false",
+							ne="true"
+						);
+						
+checkEvidenceResultSet = #if(operator="@evidenceResult", operand="",
+								eq="false",
+								ne="true"
+							);
+
+checkAgentIdSet = #if(operator="@agentId", operand="",
+						eq="false",
+						ne="true"
+					);
+					
+checkValidationIdSet = #if(operator="@validationId", operand="",
+							eq="false",
+							ne="true",
+						);
+						
+checkAgentTypeSet = #if(operator="@agentType", operand="",
+							eq="false",
+							ne="true"
+						);
+						
+checkAgentNameSet = #if(operator="@agentName", operand="",
+							eq="false",
+							ne="true"
+						);						
+
+//===================
+// Error Calls 
+//===================
+
+// Model
+//------------
+
+errorModelIdSet = #if(operator=checkModelIdSet, operand="true",
+							ne=throwModelIdSet,
+							eq="@modelId"
+					);
+#competencyErrorModelIdSet = errorModelIdSet;
+
+errorModelNameSet = #if(operator=checkModelNameSet, operand="true",
+							ne=throwModelNameSet,
+							eq="@modelName"
+					);
+#competencyErrorModelNameSet = errorModelNameSet;
+
+
+// Level
+//------------
+
+errorLevelIdSet = #if(operator=checkLevelIdSet, operand="true",
+							ne=throwLevelIdSet,
+							eq="@levelId"
+					);
+#competencyErrorLevelIdSet = errorLevelIdSet;
+
+errorLevelNameSet = #if(operator=checkLevelNameSet, operand="true",
+							ne=throwLevelNameSet,
+							eq="@levelName"
+					);
+#competencyErrorLevelNameSet = errorLevelNameSet;
+
+errorLevelRankSet = #if(operator=checkLevelRankSet, operand="true",
+							ne=throwLevelRankSet,
+							eq="@levelRank"
+					);
+#competencyErrorLevelRankSet = errorLevelRankSet;
+
+errorLevelDescriptionSet = #if(operator=checkLevelDescriptionSet, operand="true",
+								ne=throwLevelDescriptionSet,
+								eq="@levelRank"
+							);
+#competencyErrorLevelDescriptionSet = errorLevelDescriptionSet;
+
+
+// Competency
+//------------
+
+errorCompetencyIdSet = #if(operator=checkCompetencyIdSet, operand="true",
+							ne=throwCompetencyIdSet,
+							eq="@competencyId"
+						);
+#competencyErrorCompetencyIdSet = errorCompetencyIdSet;
+
+errorCompetencyTitleSet = #if(operator=checkCompetencyTitleSet, operand="true",
+								ne=throwCompetencyTitleSet,
+								eq="@competencyTitle"
+							);
+#competencyErrorCompetencyTitleSet = errorCompetencyTitleSet;
+
+errorCompetencyLevelsSet = #if(operator=checkCompetencyLevelsSet, operand="true",
+								ne=throwCompetencyLevelsSet,
+								eq="@competencyLevels"
+							);
+#competencyErrorCompetencyLevelsSet = errorCompetencyLevelsSet;
+
+// User
+//------------
+
+errorUserIdSet = #if(operator=checkUserIdSet, operand="true",
+						ne=throwUserIdSet,
+						eq="@userId",
+					);
+#competencyErrorUserIdSet = errorUserIdSet;
+					
+errorPasswordSet = #if(operator=checkPasswordSet, operand="true",
+						ne=throwPasswordSet,
+						eq="@passwordId",
+					);
+#competencyErrorPasswordSet = errorPasswordSet;
+
+
+// Competency Record
+//------------------
+
+errorRecordIdSet = #if(operator=checkRecordIdSet, operand="true",
+						ne=throwRecordIdSet,
+						eq="@recordId"
+					);
+#competencyErrorRecordIdSet = errorRecordIdSet;
+
+errorConfidenceSet = #if(operator=checkConfidenceSet, operand="true",
+							ne=throwConfidenceSet,
+							eq="@confidence",
+						);
+#competencyErrorConfidenceSet = errorConfidenceSet;
+
+errorEvidenceIdSet = #if(operator=checkEvidenceIdSet, operand="true",
+							ne=throwEvidenceIdSet,
+							eq="@evidenceType",
+						);
+#competencyErrorEvidenceIdSet = errorEvidenceIdSet;
+
+errorEvidenceTypeSet = #if(operator=checkEvidenceTypeSet, operand="true",
+							ne=throwEvidenceTypeSet,
+							eq="@evidenceType",
+						);
+#competencyErrorEvidenceTypeSet = errorEvidenceTypeSet;
+
+errorEvidenceDateSet = #if(operator=checkEvidenceDateSet, operand="true",
+							ne=throwEvidenceDateSet,
+							eq="@evidenceDate"
+						);
+#competencyErrorEvidenceDateSet = errorEvidenceDateSet;
+
+errorEvidenceResultSet = #if(operator=checkEvidenceResultSet, operand="true",
+								ne=throwEvidenceResultSet,
+								eq="@evidenceResult",
+							);
+#competencyErrorEvidenceResultSet = errorEvidenceResultSet;
+
+errorAgentIdSet = #if(operator=checkAgentIdSet, operand="true",
+						ne=throwAgentIdSet,
+						eq="@agentId"
+					);
+#competencyErrorAgentIdSet = errorAgentIdSet;
+
+errorValidationIdSet = #if(operator=checkValidationIdSet, operand="true",
+							ne=throwValidationIdSet,
+							eq="@validationId"
+						);
+#competencyErrorValidationIdSet = errorValidationIdSet;
+
+errorAgentTypeSet = #if(operator=checkAgentTypeSet, operand="true",
+						ne=throwAgentTypeSet,
+						eq="@agentType"
+					);
+#competencyErrorAgentTypeSet = errorAgentTypeSet;
+
+errorAgentNameSet = #if(operator=checkAgentNameSet, operand="true",
+						ne=throwAgentNameSet,
+						eq="@agentName"
+					);
+#competencyErrorAgentNameSet = errorAgentNameSet;
+
+//---------------------------------------
+//--------------- Parameter Existence Calls
+//---------------------------------------
+
+//===================
+// Check (T/F) Calls 
+//===================
+
+// Model
+//------------
+
+//eq=#if(operator=tryGetModel.ccall(modelId=#string(str="@modelId", op="substr", begin=#indexOf(str="@modelId", find="model-")), operand=#add(a="{", b="}"),eq="false",ne="true"),
+
+checkModelExists = #if(operator=tryGetModel, operand=#add(a="{", b="}"), 
+							eq="false",
+							ne="true"
+					);
+#competencyCheckModelExists = checkModelExists;
+
+
+// Level
+//------------
+
+checkLevelExists = #catch(
+						try=#ontologyReadInstance(
+								directory=#competencyDirectory(), 
+								ontologyId= #competencyGetModelUri(),
+								instanceId="@levelId"
+							).string(str="true"),
+						runtime="false"
+					);
+
+// Competency
+//------------
+
+checkCompetencyExists = #catch(
+							try=#ontologyReadInstance(
+									directory=#competencyDirectory(), 
+									ontologyId= #competencyGetModelUri(),
+									instanceId="@competencyId"
+								).string(str="true"),
+							runtime="false"
+						);
+
+
+// User
+//------------
+
+checkUserExists = #userExists(indexDir = #competencyUserDirectory(), databaseName = #competencyUserDBName(), index = "0", userId="@userId");
+#competencyCheckUserExists = checkUserExists;
+
+checkAgentExists =  #if(operator=findAgentCount, operand="0", 
+								eq="false", 
+								ne="true"
+						);
+#competencyCheckAgentExists = checkAgentExists;
+
+checkUserOrAgentExists = #if(operator=checkCurrentUserSet, operand="false",
+								ne=checkUserExists.ccall(userId="@currentUser"),
+								eq=#if(operator=checkCurrentAgentSet, operand="false",
+											ne=checkAgentExists.ccall(agentId="@currentAgent"),
+											eq="false"
+									)
+						);
+
+// Competency Record
+//------------------
+
+checkRecordExists = #catch(
+							try=#ontologyReadInstance(
+									directory=#competencyDirectory(), 
+									ontologyId=#competencyUserModel(), 
+									instanceId="@recordId"
+								).string(str="true"),
+							runtime="false"
+						);
+						
+checkEvidenceExists = #if(operator=tryGetEvidence, operand=#add(a="{", b="}"),
+							eq="false",
+							ne="true"
+						);
+#competencyCheckEvidenceExists = checkEvidenceExists;
+
+checkValidationExists = #catch(
+							try=#ontologyReadInstance(
+									directory=#competencyDirectory(),
+									ontologyId=#competencyUserModel(),
+									instanceId="@validationId"
+								).string(str="true"),
+							runtime="false"
+						);
+
+//===================
+// Error Calls 
+//===================
+
+// Model
+//------------
+
+errorModelExists = #if(operator=checkModelExists, operand="true",
+							eq="@modelId",
+							ne=throwModelExists
+					);
+#competencyErrorModelExists = errorModelExists;
+
+
+// Level
+//------------
+
+errorLevelExists = #if(operator=checkLevelExists, operand="true",
+								eq="@levelId",
+								ne=throwLevelExists
+					);
+#competencyErrorLevelExists = errorLevelExists;
+
+// Competency
+//------------
+
+errorCompetencyExists = #if(operator=checkCompetencyExists, operand="true",
+								eq="@competencyId",
+								ne=throwCompetencyExists
+						);
+#competencyErrorCompetencyExists = errorCompetencyExists;
+
+// User
+//------------
+
+errorUserExists = #if(operator=checkUserExists, operand="true",
+							eq="@userId",
+							ne=throwUserExists,
+					);
+#competencyErrorUserExists = errorUserExists;
+
+errorAgentExists = #if(operator=checkAgentExists, operand="true",
+							eq="@agentId",
+							ne=throwAgentExists 
+					);
+#competencyErrorAgentExists = errorAgentExists;
+
+errorUserOrAgentExists = #if(operator=checkUserOrAgentExists, operand="true",
+								eq=#if(operator="@currentUser", operand="", eq="@currentAgent", ne="currentUser"),
+								ne=throwNoUserOrAgent
+						);
+#competencyErrorUserOrAgentExists = errorUserOrAgentExists;
+						
+// Competency Record
+//------------------
+
+errorRecordExists = #if(operator=checkRecordExists, operand="true",
+							eq="@recordId",
+							ne=throwRecordExists
+						);
+#competencyErrorRecordExists = errorRecordExists;
+
+errorEvidenceExists = #if(operator=checkEvidenceExists, operand="true",
+							eq="@evidenceId",
+							ne=throwEvidenceExists
+						);
+#competencyErrorEvidenceExists = errorEvidenceExists;
+
+errorValidationExists = #if(operator=checkValidationExists, operand="true",
+							eq="@validationId",
+							ne=throwValidationExists
+						);
+#competencyErrorValidationExists = errorValidationExists;
+
+//---------------------------------------
+//--------------- Parameter Value Calls
+//---------------------------------------
+
+//===================
+// Check (T/F) Calls 
+//===================
+
+// Model
+//------------
+
+checkModelNotDefault = #if(operator="@modelId", operand=#competencyDefaultModel(),
+							eq="false",
+							ne="true"
+						);
+#competencyCheckModelNotDefault = checkModelNotDefault;
+
+checkModelPrivacyValue = #if(operator="@modelPrivacy", operand="",
+							eq="true",
+							ne=#if(operator="@modelPrivacy", operand="public",
+										eq="true",
+										ne=#if(operator="@modelPrivacy", operand="private",
+												eq="true",
+												ne="false"
+											)
+								)
+						);
+
+// TODO: Need to Check if the admin array contains "guest" account once I establish that, and remove it from the array if it is in it						
+				
+checkModelAdminValue = #if(operator=#toArray(obj="@modelAdmin").count(), operand="1",
+								lt="false",
+								eq=#if(operator=#toArray(obj="@modelAdmin").getIndex(index="0"), operand="",
+											eq="false",
+											ne="true"
+									),
+								gt="true"
+							);
+
+// Level
+//------------
+
+checkLevelRankValue = #if(operator="@levelRank", operand="0", 
+								le="false", 
+								gt="true"
+						);
+
+compareLevelToDefault = #if(operator="@levelId", operand="@defaultLevel",
+							eq="false",
+							ne="true"
+						);
+checkLevelNotDefault = #if(operator=#competencyDefaultLevels().forEach(op=compareLevelToDefault, paramName="defaultLevel").pivot().has(has="false"), operand="true",
+							eq="false",
+							ne="true"
+						);
+checkLevelsNotDefault = #if(operator=#toArray(obj="@competencyLevels").forEach(op=loopDefaults, paramName="levelId").pivot().has(has="false"), operand="true",
+							eq="false",
+							ne="true"
+						);
+						
+compareLevel = #if(operator="@compLevel", operand="@levelId", eq="true", ne="false");
+checkCompetencyLevels = #competencyRead().getByParam(param="@competencyId").getByParam(param=":competencyLevels").toArray().forEach(op=compareLevel, paramName="compLevel").pivot().has(has="true");
+checkLevelNotForCompetency = #if(operator=checkCompetencyLevels, operand="true",
+									eq="true",
+									ne="false"
+								);
+						
+// Competency
+//------------
+
+checkCompetencyLevelsValue = #if(operator=#toArray(obj="@competencyLevels").count(), operand="1", 
+									lt="false",
+									eq=#if(operator=#toArray(obj="@competencyLevels").getIndex(index="0"), operand="",
+											eq="false",
+											ne="true"
+										),
+									gt="true"
+							);
+							
+						
+// Competency Record
+//------------------
+
+checkConfidenceValue = #if(operator="@confidence", operand="1",
+							gt="false",
+							le=#if(operator="@confidence", operand="0",
+									lt="false",
+									ge="true"
+								)
+						);
+
+						
+// Backup/Restore Key
+//------------------
+
+checkBackupRestoreKeyValue = #if(operator="@backupRestoreKey", operand=#competencyBackupRestoreKey(),
+									eq="true",
+									ne="false"
+								);
+
+//===================
+// Error Calls 
+//===================
+
+// Model
+//------------
+
+errorModelNotDefault = #if(operator=checkModelNotDefault, operand="true",
+								eq="@modelId",
+								ne=throwModelDefault
+						);
+#competencyErrorModelNotDefault = errorModelNotDefault;
+
+errorModelPrivacyValue = #if(operator=checkModelPrivacyValue, operand="true",
+									eq="@modelPrivacy",
+									ne=throwModelPrivacyValue
+							);
+#competencyErrorModelPrivacyValue = errorModelPrivacyValue;
+
+errorModelAdminValue = #if(operator=checkModelAdminValue, operand="true",
+									eq="@modelAdmin",
+									ne=throwNoModelAdmin
+						);
+#competencyErrorModelAdminValue = errorModelAdminValue;
+
+
+// Level
+//------------
+
+errorLevelRankValue = #if(operator=checkLevelRankValue, operand="true",
+									eq="@levelRank",
+									ne=throwLevelRankValue
+						);
+#competencyErrorLevelRankValue = errorLevelRankValue;
+
+errorLevelNotDefault = #if(operator=checkLevelNotDefault, operand="true",
+								eq="@levelId",
+								ne=throwLevelNotDefault
+						);
+#competencyErrorLevelNotDefault = errorLevelNotDefault;
+
+errorLevelNotForCompetency = #if(operator=checkLevelNotForCompetency, operand="true",
+									eq="@levelId",
+									ne=throwLevelNotForCompetency
+								);
+#competencyErrorLevelNotForCompetency = errorLevelNotForCompetency;
+
+// Competency
+//------------
+
+errorCompetencyLevelsValue = #if(operator=checkCompetencyLevelsValue, operand="true",
+									eq="@competencyLevels",
+									ne=throwCompetencyLevelsValue
+							);
+#competencyErrorCompetencyLevelsValue = errorCompetencyLevelsValue;
+
+// Competency Record
+//------------------
+
+errorConfidenceValue = #if(operator=checkConfidenceValue, operand="true",
+								eq="@confidence",
+								ne=throwConfidenceValue,
+						);
+#competencyErrorConfidenceValue = errorConfidenceValue;
+
+// Backup/Restore Key
+//------------------
+
+errorBackupRestoreKeyValue = #if(operator=checkBackupRestoreKeyValue, operand="true",
+									eq="@backupRestoreKey",
+									ne=throwBackupRestoreKeyValue
+								);
+#competencyErrorBackupRestoreKeyValue = errorBackupRestoreKeyValue;
+
+						
+//---------------------------------------
+//--------------- Access Control Calls
+//---------------------------------------
+
+//===================
+// Check (T/F) Calls 
+//===================
+
+checkLogin = #if(operator="@currentUser", operand="",
+					eq="false",
+					ne="true"
+				);
+
+checkUserOrAgentReadAccess = #if(operator=#decode(obj="@accessControlObj").get(type=""), operand="public",
+									eq="true",
+									ne=#if(operator="@currentUser", operand="",
+												ne=#if(operator=#decode(obj="@accessControlObj").get(user="").has(has="@currentUser"), operand="true",
+																eq="true",
+																ne=#if(operator=#decode(obj="@accessControlObj").get(admin="").has(has="@currentUser"), operand="true",
+																			eq="true",
+																			ne="false"
+																	)
+													),
+												eq=#if(operator=#decode(obj="@accessControlObj").get(agent="").has(has="@currentAgent"), operand="true",
+																eq="true",
+																ne="false"
+													)		
+											)
+								).call(accessControlObj=tryGetModel.get(accessControl=""));
+#competencyCheckUserOrAgentReadAccess = checkUserOrAgentReadAccess;
+
+checkUserOrAgentWriteAccess = #if(operator="@currentUser", operand=#competencyGuestUserId(),
+									eq="false",
+									ne=#if(operator="@currentUser", operand="",
+												ne=#if(operator=#decode(obj="@accessControlObj").get(admin="").has(has="@currentUser"), operand="true",
+														eq="true",
+														ne=#if(operator=#decode(obj="@accessControlObj").get(admin="").count(), operand="1",
+																lt="true",
+																eq=#if(operator=#decode(obj="@accessControlObj").get(admin="").getIndex(index="0"), operand="",
+																		eq="true", ne="false"
+																	),
+																gt="false"
+															)
+													),
+												eq=#if(operator=#decode(obj="@accessControlObj").get(agent="").has(has="@currentAgent"), operand="true",
+														eq="true",
+														ne="false"
+													)
+										).call(accessControlObj=tryGetModel.get(accessControl=""))
+								);
+#competencyCheckUserOrAgentWriteAccess = checkUserOrAgentWriteAccess;
+														
+//===================
+// Error Calls 
+//===================
+
+errorLogin = #if(operator=checkLogin, operand="false",
+					eq=throwLogin
+				);
+#competencyErrorLogin = errorLogin;
+
+errorUserOrAgentReadAccess = #if(operator=checkUserOrAgentReadAccess, operand="true",
+									eq=#if(operator="@currentUser", operand="", 
+											ne="@currentUser",
+											eq="@currentAgent"
+										),
+									ne=#if(operator="@currentUser", operand="", 
+												ne=throwUserOrAgentReadAccess,
+												eq=#if(operator="@currentAgent", operand="",
+														ne=throwUserOrAgentReadAccess,
+														eq=throwNoUserOrAgent
+													)
+										)
+								);
+#competencyErrorUserOrAgentReadAccess = errorUserOrAgentReadAccess;
+
+errorUserOrAgentWriteAccess = #if(operator=checkUserOrAgentWriteAccess, operand="true", 
+								eq=#if(operator="@currentUser", operand="", eq="@currentAgent", ne="@currentUser"),
+								ne=throwUserOrAgentWriteAccess
+							);
+#competencyErrorUserOrAgentWriteAccess = errorUserOrAgentWriteAccess;

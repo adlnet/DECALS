@@ -1,0 +1,252 @@
+
+getMultipartPostDataObject = #getFileFromPost(name="@field").fileToString().toObject();
+
+postedCompetencyObject = getMultipartPostDataObject.call(field="competency");
+
+postedSessionId = postedCompetencyObject.cget(sessionId="");
+
+postedModelId = postedCompetencyObject.cget(modelId="");
+postedInstanceId = postedCompetencyObject.cget(instanceId="");
+
+postedCompetencyId = postedCompetencyObject.cget(competencyId="");
+postedCompetencyTitle = postedCompetencyObject.cget(competencyTitle="");
+postedCompetencyDescription = postedCompetencyObject.cget(competencyDescription="");
+postedCompetencyLevels = postedCompetencyObject.cget(competencyLevels="");
+
+postedRelationships = postedCompetencyObject.cget(competencyRelationships="");
+
+postedQuery = postedCompetencyObject.cget(query="");
+
+
+//==============
+// CREATE Competency
+//==============
+
+create = #competencyCreate(
+	modelId = postedModelId, 
+	competencyTitle = postedCompetencyTitle, 
+	competencyDescription = postedCompetencyDescription, 
+	competencyLevels = postedCompetencyLevels,
+	competencyRelationships = postedRelationships
+);
+
+checkLoginBeforeCreate = #object(
+							a=#competencyErrorLogin(),
+							b=create
+						).cget(b="");
+
+createCompetency = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeCreate,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/create = createCompetency;
+
+//-----API-------
+
+API_CreateCompetency = #object(
+	levr-service="#competencyCreate",
+	web-service="/competency/create",
+	description="Creates a new competency object inside of the model specified by modelId with the title, description and levels given",
+	params=#object(
+		modelId="identifier of the model to place the competency in",
+		competencyTitle="Title of the new competency",
+		competencyDescription="[optional] description of the new comepetency",
+		competencyLevels="[optional] levels that the competency can be at (default to binary, true and false)",
+		competencyRelationships="[optional] Map of relationships to other competency objects, relationships can include: broader, narrower, related, requires, desires and enables",
+	)
+);
+displayCreateAPI = API_CreateCompetency.displayJson(_collapse="true");
+/competency/create/api = displayCreateAPI;
+
+
+//==============
+// READ Competency
+//==============
+
+read = #competencyRead(modelId=postedModelId, competencyId=postedCompetencyId);
+
+readCompetency = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=read,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/read = readCompetency;
+
+//-----API-------
+
+API_ReadCompetency = #object(
+	levr-service="#competencyRead",
+	web-service="/competency/read",
+	description="Returns a JSONObject containing the property values (data and object relationships) of the competency specified",
+	params=#object(
+		competencyId="identifier of the competency within the model",
+		modelId="identifier of the model that the competency resides"
+	)
+);
+displayReadAPI = API_ReadCompetency.displayJson(_collapse="true");
+/competency/read/api = displayReadAPI;
+
+
+//==============
+// READ ALL Competencies
+//==============
+
+
+readAll = #competencyReadAll(modelId=postedModelId).displayJson(_collapse="true");
+
+readAllCompetencies = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=readAll,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/all = readAllCompetencies;
+
+//-----API-------
+
+API_ReadAllCompetencys = #object(
+	levr-service="#competencyReadAll",
+	web-service="/competency/all",
+	description="Returns a JSONObject containing a JSONObject, for every competency in the model specified, that represents it's values",
+	params=#object(
+		modelId="identifier of the model to read every competency from and return in JSON Objects"
+	)
+);
+displayReadAllAPI = API_ReadAllCompetency.displayJson(_collapse="true");
+/competency/all/api = displayReadAllAPI;
+
+
+//==============
+// UPDATE Competency
+//==============
+
+update = #execute(
+			service="competencyUpdate", 
+			paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent="", currentUser="")
+		);
+
+checkLoginBeforeUpdate = #object(
+							a=#competencyErrorLogin(),
+							b=update
+						).cget(b="");
+
+updateCompetency = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeUpdate,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/update = updateCompetency;
+
+//-----API-------
+
+API_UpdateCompetency = #object(
+	levr-service="#competencyUpdate",
+	web-service="/competency/update",
+	description="Updates the values of a competencies properties with the values that are passed in",
+	params=#object(
+		competencyId="identifier of the competency to be updated",
+		modelId="identifier of the model within which the competency resides",
+		competencyTitle="[optional] updated title of the competency",
+		competencyDescription="[optional] updated description of the competency",
+		competencyLevels="[optional] array of new levels that a record of the competency can be at",
+		competencyRelationships="[optional] map of relationships to other competencies in the form {<relationshipId>: <competencyId>}"
+	)
+);
+displayUpdateAPI = API_UpdateCompetency.displayJson(_collapse="true");
+/competency/update/api = displayUpdateAPI;
+
+
+//==============
+// DELETE Competency
+//==============
+
+delete = #competencyDelete(modelId=postedModelId, competencyId=postedCompetencyId);
+
+checkLoginBeforeDelete = #object(
+							a=#competencyErrorLogin(),
+							b=delete
+						).cget(b="");
+
+deleteCompetency = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeDelete,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/delete = deleteCompetency;
+
+//-----API-------
+
+API_DeleteCompetency = #object(
+	levr-service="#competencyDelete",
+	web-service="/competency/delete",
+	description="Deletes the specified competency and removes any references to it from the model",
+	params=#object(
+		competencyId="identifier of the competency to be deleted",
+		modelId="identifier of the model within which the competency resides"
+	)
+);
+displayDeleteAPI = API_DeleteCompetency.displayJson(_collapse="true");
+/competency/delete/api = displayDeleteAPI;
+
+//==============
+// List Competency RelationshpTypes
+//==============
+
+list = #competencyListRelationshipTypes(modelId=postedModelId).displayJson(_collapse="true");
+/competency/relationships = list;
+
+//-----API-------
+
+API_ListCompetencyRelationships = #object(
+	levr-service="#competencyListRelationshipTypes",
+	web-service="/competency/relationships",
+	description="",
+	params=#object(
+		modelId="identifier of the model to look for the relationship types from"
+	)
+);
+displayListRelationshipsAPI = API_ListCompetencyRelationships.displayJson(_collapse="true");
+/competency/relationships/api = displayListRelationshipsAPI;
+
+
+//==============
+// API for Manipulating Competency Models
+//==============
+
+
+API_Competency = #object().putInObject(
+	dest="/competency/create",
+	item=API_CreateCompetency
+).putInObject(
+	dest="/competency/read",
+	item=API_ReadCompetency
+).putInObject(
+	dest="/competency/all",
+	item=API_ReadAllCompetencys
+).putInObject(
+	dest="/competency/update",
+	item=API_UpdateCompetency
+).putInObject(
+	dest="/competency/delete",
+	item=API_DeleteCompetency
+).putInObject(
+	dest="/competency/relationships",
+	item=API_ListCompetencyRelationships
+);
+					
+					
+					
+#api_Competency = API_Competency;
+
+displayCompetencyAPI = #displayJson(obj=API_Competency, _collapse="true");
+/competency/competency/api = displayCompetencyAPI;

@@ -1,0 +1,422 @@
+
+getMultipartPostDataObject = #getFileFromPost(name="@field").fileToString().toObject();
+
+postedCompetencyObject = getMultipartPostDataObject.call(field="competency");
+
+postedSessionId = postedCompetencyObject.cget(sessionId="");
+
+postedModelName = postedCompetencyObject.cget(modelName="");
+postedModelDescription = postedCompetencyObject.cget(modelDescription="");
+postedModelPrivacy = postedCompetencyObject.cget(modelPrivacy="");
+postedModelId = postedCompetencyObject.cget(modelId="");
+
+postedImportId = postedCompetencyObject.cget(importId="");
+
+postedBackupRestoreKey = postedCompetencyObject.cget(backupRestoreKey="");
+
+
+
+//==============
+// RETRIEVE ALL Competency Model IDs
+//==============
+
+getIds = #competencyGetModelIds().displayJson(_collapse="true");
+/competency/model/ids = getIds;
+
+
+//-----API-------
+
+API_ReadModelIds = #object(
+	levr-service="#competencyGetModelsIds",
+	web-service="/competency/model/ids",
+	description="Returns an array containing each competency model identifier",
+	params=#object()
+);
+displayReadModelIdsAPI = API_ReadModelIds.displayJson(_collapse="true");
+/competency/model/ids/api = displayReadModelIdsAPI;
+
+
+//==============
+// CREATE Competency Model
+//==============
+
+createCompetencyModel = #competencyCreateModel(
+							modelName=postedModelName, 
+							modelDescription=postedModelDescription,
+							modelPrivacy = postedModelPrivacy,
+						);
+
+checkLoginBeforeCreate = #object(
+							a=#competencyErrorLogin(),
+							b=createCompetencyModel
+						).get(b="");
+
+create = #competencySessionUser(
+						sessionId=postedSessionId
+			).toParameter(
+						op=checkLoginBeforeCreate, 
+						paramName="currentUser"
+			).displayJson(_collapse="true");
+						
+/competency/model/create = create;
+   
+//-----API-------
+
+API_CreateModel = #object(
+	levr-service="#competencyCreateModel",
+	web-service="/competency/model/create",
+	description="Creates a new empty Competency Model that imports the 'structure-competency' ontology, so we can start creating relationships",
+	params=#object(
+				modelName="Name of the new competency model being created",
+				modelDescription="[optional] Description of the new competency model being created",
+				modelPrivacy="if left blank, defaults to 'public', ('public': anyone can see model, 'private': only users on accessControl list can see model",
+			)
+);
+displayCreateModelAPI = API_CreateModel.displayJson(_collapse="true");
+/competency/model/create/api = displayCreateModelAPI;
+
+
+//==============
+// READ Competency Model Details
+//==============
+
+readCompetencyModel = #competencyReadModel(
+							modelId = postedModelId
+						);
+
+read = #competencySessionUser(
+					sessionId=postedSessionId
+		).toParameter(
+					op=readCompetencyModel,
+					paramName="currentUser"
+		).displayJson(_collapse="true");					
+
+/competency/model/read = read;
+
+//-----API-------
+
+API_ReadModel = #object(
+	levr-service="#competencyReadModel",
+	web-service="/competency/model/read",
+	description="Returns a JSONObject with details about a competency model (name, description, accessControl, defaultLevels, uri, directory, filename, ontologyId)",
+	params=#object(
+				modelId="identifier of the model to retrieve details for"
+			)
+);
+displayReadModelAPI = API_ReadModel.displayJson(_collapse="true");
+/competency/model/read/api = displayReadModelAPI;
+
+
+//==============
+// UPDATE Competency Model Details
+//==============
+
+update = #competencyUpdateModel(modelId=postedModelId);
+
+checkLoginBeforeUpdate = #object(
+							a=#competencyErrorLogin(),
+							b=update
+						).get(b="");
+							
+updateCompetencyModel = #competencySessionUser(
+									sessionId=postedSessionId
+						).toParameter(
+									op=checkLoginBeforeUpdate, 
+									paramName="currentUser"
+						).displayJson(_collapse="true");
+#comp_UpdateModel = updateCompetencyModel;
+
+updateModel = #execute(service="comp_UpdateModel", paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent=""));
+/competency/model/update = updateModel;
+
+//-----API-------
+
+API_UpdateModel = #object(
+	levr-service="#competencyUpdateModel",
+	web-service="/competency/model/update",
+	description="Updates the competency model metadata details (name, description, defaultLevels)",
+	params=#object(
+				modelId="ID of the model to be updated",
+				modelName="[optional] New name to give the model",
+				modelDescription="[optional] New description to give to the model",
+				modelDefaultLevels="[optional] New array of levels that new competencies in this model will default to having on creation if no others are specified"
+			)
+);
+displayUpdateModelAPI = API_UpdateModel.displayJson(_collapse="true");
+/competency/model/update/api = displayUpdateModelAPI;
+
+//==============
+// UPDATE Competency Access Control
+//==============
+
+updateAC = #competencyUpdateModelAccessControl(modelId=postedModelId);
+
+checkLoginBeforeUpdateAC = #object(
+							a=#competencyErrorLogin(),
+							b=updateAC
+						).get(b="");
+							
+updateCompetencyModelAC = #competencySessionUser(
+									sessionId=postedSessionId
+						).toParameter(
+									op=checkLoginBeforeUpdateAC, 
+									paramName="currentUser"
+						).displayJson(_collapse="true");
+#comp_UpdateModelAC = updateCompetencyModelAC;
+
+updateModelAC = #execute(service="comp_UpdateModelAC", paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent=""));
+/competency/model/updateAccessControl = updateModelAC;
+
+//-----API-------
+
+API_UpdateModelAC = #object(
+	levr-service="#competencyUpdateModelAccessControl",
+	web-service="/competency/model/updateAccessControl",
+	description="Updates the competency model User and Agent Access Control details",
+	params=#object(
+				modelId="ID of the model to be updated",
+				modelPrivacy="[optional]",
+				modelAdmin="[optional]",
+				modelUser="[optional]",
+				modelAgent="[optional]",
+			)
+);
+displayUpdateModelAccessControlAPI = API_UpdateModelAC.displayJson(_collapse="true");
+/competency/model/updateAccessControl/api = displayUpdateModelAccessControlAPI;
+
+//==============
+// UPDATE Competency Model Source Info
+//==============
+
+updateSource = #competencyUpdateModelSource(modelId=postedModelId).displayJson(_collapse="true");
+
+checkLoginBeforeUpdateSource = #object(
+									a=#competencyErrorLogin(),
+									b=updateSource,
+								).get(b="");
+
+updateModelSource = #competencySessionUser(
+								sessionId=postedSessionId
+						).toParameter(
+									op=checkLoginBeforeUpdateSource, 
+									paramName="currentUser"
+						).displayJson(_collapse="true");
+#comp_UpdateModelSource = updateModelSource;
+
+updateModelSource = #execute(service="comp_UpdateModelSource", paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent=""));
+/competency/model/updateSource = updateModelSource;
+
+//-----API-------
+
+API_UpdateModelSource = #object(
+	levr-service="#competencyUpdateModelSource",
+	web-service="/competency/model/updateSource",
+	description="Updates the competency model source metadata details (title, structure and id)",
+	params=#object(
+		modelId="ID of the model to be updated",
+		sourceTitle="title of the competency model source document",
+		sourceStructure="description of the structure of the model source document (list, ontology, medbiquitous)",
+		sourceIdCatalog="Catalog of the scheme of the ID Entry", 
+		sourceIdEntry="ID string of the model source document",
+	)
+);
+displayUpdateModelSourceAPI = API_UpdateModelSource.displayJson(_collapse="true");
+/competency/model/updateSource/api = displayUpdateModelSourceAPI;
+
+
+//==============
+// DELETE Competency Model 
+//==============
+
+delete = #competencyDeleteModel(modelId=postedModelId);
+
+checkLoginBeforeDelete = #object(
+								a=#competencyErrorLogin(),
+								b=delete,
+						).get(b="");
+
+deleteModel = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeDelete,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/model/delete = deleteModel;
+
+
+//-----API-------
+
+API_DeleteModel = #object(
+	levr-service="#competencyDeleteModel",
+	web-service="/competency/model/delete",
+	description="Deletes the competency model specified",
+	params=#object(
+		modelId="identifier of the competency model to be deleted",
+	)
+);
+displayDeleteModelAPI = API_DeleteModel.displayJson(_collapse="true");
+/competency/model/delete/api = displayDeleteModelAPI;
+
+
+//==============
+// READ ALL Competency Models 
+//==============
+
+readAll = #competencyReadAllModels();
+
+readAllModels = #competencySessionUser(
+						sessionId=postedSessionId
+				).toParameter(
+						op=readAll, 
+						paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/model/all = readAllModels;
+
+
+//-----API-------
+
+API_ReadAllModels = #object(
+	levr-service="#competencyReadAllModels",
+	web-service="/competency/model/all",
+	description="Returns a JSONObject containing JSONObject for every competency model defined, containing the same details that read returns",
+	params=#object()
+);
+displayReadAllModelAPI = API_ReadAllModels.displayJson(_collapse="true");
+/competency/model/readAll/api = displayReadAllModelAPI;
+
+
+//==============
+// Add Import to Competency Model
+//==============
+
+add = #competencyModelAddImport(modelId=postedModelId, importId=postedImportId).displayJson(_collapse="true");
+
+checkLoginBeforeAdd = #object(
+							a=#competencyErrorLogin(),
+							b=add,
+						).get(b="");
+
+addImport = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeAdd,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/model/addImport = addImport;
+
+
+//-----API-------
+
+API_AddImport = #object(
+	levr-service="#competencyModelAddImport",
+	web-service="/competency/model/addImport",
+	description="Adds the Model specified by <importId> to the imports of the model specified by <modelId>",
+	params=#object(
+		modelId="identifier of the model that will gain the new import",
+		importId="identifier of the model to be imported"
+	)
+);
+displayAddImportAPI = API_AddImport.displayJson(_collapse="true");
+/competency/model/addImport/api = displayAddImportAPI;
+
+
+//==============
+// Export Competency Model Backup
+//==============
+
+backup = #competencyExportModelBackup(
+				backupRestoreKey = postedBackupRestoreKey,
+				modelId=postedModelId
+			);
+
+/competency/model/backup = backup;
+
+//-----API-------
+
+API_BackupModel = #object(
+	levr-service="#competencyExportModelBackup",
+	web-service="/competency/model/backup",
+	description="Exports the model specified by <modelId> to an .RDF file and a .info file in the backups directory",
+	params=#object(
+		modelId="identifier of the model that will be backed up",
+		backupRestoreKey="Secret Key to limit the ability to backup models to only those who are authorized",
+	)
+);
+displayBackupAPI = API_BackupModel.displayJson(_collapse="true");
+/competency/model/backup/api = displayBackupAPI;
+     
+//==============
+// Restore Competency Model Backup
+//==============
+
+restore = #competencyRestoreModelBackup(
+				backupRestoreKey=postedBackupRestoreKey,
+				modelId=postedModelId,
+				modelInfo=#catch(try=#getFileFromPost(name=#add(a=postedModelId, b=".info")).fileToString(), null=#error(msg=".info file not included or named correctly (<modelId>.info)")), 
+				modelRDF=#catch(try=#getFileFromPost(name=#add(a=postedModelId, b=".rdf")).fileToString(), null=#error(msg=".rdf file not included or named correclty (<modelId>.rdf)")),
+		);
+
+/competency/model/restore = restore;
+
+//-----API-------
+
+API_RestoreModel = #object(
+	levr-service="#competencyRestoreModelBackup",
+	web-service="/competency/model/restore",
+	description="Restores the model specified by <modelId> from the given .RDF file and .info file in the backups directory",
+	params=#object(
+		modelId="identifier of the model that will be restored (must be the same as the file names)",
+		backupRestoreKey="Secret Key to limit the ability to restore models to only those who are authorized",
+		files="2, <modelId>.info AND <modelId>.rdf from backup process"
+	)
+);
+displayRestoreAPI = API_RestoreModel.displayJson(_collapse="true");
+/competency/model/restore/api = displayRestoreAPI;
+
+
+//==============
+// API for Manipulating Competency Models
+//==============
+
+
+API_Model = #object().putInObject(
+	dest="/competency/model/ids",
+	item=API_ReadModelIds
+).putInObject(
+	dest="/competency/model/create", 
+	item=API_CreateModel
+).putInObject(
+	dest="/competency/model/read",
+	item=API_ReadModel
+).putInObject(
+	dest="/competency/model/update",
+	item=API_UpdateModel
+).putInObject(
+	dest="/competency/model/updateAccessControl",
+	item=API_UpdateModelAC
+).putInObject(
+	dest="/competency/model/updateSource",
+	item=API_UpdateModelSource
+).putInObject(
+	dest="/competency/model/delete",
+	item=API_DeleteModel
+).putInObject(
+	dest="/competency/model/all",
+	item=API_ReadAllModels
+).putInObject(
+	dest="/competency/model/addImport",
+	item=API_AddImport
+).putInObject(
+	dest="/competency/model/backup",
+	item=API_BackupModel
+).putInObject(
+	dest="/competency/model/restore",
+	item=API_RestoreModel
+);
+#api_Model = API_Model;
+
+displayModelAPI = #displayJson(obj=API_Model);
+/competency/model/api = displayModelAPI;

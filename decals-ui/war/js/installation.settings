@@ -1,0 +1,13 @@
+site.name="DECALS"
+
+root.url="http://127.0.0.1:9722/"
+esb.url="http://127.0.0.1:9722/api/custom/"
+
+alfresco.url="http://127.0.0.1:9722"
+site.url="http://127.0.0.1:9722"
+help.url="http://127.0.0.1:9722"
+feedback.email="DECALS.feedback@eduworks.com"
+
+competency.url="http://127.0.0.1:8888/competency-ui"
+
+int.search.thumbnail.root="http://127.0.0.1:8080/thumbnails/"

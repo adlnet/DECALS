@@ -1,0 +1,23 @@
+<header style="margin: 10px; text-align: center;">
+	<h4>Create New Level</h4>
+</header>
+<div class="row">
+	<div class="small-8 columns">
+		Name: <br /> <input type="text" ng-model="$parent.name"></input>
+	</div>
+	<div class="small-4 columns">
+		Rank: [0 - 100] <br /> <input type="text" ng-model="$parent.rank"></input>
+	</div>
+</div>
+<div class="row">
+
+	<div class="small-12 columns">
+		Description: <br /> <input type="text" ng-model="$parent.description"></input>
+	</div>
+</div>
+
+<div class="row">
+	<button style='float: right; margin: 0px 20px;' ng-click="create()">Create</button>
+	<button style='float: right;' ng-click="cancel()">Cancel</button>
+</div>
+

@@ -1,0 +1,7 @@
+<h3 class="title">
+	<a title="{{result.title}}"
+		ng-click="showView(appCache.context, result.id, result.modelId)">
+		{{result.title}} </a>
+</h3>
+<span class="info" ng-repeat="description in result.descriptions">{{description.text}}</span>
+<span class="id">{{result.modelId}}#<strong>{{result.id.replace(":","")}}</strong></span>

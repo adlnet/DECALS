@@ -1,0 +1,317 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY structure-competency "http://www.competency.services/structure-competency#" >
+]>
+
+
+<rdf:RDF xmlns="http://www.competency.services/structure-competency#"
+     xml:base="http://www.competency.services/structure-competency"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:structure-competency="&structure-competency;">
+    <owl:Ontology rdf:about="&structure-competency;">
+        <owl:imports rdf:resource="http://www.w3.org/2004/02/skos/core"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.competency.services/structure-competency#competencyLevels -->
+
+    <owl:ObjectProperty rdf:about="&structure-competency;competencyLevels">
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+        <rdfs:range rdf:resource="&structure-competency;CompetencyLevel"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#desiredFor -->
+
+    <owl:ObjectProperty rdf:about="&structure-competency;desiredFor">
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+        <rdfs:range rdf:resource="&structure-competency;Competency"/>
+        <owl:inverseOf rdf:resource="&structure-competency;desires"/>
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2004/02/skos/core#semanticRelation"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#desires -->
+
+    <owl:ObjectProperty rdf:about="&structure-competency;desires">
+        <rdf:type rdf:resource="&owl;TransitiveProperty"/>
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+        <rdfs:range rdf:resource="&structure-competency;Competency"/>
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2004/02/skos/core#semanticRelation"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#enabledBy -->
+
+    <owl:ObjectProperty rdf:about="&structure-competency;enabledBy">
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+        <rdfs:range rdf:resource="&structure-competency;Competency"/>
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2004/02/skos/core#semanticRelation"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#enables -->
+
+    <owl:ObjectProperty rdf:about="&structure-competency;enables">
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+        <rdfs:range rdf:resource="&structure-competency;Competency"/>
+        <owl:inverseOf rdf:resource="&structure-competency;enabledBy"/>
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2004/02/skos/core#semanticRelation"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#equivalent -->
+
+    <owl:ObjectProperty rdf:about="&structure-competency;equivalent">
+        <rdf:type rdf:resource="&owl;SymmetricProperty"/>
+        <rdf:type rdf:resource="&owl;TransitiveProperty"/>
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+        <rdfs:range rdf:resource="&structure-competency;Competency"/>
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2004/02/skos/core#semanticRelation"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#requiredFor -->
+
+    <owl:ObjectProperty rdf:about="&structure-competency;requiredFor">
+        <rdf:type rdf:resource="&owl;TransitiveProperty"/>
+        <rdfs:range rdf:resource="&structure-competency;Competency"/>
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2004/02/skos/core#semanticRelation"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#requires -->
+
+    <owl:ObjectProperty rdf:about="&structure-competency;requires">
+        <rdf:type rdf:resource="&owl;TransitiveProperty"/>
+        <rdfs:range rdf:resource="&structure-competency;Competency"/>
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+        <owl:inverseOf rdf:resource="&structure-competency;requiredFor"/>
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2004/02/skos/core#semanticRelation"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.competency.services/structure-competency#competencyDescription -->
+
+    <owl:DatatypeProperty rdf:about="&structure-competency;competencyDescription">
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#competencyLevelDescription -->
+
+    <owl:DatatypeProperty rdf:about="&structure-competency;competencyLevelDescription">
+        <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#competencyLevelName -->
+
+    <owl:DatatypeProperty rdf:about="&structure-competency;competencyLevelName">
+        <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#competencyLevelRank -->
+
+    <owl:DatatypeProperty rdf:about="&structure-competency;competencyLevelRank">
+        <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#competencySourceIdCatalog -->
+
+    <owl:DatatypeProperty rdf:about="&structure-competency;competencySourceIdCatalog">
+        <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#competencySourceIdEntry -->
+
+    <owl:DatatypeProperty rdf:about="&structure-competency;competencySourceIdEntry"/>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#competencyTitle -->
+
+    <owl:DatatypeProperty rdf:about="&structure-competency;competencyTitle">
+        <rdfs:domain rdf:resource="&structure-competency;Competency"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.competency.services/structure-competency#Competency -->
+
+    <owl:Class rdf:about="&structure-competency;Competency">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyLevels"/>
+                <owl:allValuesFrom rdf:resource="&structure-competency;CompetencyLevel"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyTitle"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyTitle"/>
+                <owl:someValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyDescription"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyLevels"/>
+                <owl:someValuesFrom rdf:resource="&structure-competency;CompetencyLevel"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#CompetencyCondition -->
+
+    <owl:Class rdf:about="&structure-competency;CompetencyCondition"/>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#CompetencyLevel -->
+
+    <owl:Class rdf:about="&structure-competency;CompetencyLevel">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyLevelDescription"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyLevelRank"/>
+                <owl:someValuesFrom rdf:resource="&xsd;integer"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyLevelDescription"/>
+                <owl:someValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyLevelName"/>
+                <owl:someValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-competency;competencyLevelName"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.competency.services/structure-competency#false -->
+
+    <owl:NamedIndividual rdf:about="&structure-competency;false">
+        <rdf:type rdf:resource="&structure-competency;CompetencyLevel"/>
+        <structure-competency:competencyLevelRank rdf:datatype="&xsd;integer">0</structure-competency:competencyLevelRank>
+        <structure-competency:competencyLevelName rdf:datatype="&xsd;string">False</structure-competency:competencyLevelName>
+        <structure-competency:competencyLevelDescription rdf:datatype="&xsd;string">It is determined that the person does not yet hold this competency</structure-competency:competencyLevelDescription>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.eduworks.com/competencies/structure-competency#true -->
+
+    <owl:NamedIndividual rdf:about="&structure-competency;true">
+        <rdf:type rdf:resource="&structure-competency;CompetencyLevel"/>
+        <structure-competency:competencyLevelRank rdf:datatype="&xsd;integer">1</structure-competency:competencyLevelRank>
+        <structure-competency:competencyLevelDescription rdf:datatype="&xsd;string">It is determined that the person holds this competency.</structure-competency:competencyLevelDescription>
+        <structure-competency:competencyLevelName rdf:datatype="&xsd;string">True</structure-competency:competencyLevelName>
+    </owl:NamedIndividual>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net -->
+

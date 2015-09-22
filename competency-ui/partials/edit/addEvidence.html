@@ -1,0 +1,63 @@
+<div style='margin-top: 10px; text-align: center;'
+	ng-hide='newEvidence == undefined || objectLength(newEvidence) != 0'>
+	<button style="margin-right: 20px;" ng-click="addNewEvidence(validId)">New</button>
+	<button ng-click="addExistingEvidence(validIdx)">Existing</button>
+</div>
+
+<div style='margin-top: 10px;' class="row"
+	ng-hide="newEvidence.id == undefined">
+	<div class="small-12 columns">
+		Search by Evidence Name or ID: <input type="text"></input>
+	</div>
+</div>
+
+<!-- ng-repeat="evidence in validObj.evidences"-->
+<div style='margin-top: 10px;' ng-hide="newEvidence.type == undefined"
+	class="row">
+	<div class="small-12 columns">
+		<div class="row">
+			<span class="small-6 columns"> <strong>Evidence Type:</strong>
+				<input type="text" ng-model="newEvidence.type"></input>
+			</span> <span class="small-4 columns"> <strong>Date:</strong> <input
+				type="date" ng-model="newEvidence.date"></input>
+			</span>
+		</div>
+
+		<div class="row">
+			<span class="small-9 columns"> <strong>Evidence
+					Description</strong> <input type="text" ng-model="newEvidence.description"></input>
+			</span> <span class="small-3 columns"> <strong>Evidence
+					Result</strong> <input type="text" ng-model="newEvidence.result"></input>
+			</span>
+		</div>
+
+		<div class="row">
+			<span class="small-6 columns">
+				<strong>Resource Type:</strong>
+				<select ng-model="newEvidence.valueType"
+				ng-options="id as text for (id, text) in evidenceValueTypes">
+				</select>
+			</span> 
+			<span class="small-5 columns"> 
+				<strong>Resource:</strong> 
+				<input type="text" ng-model="newEvidence.value" ng-hide="newEvidence.valueType == 'Filename'"></input> 
+				<input id="{{validId == undefined ? 'evidenceFile' : 'evidenceFile'+validId.replace(':', '')}}" type="file" ng-model="newEvidence.valueFile" ng-hide="newEvidence.valueType != 'Filename'"></input>
+			</span>
+		</div>
+	</div>
+</div>
+
+<div style='margin-top: 10px;'>
+	<a style="margin-right: 10px;" ng-click="startAddEvidence()"
+		ng-hide="newEvidence != undefined"> <i class="fa fa-plus"></i> Add
+		Evidence
+	</a> <span style="float: right"> <a style="margin-right: 10px;"
+		ng-hide="newEvidence == undefined" ng-click="cancelAddEvidence()">
+			<i class="fa fa-trash-o"></i> Cancel
+	</a> <a
+		ng-hide="newEvidence == undefined || (newEvidence.id == undefined && newEvidence.type == undefined)"
+		ng-click="saveAddEvidence()"> <i class="fa fa-save"></i> Save
+			Evidence
+	</a>
+	</span>
+</div>

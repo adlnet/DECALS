@@ -1,0 +1,268 @@
+fileDb=#object(
+	indexDir="@indexDir",
+	databaseName="@databaseNameFile",
+	index="@indexFile"
+);
+
+fileDbx={
+	indexDir="@indexDir",
+	databaseName="@databaseNameFile",
+	index="@indexFile"
+};
+
+fileMetadataDb=#object(
+	indexDir="@indexDir",
+	databaseName="@databaseNameFile",
+	index="@indexFileMetadata"
+);
+
+fileMetadataDbx={
+	indexDir="@indexDir",
+	databaseName="@databaseNameFile",
+	index="@indexFileMetadata"
+};
+
+textDbx={
+	indexDir="@indexDir",
+	databaseName="@databaseNameText",
+	index="@indexText"
+};
+
+matchDbx={
+	indexDir="@indexDir",
+	databaseName="@databaseNameMatch",
+	index="@indexMatch"
+};
+
+evidenceDbx={
+	indexDir="@indexDir",
+	databaseName=#add(a="evidence",b="@databaseNameMatch"),
+	index="@username"
+};
+
+nyi=#object(error="Not Yet Implemented.");
+
+model=#competencyReadModel(modelId="@modelId");
+record=#toObject(obj="@record");
+validation=#competencyReadRecordValidation(userId="@userId",validationId="@validationId").getByParam(param="@validationId");
+evidence=#toObject(obj="@evidence");
+getEvidence=#object(
+	id="@validationId",
+	competencyId=record.cgetByParam(param=":recordCompetency").flatten(),
+	type=evidence.cget(type=""),
+	result=evidence.cget(result=""),
+	text=#if(
+		operator=evidence.cget(type=""),
+		operand="file",
+		eq=#fileGetText(fileId=evidence.cget(string="")),
+		ne=#if(operator=evidence.cget(type=""),
+			operand="uri",
+			eq=#urlGetText(url=evidence.cget(uri=""),timestamp=evidence.cget(date="")).flatten()
+		)
+	)
+).call(evidence=#competencyReadEvidence(evidenceId="@evidenceId"));
+
+competencyGetEvidence=validation.getByParam(param=":validationEvidence").cforEach(threaded="false",soft="true",array="true",paramName="evidenceId",op=getEvidence);
+competencyGetValidation=record.getByParam(param=":recordValidation").cforEach(threaded="false",soft="true",array="true",paramName="validationId",op=competencyGetEvidence);
+competencyCheckRecord=#if(operator=record.getByParam(param=":recordLevel").has(has="@levelId"),operand="true",eq=competencyGetValidation);
+competencyReadRecords=#competencyReadAllRecords(userId="@userId").cforEach(array="true",threaded="false",soft="true",
+	paramName="recordId",
+	valueName="record",
+	op=record.getByParam(param=":recordCompetency").cforEach(threaded="false",soft="true",array="true",threaded="false",
+		paramName="competencyCandidate",
+		op=#if(
+			operator=#toArray(obj="@activeCompetencies").has(has="@competencyCandidate"),
+			operand="true",
+			eq=competencyGetValidation.union()
+		)
+	).union()
+).union();
+
+competencyReadUsers=#competencyGetUserIds().cforEach(threaded="false",soft="true",array="true",threaded="false",paramName="userId",op=competencyReadRecords).union();
+competencyReadLevels=model.cget(defaultLevels="").cforEach(threaded="false",soft="true",array="true",paramName="levelId",op=competencyReadRecords.union());
+competencyReadModels=#competencyReadAll(modelId="@modelId").cforEach(threaded="false",array="true",soft="true",paramName="competencyId",op=competencyReadUsers.union());
+activeCompetencies=#competencyGetModelIds().cforEach(threaded="false",array="true",soft="true",paramName="modelId",op=#competencyReadAll(modelId="@modelId").keySet()).union();
+competencyIndex=competencyReadUsers.collapse(keyKey="competencyId",valueKey="text").call(activeCompetencies=activeCompetencies);
+display=competencyIndex.displayJson().call(
+	indexDir="../db",
+	databaseNameFile="dbFile",
+	databaseNameText="dbText",
+	databaseNameMatch="dbMatch",
+	indexFileMetadata="fileMetadata",
+	indexFile="file",
+	indexText="file",
+	indexMatch="pulsit"	
+);
+/pulsar/errything=display;
+
+detail=#object(
+	competency=#competencyRead(modelId="@modelId",competencyId="@competencyId"),
+	score="@score"
+);
+
+matchx=#identityGraphLookup(
+	_indexDir="@indexDir",
+	_dataDir="@indexDir",
+	_name="@indexMatch",
+	_object="true",
+	_limit="5000",
+	data="@text"
+);
+
+matchxSelect=matchx.fuzzyDecide(threshold=#if(operator="@threshold",operand="",eq="20.0",ne="@threshold"));
+matchxDetail=matchx.cforEach(paramName="competencyId",valueName="score",op=detail);
+matchxAll=#object(
+	text="@text",
+	decide=matchxSelect.cforEach(paramName="competencyId",valueName="score",op=detail)
+);
+
+fileMatchCompetency=#fileSetMetadata(
+	fileMetadataDbx,
+	id="@fileId",
+	value=#fileGetMetadata(
+		id="@fileId"
+	).buildArguments(
+		arguments=fileMetadataDb
+	).toObject().put(
+		_key="relatedCompetencies_t",
+		_value=matchxSelect.call(text=#fileGetText(textDbx)).keySet()
+	)
+);
+
+fileMatchCompetency=#if(
+	operator=#fileGetMetadata(fileMetadataDb,id="@fileId").cget(relatedCompetencies_t=""),
+	operand="",
+	eq=#object(
+		a=fileMatchCompetency,
+		b=#fileGetMetadata(fileMetadataDb,id="@fileId").cget(relatedCompetencies_t="")
+	).cget(b="")
+);
+
+filesMatchCompetency=#idxKeys(fileDbx).cforEach(
+	paramName="fileId",
+	threaded="false",
+	op=fileMatchCompetency
+);
+
+compMatch=#displayJson(
+	a=matchxAll.call(text=#urlGetText(url="@url"))
+);
+/pulsar/test=compMatch;
+
+foo=#buildIdentitySmallGraph(
+	ids=#toObject(obj="@competencyIndex").keySet(),
+	_indexDir="@indexDir",
+	_dataDir="@indexDir",
+	_name="@indexMatch",
+	_overwrite="true",
+	paramName="key",
+	op=#toObject(obj="@competencyIndex").cgetByParam(param="@key")
+).call(competencyIndex=competencyIndex);
+
+clearFileMatchedCompetencies=#idxKeys(fileDbx).cforEach(
+	rethrow="true",
+	paramName="fileId",
+	threaded="false",
+	op=#fileSetMetadata(
+		fileMetadataDbx,
+		id="@fileId",
+		value=#fileGetMetadata(
+			id="@fileId"
+		).buildArguments(
+			arguments=fileMetadataDb
+		).toObject().put(
+			_key="relatedCompetencies_t",
+			_value=""
+		)
+	)
+);
+
+clearCandidateMatchedCompetencies=#idxKeys(matchDbx).cforEach(paramName="id",op=#idxSet(matchDbx,key="@id",value=""));
+
+competencyMatchCandidate=#if(
+	operator=#idxGet(matchDbx,key="@id"),
+	operand="",
+	eq=#idxSet(matchDbx,key="@id",obj=matchxSelect),
+	ne=#idxGet(matchDbx,key="@id").toObject()
+);
+competencyMatchCandidate=#idxSet(matchDbx,key="@id",value=matchxSelect);
+
+competencyMatchCandidateIndexAll=#idxKeys(matchDbx).cforEach(
+	paramName="@id",
+	op=competencyMatchNewCandidate.call(
+		text=#competencyMatchCandidateIndexAllGetText(id="@id")
+	)
+);
+
+competencyMatchCandidateDecay=#jinroIdentityGraphLookupDecayPersistant(
+	indexDir="@indexDir",
+	dataDir="@indexDir",
+	name="@indexMatch",
+	keys=#toArray(obj="@keys"),
+	paramName="id",
+	opText=#competencyMatchCandidateIndexAllGetText(id="@id"),
+	opDate=#competencyMatchCandidateIndexAllGetDate(id="@id"),
+	dataRead=#idxGet(evidenceDbx,key="@key").toObject(),
+	dataWrite=#idxSet(evidenceDbx,key="@key",value="@value")
+);
+
+competencyMatchCandidateDecayIgnoreTime=#jinroIdentityGraphLookupDecayPersistant(
+	indexDir="@indexDir",
+	dataDir="@indexDir",
+	name="@indexMatch",
+	keys=#toArray(obj="@keys"),
+	paramName="id",
+	opText=#competencyMatchCandidateIndexAllGetText(id="@id"),
+	opDate=#date(dateFormat="yyyy-MM-dd'T'HH:mm:ss"),
+	dataRead=#idxGet(evidenceDbx,key="@key").toObject(),
+	dataWrite=#idxSet(evidenceDbx,key="@key",value="@value")
+);
+
+competencyMatchCandidateDecayMax=#jinroIdentityGraphLookupDecayPersistant(
+	indexDir="@indexDir",
+	dataDir="@indexDir",
+	name="@indexMatch",
+	keys=#toObject(obj="@competencyIndex").keySet(),
+	paramName="id",
+	opText=#toObject(obj="@competencyIndex").cgetByParam(param="@id"),
+	opDate=#date(dateFormat="yyyy-MM-dd'T'HH:mm:ss"),
+	dataRead=#idxGet(evidenceDbx,key="@key").toObject(),
+	dataWrite=#idxSet(evidenceDbx,key="@key",value="@value")
+).call(competencyIndex=competencyIndex);
+
+competencyMatchNewEvidence=#object(
+	a=#variableSet(key="competencyMatchReindexing",obj="true"),
+	d=clearFileMatchedCompetencies,
+	e=clearCandidateMatchedCompetencies,
+	f=foo
+);
+
+competencyMaxScores=competencyIndex.cforEach(paramName="competencyId",valueName="text",op=matchx.cgetByParam(param="@competencyId"));
+
+//Evidence is an authoritative document, this will re-create the matching index and re-match all resources.
+//Candidate is a record that needs matching to competencies, e.g. an XAPI Statement. This will be stored for the purposes of re-matching.
+//Files will also be re-matched.
+
+//Everything requires the following: indexDir, databaseNameFile, databaseNameText, databaseNameMatch, indexFile, indexFileMetadata, indexText, indexMatch
+
+//Recomputes the competency matching index
+#competencyMatchNewEvidence=competencyMatchNewEvidence;
+
+//text, id (for caching purposes)
+#competencyMatchCandidate=competencyMatchCandidate;
+
+#competencyMatchCandidateDecay=competencyMatchCandidateDecay;
+#competencyMatchCandidateDecayIgnoreTime=competencyMatchCandidateDecayIgnoreTime;
+#competencyMatchCandidateDecayMax=competencyMatchCandidateDecayMax;
+
+#competencySampleCandidate=matchx;
+#competencyMaxScores=competencyMaxScores;
+
+//Requires callback method to get text, called #competencyMatchCandidateIndexAllGetText(id)
+#competencyMatchCandidateIndexAll=competencyMatchCandidateIndexAll;
+
+#competencyMatchFileIndexAll=filesMatchCompetency;
+
+//fileId
+#competencyMatchFile=fileMatchCompetency;
+

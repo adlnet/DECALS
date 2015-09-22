@@ -1,0 +1,355 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+safeUserRecord=#userGet(userDb,userId="@userId").remove(
+	password="",
+	sessionId="",
+	lastIp="",	
+	datePasswordUpdated=""
+);
+
+userObj=#idxGet(userDb,key="@userId").toObject();
+allUserObj=#idxKeys(userDb).cforEach(paramName="userId",op=userObj);
+
+
+learningObjectiveDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsLearningObjectiveDbName(),
+	index=#decalsLearningObjectiveDbIndexName() 
+};
+
+
+
+DOCUMENT_RESOURCE_TYPE=#string(str="text");
+IMAGE_RESOURCE_TYPE=#string(str="image");
+VIDEO_RESOURCE_TYPE=#string(str="video");
+AUDIO_RESOURCE_TYPE=#string(str="audio");
+PRESENTATION_RESOURCE_TYPE=#string(str="slideshow");
+WEB_RESOURCE_TYPE=#string(str="web");
+TUTOR_RESOURCE_TYPE=#string(str="tutor");
+INTERACTIVE_RESOURCE_TYPE=#string(str="interactive");
+OTHER_RESOURCE_TYPE=#string(str="other");
+
+resourceTypes=#toArray(obj=#add(a="[",b="]")).append(
+												a=DOCUMENT_RESOURCE_TYPE,
+												b=IMAGE_RESOURCE_TYPE,
+												c=VIDEO_RESOURCE_TYPE,
+												d=AUDIO_RESOURCE_TYPE,
+												e=PRESENTATION_RESOURCE_TYPE,
+												f=WEB_RESOURCE_TYPE,
+												g=TUTOR_RESOURCE_TYPE,
+												h=INTERACTIVE_RESOURCE_TYPE,
+												i=OTHER_RESOURCE_TYPE
+											);
+											
+resourceTypeDisplay = #object().putInObject(
+									dest=DOCUMENT_RESOURCE_TYPE,
+									item="Document"
+								).putInObject(
+									dest=IMAGE_RESOURCE_TYPE,
+									item="Image"
+								).putInObject(
+									dest=VIDEO_RESOURCE_TYPE,
+									item="Video"
+								).putInObject(
+									dest=AUDIO_RESOURCE_TYPE,
+									item="Audio"
+								).putInObject(
+									dest=PRESENTATION_RESOURCE_TYPE,
+									item="Presentation"
+								).putInObject(
+									dest=WEB_RESOURCE_TYPE,
+									item="Webpage"
+								).putInObject(
+									dest=IMAGE_RESOURCE_TYPE,
+									item="Image"
+								).putInObject(
+									dest=TUTOR_RESOURCE_TYPE,
+									item="Live Tutor/Webcast"
+								).putInObject(
+									dest=INTERACTIVE_RESOURCE_TYPE,
+									item="Simulation/Game"
+								).putInObject(
+									dest=OTHER_RESOURCE_TYPE,
+									item="Other"
+								);
+								
+#decalsResourceTypes = resourceTypeDisplay;
+
+resourceTypeMimes = #object().putInObject(
+									dest=DOCUMENT_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(
+																		a="text/plain",
+																		b="text/rtf",
+																		c="application/pdf",
+																		d="application/vnd.ms-word",
+																		e="application/officedocument.wordprocessingml",
+																		f="application/vnd.ms-word",
+																		g="application/vnd.ms-office",
+																		h="xml"
+																	)
+								).putInObject(
+									dest=IMAGE_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(a="image")
+								).putInObject(
+									dest=VIDEO_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(
+																		a="video",
+																		b="realmedia",
+																		c="shockwave",
+																		d="flash"
+																	)
+								).putInObject(
+									dest=AUDIO_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(
+																		a="audio"
+																	)
+								).putInObject(
+									dest=PRESENTATION_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(
+																		a="powerpoint",
+																		b="officedocument.presentationml",
+																		c="vnd.oasis.opendocument.presentation"
+																	),
+								).putInObject(
+									dest=WEB_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(
+																		a="html",
+																		b="xhtml",
+																		c="url"
+																	)
+								).putInObject(
+									dest=IMAGE_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(
+																		a="image"
+																	)
+								).putInObject(
+									dest=TUTOR_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray()
+								).putInObject(
+									dest=INTERACTIVE_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(
+																		a="shockwave",
+																		b="flash"
+																	)
+								).putInObject(
+									dest=OTHER_RESOURCE_TYPE,
+									item=#add(a="[",b="]").toArray().append(
+																		a="xml",
+																		b="excel",
+																		c="gzip",
+																		d="java",
+																		e="class",
+																		f="vnd.openxmlformats",
+																		g="zip",
+																		h="binhex",
+																		i="shockwave",
+																		j="flash",
+																		k="dos",
+																		l="executable",
+																		m="octet",																		
+																		n="stream",
+																		o="vnd.ms-office",
+																		p="url"
+																	)
+								);
+
+#decalsResourceMimeTypes = resourceTypeMimes;
+
+KINDERGARTEN_GRADE_LEVEL = #string(str="kg");
+ELEMENTARY_GRADE_LEVEL = #string(str="es");
+MIDDLE_SCHOOL_GRADE_LEVEL = #string(str="ms");
+HIGH_SCHOOL_GRADE_LEVEL = #string(str="hs");
+HIGHER_ED_GRADE_LEVEL = #string(str="he");
+VOCATIONAL_GRADE_LEVEL = #string(str="vt");
+
+#decals_KINDERGARTEN_GRADE_LEVEL = KINDERGARTEN_GRADE_LEVEL;
+#decals_ELEMENTARY_GRADE_LEVEL = ELEMENTARY_GRADE_LEVEL;
+#decals_MIDDLE_SCHOOL_GRADE_LEVEL = MIDDLE_SCHOOL_GRADE_LEVEL;
+#decals_HIGH_SCHOOL_GRADE_LEVEL = HIGH_SCHOOL_GRADE_LEVEL;
+#decals_HIGHER_ED_GRADE_LEVEL = HIGHER_ED_GRADE_LEVEL;
+#decals_VOCATIONAL_GRADE_LEVEL = VOCATIONAL_GRADE_LEVEL;
+
+
+gradeLevelDisplay = #object().putInObject(
+								dest=KINDERGARTEN_GRADE_LEVEL,
+								item="Kindergarten"
+							).putInObject(
+								dest=ELEMENTARY_GRADE_LEVEL,
+								item="Elementary"
+							).putInObject(
+								dest=MIDDLE_SCHOOL_GRADE_LEVEL,
+								item="Middle School"
+							).putInObject(
+								dest=HIGH_SCHOOL_GRADE_LEVEL,
+								item="High School"
+							).putInObject(
+								dest=HIGHER_ED_GRADE_LEVEL,
+								item="Higher Education"
+							).putInObject(
+								dest=VOCATIONAL_GRADE_LEVEL,
+								item="Vocational Training"
+							);
+
+#decalsGradeLevels = gradeLevelDisplay;
+
+getLanguages = #solrSearch(
+						solrURL=#decalsRegistrySolrUrl(), 
+						rows="0", 
+						facetFields=#toArray(obj=#add(a="['", b="language_t", c="']"))
+					).cget(
+						facets=""
+					).cget(
+						language_t=""
+					);
+#decalsGetLanguages = getLanguages;
+
+
+//============================
+// Get Preference Types
+
+enumTypes = #object(
+								gradeLevel=gradeLevelDisplay,
+								resourceTypes=resourceTypeDisplay,
+								language=getLanguages
+							).displayJson(_collapse="true");
+#decalsEnumTypes = enumTypes;
+
+/decalsPreferenceEnumTypes = enumTypes;
+
+newPreferencesObj = #object(
+					gradeLevel=#toArray(obj=#add(a="[",b="]")),
+					readingLevel=#toArray(obj=#add(a="[",b="]")),
+					resourceTypes=#toArray(obj=#add(a="[",b="]")),
+					language=#toArray(obj=#add(a="[",b="]")),
+					learningObjectives=#toArray(obj=#add(a="[",b="]")),
+				);
+#decalsNewPreferencesObj = newPreferencesObj;	
+
+
+//============================
+// Add Learning Objective to DB
+
+addLearningObjective = #idxAdd(learningObjectiveDb, key="@learningObjective", obj="@userId"); 
+
+
+//============================
+// Remove Learning Objective from DB
+
+removeLearningObjective = #idxDelete(learningObjectiveDb, key="@learningObjective", value="@userId", multi="true"); 
+
+
+//============================
+// Get Learning Objectives List
+
+learningObjectiveList = #idxKeys(learningObjectiveDb, multi="true").displayJson();
+
+#decalsLearningObjectiveList = learningObjectiveList;
+
+/decalsLearningObjectiveList = learningObjectiveList;
+
+//============================
+// Get User Preferences
+
+userPrefs = userObj.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))).cget(preferences="");
+
+getUserPrefs = #if(operator="@prefs", operand="",
+					eq=newPreferencesObj,
+					ne=#decode(obj="@prefs")
+				).ccall(
+					prefs=userPrefs
+				); 
+
+#decalsGetUserPreferences = userPrefs;
+
+publicGetUserPreferences = userPrefs.displayJson(_collapse="true");
+
+/decalsGetUserPreferences = publicGetUserPreferences;
+
+//============================
+// Update User Preferences
+
+			
+
+				
+gradeLevelVal = #if(operator="@gradeLevel", operand="",
+						eq=getUserPrefs.cget(gradeLevel=""),
+						ne=#toArray(obj="@gradeLevel")
+					).ccall(
+						gradeLevel=decalsPostData.cget(gradeLevels="")
+					);
+					
+readingLevelVal = #if(operator="@readingLevel", operand="",
+						eq=getUserPrefs.cget(readingLevel=""),
+						ne=#toArray(obj="@readingLevel")
+					).ccall(
+						readingLevel=decalsPostData.cget(readingLevel="")
+					);
+
+resourceTypesVal = #if(operator="@resourceTypes", operand="",
+						eq=getUserPrefs.cget(resourceTypes=""),
+						ne=#toArray(obj="@resourceTypes")
+					).ccall(
+						resourceTypes=decalsPostData.cget(resourceTypes="")
+					);
+					
+learningObjVal = #if(operator="@learningObjectives", operand="",
+						eq=getUserPrefs.cget(learningObjectives=""),
+						ne=#toArray(obj="@learningObjectives")
+					).ccall(
+						learningObjectives=decalsPostData.cget(learningObjectives="")
+					);
+
+languageVal = #if(operator="@language", operand="",
+						eq=getUserPrefs.cget(language=""),
+						ne=#toArray(obj="@language")
+					).ccall(
+						language=decalsPostData.cget(languages="")
+					);
+
+preferencesObj = #if(operator=userPrefs, operand="",
+						eq=newPreferencesObj,
+						ne=userPrefs
+					).putInObject(
+						dest="gradeLevel",
+						item=gradeLevelVal,
+					).putInObject(
+						dest="readingLevel",
+						item=readingLevelVal,
+					).putInObject(
+						dest="resourceTypes",
+						item=resourceTypesVal
+					).putInObject(
+						dest="learningObjectives",
+						item=learningObjVal,
+					).putInObject(
+						dest="language",
+						item=languageVal,
+					);
+
+setPreferences = #object(
+						a=#if(operator="@learningObjectives", operand="",
+								ne=#toArray(obj="@learningObjectives").cforEach(op=addLearningObjective, paramName="learningObjective")
+							).ccall(learningObjectives=decalsPostData.cget(learningObjectives="")),
+						b=#idxPut(userDb, key="@userId", preferences=preferencesObj),	
+						c=safeUserRecord,
+					).cget(c="");
+					
+checkAndSet = #object(
+					a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+					b=setPreferences.ccall(
+										userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))
+									)
+				).cget(b="");
+
+#decalsUpdateUserPreferences = checkAndSet;
+
+updateAndDisplay = checkAndSet.displayJson(_collapse="true");
+
+/decalsUpdateUserPreferences = updateAndDisplay;
+				

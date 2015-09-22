@@ -1,0 +1,224 @@
+getMultipartPostDataObject = #getFileFromPost(name="@field").fileToString().toObject();
+
+postedCompetencyObject = getMultipartPostDataObject.call(field="competency");
+
+postedSessionId = postedCompetencyObject.cget(sessionId="");
+
+postedCompetencyId = postedCompetencyObject.cget(competencyId="");
+postedModelId = postedCompetencyObject.cget(modelId="");
+postedQuery = postedCompetencyObject.cget(query="");
+
+postedLevelId = postedCompetencyObject.cget(levelId="");
+postedLevelName = postedCompetencyObject.cget(levelName="");
+postedLevelRank = postedCompetencyObject.cget(levelRank="");
+postedLevelDescription = postedCompetencyObject.cget(levelDescription="");
+
+//==============
+// Create Competency Level
+//==============
+
+create = #competencyCreateLevel(
+			modelId=postedModelId, 
+			levelName=postedLevelName, 
+			levelRank=postedLevelRank, 
+			levelDescription=postedLevelDescription
+		);
+		
+checkLoginBeforeCreate = #object(
+							a=#competencyErrorLogin(),
+							b=create
+						).cget(b="");
+
+createLevel = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=checkLoginBeforeCreate,
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/level/create = createLevel;
+
+//-----API-------
+
+API_CreateCompetencyLevel = #object(
+	levr-service="#competencyCreateLevel",
+	web-service="/competency/level/create",
+	description="Creates a new Competency Level that can be assigned to Competencys with a Name, Description and Rank (order of competency levels for a given competency, 0 is lowest)",
+	params=#object(
+		modelId="identifier of the model to place the competency level in",
+		levelName="Name of the new level to create",
+		levelRank="Rank Order (0+) of the new level to create",
+		levelDescription="Distinct description to help differentiate betweeen similarly named competencies"
+	)
+);
+displayCreateCompetencyLevelAPI = API_CreateCompetencyLevel.displayJson(_collapse="true");
+/competency/level/create/api = displayCreateCompetencyLevelAPI;
+
+
+//==============
+// Read Competency Level
+//==============
+
+read = #competencyReadLevel(
+				modelId=postedModelId, 
+				levelId=postedLevelId
+		);
+
+readLevel = #competencySessionUser(
+				sessionId=postedSessionId
+			).toParameter(
+				op=read,
+				paramName="currentUser"
+			).displayJson(_collapse="true");
+
+/competency/level/read = readLevel;
+
+//-----API-------
+
+API_ReadCompetencyLevel = #object(
+	levr-service="#competencyReadLevel",
+	web-service="/competency/level/read",
+	description="Retrieves a JSON representation of a competency level containing it's Name, Description and Rank",
+	params=#object(
+		modelId="identifier of the model that the competency level is in",
+		levelId="identifier of the competency level to retrieve and display",
+	)
+);
+displayReadCompetencyLevelAPI = API_ReadCompetencyLevel.displayJson(_collapse="true");
+/competency/level/read/api = displayReadCompetencyLevelAPI;
+
+
+//==============
+// Read All Competency Levels
+//==============
+
+readAll = #competencyReadAllLevels(modelId=postedModelId).displayJson(_collapse="true");
+
+readAllLevels = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=readAll,
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/level/all = readAllLevels;
+
+//-----API-------
+
+API_ReadAllCompetencyLevels = #object(
+	levr-service="#competencyReadAllLevels",
+	web-service="/competency/level/all",
+	description="Returns an map from levelId to JSON representation of every competency level in the specified model",
+	params=#object(
+		modelId="identifier of the model to read every competency level from",
+	)
+);
+displayReadAllCompetencyLevelsAPI = API_ReadAllCompetencyLevels.displayJson(_collapse="true");
+/competency/level/all/api = displayReadAllCompetencyLevelsAPI;
+
+
+
+//==============
+// Update Competency Level
+//==============
+
+update = #execute(
+				service="competencyUpdateLevel", 
+				modelId=postedModelId, 
+				levelId=postedLevelId, 
+				paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent="", currentUser="")
+			);
+
+checkLoginBeforeUpdate = #object(
+							a=#competencyErrorLogin(),
+							b=update
+						).cget(b="");				
+
+updateLevel = #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=checkLoginBeforeUpdate,
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/level/update = updateLevel;
+
+//-----API-------
+
+API_UpdateCompetencyLevel = #object(
+	levr-service="#competencyUpdateLevel",
+	web-service="/competency/level/update",
+	description="Update the competency level specified by <levelId>, in the model specified by <modelId> with the given values",
+	params=#object(
+		modelId="identifier of the model that the competency level is in",
+		levelId="identifier of the competency level to be updated",
+		levelName="[optional] updated name of the level to be changed",
+		levelRank="[optional] updated rank (order) value for the level (0+)",
+		levelDescription="[optional] updated distinct description of the level"
+	)
+);
+displayUpdateCompetencyLevelAPI = API_UpdateCompetencyLevel.displayJson(_collapse="true");
+/competency/level/update/api = displayUpdateCompetencyLevelAPI;
+
+
+//==============
+// Delete Competency Level
+//==============
+
+delete = #competencyDeleteLevel(modelId=postedModelId, levelId=postedLevelId).displayJson(_collapse="true");
+
+checkLoginBeforeDelete = #object(
+							a=#competencyErrorLogin(),
+							b=delete
+						).cget(b="");
+
+deleteLevel =  #competencySessionUser(
+					sessionId=postedSessionId
+				).toParameter(
+					op=checkLoginBeforeDelete,
+					paramName="currentUser"
+				).displayJson(_collapse="true");
+
+/competency/level/delete = deleteLevel;
+
+//-----API-------
+
+API_DeleteCompetencyLevel = #object(
+	levr-service="#competencyDeleteLevel",
+	web-service="/competency/level/delete",
+	description="Deletes the competency level specified by <levelId> in the model specified by <modelId>",
+	params=#object(
+		modelId="identifier of the model that the competency level to be deleted is defined in",
+		levelId="identifier of the competency level to be deleted",
+	)
+);
+displayDeleteCompetencyLevelAPI = API_DeleteCompetencyLevel.displayJson(_collapse="true");
+/competency/level/delete/api = displayDeleteCompetencyLevelAPI;
+
+//==============
+// API for Manipulating Competency Levels
+//==============
+
+
+API_Level = #object().putInObject(
+	dest="/competency/level/create",
+	item=API_CreateCompetencyLevel
+).putInObject(
+	dest="/competency/level/read",
+	item=API_ReadCompetencyLevel
+).putInObject(
+	dest="/competency/level/all",
+	item=API_ReadAllCompetencyLevels
+).putInObject(
+	dest="/competency/level/update",
+	item=API_UpdateCompetencyLevel
+).putInObject(
+	dest="/competency/level/delete",
+	item=API_DeleteCompetencyLevel
+);
+					
+										
+#api_Level = API_Level;
+
+displayLevelAPI = #displayJson(obj=API_Level);
+/competency/level/api = displayLevelAPI;

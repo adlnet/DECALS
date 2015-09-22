@@ -1,0 +1,238 @@
+//==============
+// Competency Directory
+//==============
+
+checkDefaultDirectory = #if(operator=#fileExists(safe="false",path=#competencyDefaultDirectory()), operand="true", 
+		eq=#competencyDefaultDirectory(), 
+		ne=#createDirectory(safe="false",path=#competencyDefaultDirectory())
+);
+
+baseDirectory = #if(operator="@competencyDirectory", operand="", 
+	eq=checkDefaultDirectory, 
+	ne="@competencyDirectory"
+);
+
+modelDirectory = #add(a=baseDirectory, b=#competencyModelDirectoryName(), c="/");
+userDirectory = #add(a=baseDirectory, b=#competencyUserDirectoryName(), c="/");
+evidenceDirectory = #add(a=baseDirectory, b=#competencyEvidenceDirectoryName(), c="/");
+agentDirectory = #add(a=baseDirectory, b=#competencyAgentDirectoryName(), c="/"); 
+backupDirectory = #add(a=baseDirectory, b=#competencyBackupDirectoryName(), c="/");
+importDirectory = #add(a=baseDirectory, b=#competencyImportDirectoryName(), c="/");
+
+createCompetencyDirectoryStructure = #object(
+	a=#createDirectory(safe="false",path="@competencyDirectory"),
+	b=#createDirectory(safe="false",path=modelDirectory),
+	c=#createDirectory(safe="false",path=userDirectory),
+	d=#createDirectory(safe="false",path=evidenceDirectory),
+	e=#createDirectory(safe="false",path=agentDirectory),
+	f=#createDirectory(safe="false",path=backupDirectory),
+	g=#createDirectory(safe="false",path=importDirectory),
+	h=#competencyCreateDefaultModel()
+);
+// TODO: Create Default (Guest) User on Directory Creation
+// TODO: Create Structure Ontologies on Directory Creation 
+
+checkModelDirectory = #if(operator=#fileExists(safe="false",path=modelDirectory), operand="true", ne=#createDirectory(safe="false",path=modelDirectory));
+checkUserDirectory = #if(operator=#fileExists(safe="false",path=userDirectory), operand="true", ne=#createDirectory(safe="false",path=userDirectory));
+checkEvidenceDirectory = #if(operator=#fileExists(safe="false",path=evidenceDirectory), operand="true", ne=#createDirectory(safe="false",path=evidenceDirectory));
+checkAgentDirectory = #if(operator=#fileExists(safe="false",path=agentDirectory), operand="true", ne=#createDirectory(safe="false",path=agentDirectory));
+checkBackupDirectory = #if(operator=#fileExists(safe="false",path=backupDirectory), operand="true", ne=#createDirectory(safe="false",path=backupDirectory));
+checkImportDirectory = #if(operator=#fileExists(safe="false",path=importDirectory), operand="true", ne=#createDirectory(safe="false",path=importDirectory));
+  
+checkSubdirectories = #object(
+	a=checkModelDirectory,
+	b=checkUserDirectory,
+	c=checkEvidenceDirectory,
+	d=checkAgentDirectory,
+	e=checkBackupDirectory,
+	f=checkImportDirectory,
+	directory="@competencyDirectory"
+).get(directory="");
+
+checkDirectoryGiven = #if(
+	operator=#fileExists(safe="false",path="@competencyDirectory"), 
+	operand="true",
+	eq=checkSubdirectories,
+	ne=createCompetencyDirectoryStructure
+);
+
+createTDBDir = #add(a="@base", b="tdb/");
+
+competencyDirectory = #if(
+	operator="@competencyDirectory", 
+	operand="", 
+	eq=#object(a=checkDefaultDirectory, b=checkSubdirectories).get(a=""),
+	ne=checkDirectoryGiven
+).toParameter(op=createTDBDir, paramName="base");  		
+						
+#competencyDirectory = competencyDirectory;
+  
+#competencyModelDirectory = modelDirectory;
+#competencyUserDirectory = userDirectory;
+#competencyEvidenceDirectory = evidenceDirectory;
+#competencyAgentDirectory = agentDirectory;
+#competencyBackupDirectory = backupDirectory;
+#competencyImportDirectory = importDirectory;
+
+//==============
+// User Evidence File Directory 
+//==============
+
+userEvidenceDir = #object(
+	a=#if(operator=#fileExists(safe="false",path="@path"), operand="true", eq="@path", ne=#createDirectory(path="@path")),
+	b="@path"
+).ccall(path=#add(a=#competencyEvidenceDirectory(), c="@userId")).get(b="");
+
+#competencyUserEvidenceDirectory = userEvidenceDir;
+
+//==============   
+// User Model Name 
+//==============    
+
+userModelName= #add(b="user-", c="@userId");
+
+#competencyUserModel = userModelName;
+
+//==============
+// Competency Model Structure URIs
+//==============
+
+competencyStructureURI = #add(a=#competencyDefaultURI(), b="structure-competency");
+userStructureURI = #add(a=#competencyDefaultURI(), b="structure-user");
+ 
+#competencyStructureURI = competencyStructureURI;
+#competencyUserStructureURI = userStructureURI;
+
+//==============
+// Default Competency Model
+//==============
+
+defaultModelName = #string(str="model-default");
+
+#competencyDefaultModel = defaultModelName;
+
+//==============
+// Default Competency Levels
+//==============
+
+defaultLevels = #string(str=":true").toArray().append(a=":false");
+
+#competencyDefaultLevels = defaultLevels;
+
+//==============
+// Formatted Now String
+//==============
+
+now = #add(
+	a=#date(dateFormat="yyyy-MM-dd"),
+	b="T",
+	c=#date(dateFormat="hh:mm:ss")
+);
+		
+#competencyNow = now;
+
+//==============
+// Competency Manager Setup
+//==============
+
+createGuestUser = #if(operator=#competencyCheckUserExists(userId=#competencyGuestUserId()), operand="true",
+						eq=#competencyReadUser(userId=#competencyGuestUserId()),
+						ne=#competencyCreateUser(
+												userId=#competencyGuestUserId(), 
+												password=#competencyGuestUserPassword(), 
+												firstName="Guest", 
+												lastName="User"
+							)
+					);
+
+createGuestIfSet = #if(operator=#competencyCreateGuestUser(), operand=#true(),
+						eq=createGuestUser,
+						ne="No Guest User Created"
+					);
+
+deleteUser = #object(
+				a=#ontologyDelete(directory=#competencyDirectory(), ontologyId="@uri"),
+				b=#idxDelete(indexDir = #competencyUserDirectory(), databaseName = #competencyUserDBName(), index = "0", key=#string(str="@uri", op="substr", begin=#add(a=#indexOf(str="@uri", substr="user-"), b="5"))).toObject()
+			).cget(b="");
+			
+checkDeleteUser = #if(operator=#indexOf(str="@uri", substr="user-"), operand="-1",
+						ne=deleteUser
+					);  
+
+deleteUsers = #decode(obj="@uris").cforEach(op=checkDeleteUser, paramName="uri", threaded="false");
+
+checkUri = #if(operator=#catch(try=#ontologyReadAllProperties(directory=#competencyDirectory(), ontologyId=#competencyUserModel(userId=#decode(obj="@users").getIndex(index="0"))), runtime="false"), operand="false",
+				eq=deleteUsers.ccall(uris=#ontologyListOntologies(directory=#competencyDirectory()))
+			); 
+
+checkUserUris = #if(operator=#decode(obj="@users").count(), operand="1",
+					 ge=checkUri,
+					).ccall(users=#competencyGetUserIds()); 
+ 
+prepFile = #object(
+				a=#setCache(
+						name="fileString", 
+						item=#fileLoad(
+									path=#add(a=#competencyStructureDirectory(), b="/", c="@fileName", d=".owl")
+								).fileToString()
+					),
+				b=#setCache(
+						name="start", 
+						item=#indexOf(
+								str=#getCache(name="fileString"), 
+								substr=#add(a="<!ENTITY ", b="@fileName")
+							).add(a="2", b=#string(str=#add(a="<!ENTITY ", b="@fileName"), op="length"))
+					),
+				c=#setCache(
+						name="end", 
+						item=#indexOf(
+								str=#string(op="substr", str=#getCache(name="fileString"), begin=#getCache(name="start")), 
+								substr="#"
+								).add(a=#add(a="-", b=#string(str="@fileName", op="length")))
+					),
+				d=#setCache(name="oldUri", item=#string(
+													op="substr", 
+													str=#getCache(name="fileString"), 
+													begin=#getCache(name="start"), 
+													end=#add(
+															a=#getCache(name="start").toDouble(), 
+															b=#getCache(name="end").toDouble()
+														)
+												)
+					),
+				e=#string(
+						str=#getCache(name="fileString"), 
+						op="replace", 
+						regex=#getCache(name="oldUri"), 
+						with=#competencyDefaultURI()
+					).fileSave(path=#add(a=#competencyStructureDirectory(), b="/", c="@fileName", d=".owl"))
+			).ccall(
+				cacheId=#generateUUID()
+			);
+			
+																					
+prepStructureFiles = #add(a="[",b="]").toArray().append(
+													a="structure-competency",
+													b="structure-user",
+												).cforEach(op=prepFile, paramName="fileName", threaded="false");  
+
+setup = #object(  
+	a_uri = #ontologySetUriPrefix(uri=#competencyDefaultURI()),
+	b_directory=#competencyDirectory(),
+	c_structures=#if(operator=#toArray(obj="@uris").has(has=#competencyStructureURI()), operand="true",
+						ne=#object(
+								a=prepStructureFiles,
+								b=#ontologyTDBLoader(
+									input=#competencyStructureDirectory(), 
+									extension=".owl", 
+									tdbDirectory=#competencyDirectory()
+								)
+							)
+					).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory())),
+	d_default=#competencyCreateDefaultModel(),
+	e=#decode(obj=checkUserUris),
+	f_guestUser=createGuestIfSet,
+);      
+    
+#competencySetupAutoExecute = setup;
+

@@ -1,0 +1,285 @@
+
+getMultipartPostDataObject = #getFileFromPost(name="@field").fileToString().toObject();
+
+postedCompetencyObject = getMultipartPostDataObject.call(field="competency");
+
+postedSessionId = postedCompetencyObject.cget(sessionId="");
+
+postedUserId = postedCompetencyObject.cget(userId="");
+postedModelId = postedCompetencyObject.cget(modelId="");
+postedCompetencyId = postedCompetencyObject.cget(competencyId="");
+postedLevelId = postedCompetencyObject.cget(levelId="");
+postedLevelModelId = postedCompetencyObject.cget(levelModelId="");
+postedConfidence = postedCompetencyObject.cget(confidence="");
+
+postedRecordId = postedCompetencyObject.cget(recordId="");
+
+//==============
+// CREATE Competency Record
+//==============
+
+create = #competencyCreateRecord(
+	userId=postedUserId, 
+	modelId=postedModelId, 
+	competencyId=postedCompetencyId, 
+	levelModelId=postedLevelModelId, 
+	levelId=postedLevelId
+);
+
+checkLoginBeforeCreate = #object(
+							a=#competencyErrorLogin(),
+							b=create
+						).cget(b="");
+
+createRecord = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeCreate,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/record/create = createRecord;
+
+//-----API-------
+
+API_CreateRecord = #object(
+	levr-service="#competencyCreateRecord",
+	web-service="/competency/record/create",
+	description="Creates a new Record for a User, specified by <userId>, for the Competency, within <modelId> specified by <competencyId>, at the Level specified by <levelId>",
+	params=#object(
+		userId="Id of the User who holds the new competency record",
+		modelId="Id of the Model in which the competency is defined",
+		competencyId="Id of the competency within the model",
+		levelId="Id of the Level at which the user holds the competency"
+	)
+);
+displayCreateRecordAPI = API_CreateRecord.displayJson(_collapse="true");
+/competency/record/create/api = displayCreateRecordAPI;
+
+
+//==============
+// READ Competency Record
+//==============
+
+read = #competencyReadRecord(
+	userId=postedUserId, 
+	recordId=postedRecordId
+);
+
+checkLoginBeforeRead = #object(
+							a=#competencyErrorLogin(),
+							b=read
+						).cget(b="");
+
+readRecord = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeRead,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/record/read = readRecord;
+
+
+//-----API-------
+
+API_ReadRecord = #object(
+	levr-service="#competencyReadRecord",
+	web-service="/competency/record/read",
+	description="Retrieves the competency record, specified by <recordId>",
+	params=#object(
+		recordId="Id of the competency record to retrieve from the user's competency model",
+		userId="Id of the User who holds the competency record to be read",
+	)
+);
+displayReadRecordAPI = API_ReadRecord.displayJson(_collapse="true");
+/competency/record/read/api = displayReadRecordAPI;
+
+
+//==============
+// READ ALL Competency Records
+//==============
+
+readAll = #competencyReadAllRecords(
+	userId=postedUserId, 
+);
+
+checkLoginBeforeReadAll = #object(
+							a=#competencyErrorLogin(),
+							b=readAll
+						).cget(b="");
+
+readAllRecords = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeReadAll,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+
+/competency/record/all = readAllRecords;
+
+
+//-----API-------
+
+API_ReadAllRecords = #object(
+	levr-service="#competencyReadAllRecords",
+	web-service="/competency/record/all",
+	description="Retrieves all of the competency records for the user specified by <userId>",
+	params=#object(
+		userId="Id of the User to read the records of",
+	)
+);
+displayReadAllRecordsAPI = API_ReadAllRecords.displayJson(_collapse="true");
+/competency/record/all/api = displayReadAllRecordsAPI;
+
+
+//==============
+// UPDATE Competency Records
+//==============
+
+update = #competencyUpdateRecordConfidence(
+	userId=postedUserId,
+	recordId=postedRecordId,
+	confidence=postedConfidence
+).displayJson(_collapse="true");
+
+
+checkLoginBeforeUpdate = #object(
+							a=#competencyErrorLogin(),
+							b=update
+						).cget(b="");
+
+updateRecord = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeUpdate,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/record/updateConfidence = updateRecord;
+
+
+//-----API-------
+
+API_UpdateRecord = #object(
+	levr-service="#competencyRecordUpdateConfidence",
+	web-service="/competency/record/updateConfidence",
+	description="Updates the competency record confidence value, specified by <recordId> to the confidence specified by <confidence>, for the user specified by <userId>",
+	params=#object(
+		userId="Id of the User who holds the competency record to be updated",
+		recordId="Id of the competency record",
+		confidence="new confidence rank, must be real between 0 and 1"
+	)
+);
+displayUpdateRecordAPI = API_UpdateRecord.displayJson(_collapse="true");
+/competency/record/updateConfidence/api = displayUpdateRecordAPI;
+
+
+//==============
+// DELETE Competency Record
+//==============
+
+delete = #competencyDeleteRecord(
+	userId=postedUserId,
+	recordId = postedRecordId 
+).displayJson(_collapse="true");
+
+checkLoginBeforeDelete = #object(
+							a=#competencyErrorLogin(),
+							b=delete
+						).cget(b="");
+
+deleteRecord = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeDelete,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/record/delete = deleteRecord;
+
+
+//-----API-------
+
+API_DeleteRecord = #object(
+	levr-service="#competencyDeleteRecord",
+	web-service="/competency/record/delete",
+	description="Deletes the competency record, specified by <recordId>, for the user specified by <userId>",
+	params=#object(
+		userId="Id of the User who holds the competency record to be deleted",
+		recordId="Id of the Competency Record to be deleted",
+	)
+);
+displayDeleteRecordAPI = API_DeleteRecord.displayJson(_collapse="true");
+/competency/record/delete/api = displayDeleteRecordAPI;
+
+//==============
+// READ User's Competencies
+//==============
+
+readUserCompetencies = #competencyReadUserCompetencies(
+	userId=postedUserId, 
+).displayJson(_collapse="true");
+
+checkLoginBeforeReadCompetencies = #object(
+							a=#competencyErrorLogin(),
+							b=readUserCompetencies
+						).cget(b="");
+
+readCompetencies = #competencySessionUser(
+						sessionId=postedSessionId
+					).toParameter(
+						op=checkLoginBeforeReadCompetencies,
+						paramName="currentUser"
+					).displayJson(_collapse="true");
+
+/competency/record/readCompetencies = readCompetencies;
+
+
+//-----API-------
+
+API_ReadUserCompetencies = #object(
+	levr-service="#competencyReadUserCompetencies",
+	web-service="/competency/record/readCompetencies",
+	description="Display's all of the competency details for each competency that the user, specified by <userId>, has a record for",
+	params=#object(
+		userId="Id of the User who holds the competencies to be listed",
+	)
+);
+displayReadUserCompetenciesAPI = API_ReadUserCompetencies.displayJson(_collapse="true");
+/competency/record/readCompetencies/api = displayReadUserCompetenciesAPI;
+
+
+
+
+
+//==============
+// API for Manipulating Competency Records
+//==============
+
+
+API_Record = #object().putInObject(
+	dest="/competency/record/create",
+	item=API_CreateRecord
+).putInObject(
+	dest="/competency/record/read",
+	item=API_ReadRecord
+).putInObject(
+	dest="/competency/record/all",
+	item=API_ReadAllRecords
+).putInObject(
+	dest="/competency/record/delete",
+	item=API_DeleteRecord
+).putInObject(
+	dest="/competency/record/updateConfidence",
+	item=API_UpdateRecord
+).putInObject(
+	dest="/competency/record/readCompetencies",
+	item=API_ReadUserCompetencies,
+);
+					
+#api_Record = API_Record;
+
+displayRecordAPI = #displayJson(obj=API_Record);
+/competency/record/api = displayRecordAPI;

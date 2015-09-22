@@ -1,0 +1,589 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+
+fileDb={
+	indexDir=#decalsFileDbDirectory(),
+	databaseName=#decalsFileDbName(),
+	index=#decalsFileDbIndexName() 
+};
+
+fileMetadataDb={
+	indexDir=#decalsFileMetadataDbDirectory(),
+	databaseName=#decalsFileMetadataDbName(),
+	index=#decalsFileMetadataDbIndexName() 
+};
+
+tempDb={
+	indexDir=#decalsTempDbDirectory(),
+	databaseName=#decalsTempDbName(),
+	index=#decalsTempDbIndexName() 
+};
+
+fileObj=#idxGet(fileDb,key="@fileId").toObject();
+allFileObj=#idxKeys(fileDb).cforEach(paramName="fileId",op=fileObj);
+
+fileMdObj=#fileGetMetadata(fileMetadataDb,id="@fileId").toObject();
+allFileMdObj=#idxKeys(fileMetadataDb).cforEach(paramName="fileId",op=fileMdObj);
+
+#decalsFileMdObj = fileMdObj;
+
+tempObj=#idxGet(tempDb,key="@tempId").toObject();
+allTempObj=#idxKeys(tempDb).cforEach(paramName="tempId",op=tempObj);
+
+deleteTempObj=#idxDelete(tempDb,key="@tempId");
+
+inFile=#getFileFromPost().getIndex(index="0");
+
+
+//============================
+//Files/Resources
+//============================
+
+//--------------------------
+//Show all files
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllFiles=allFileObj.displayJson();
+/decalsShowAllFiles=getAllFiles;
+
+//--------------------------
+//Show all file metadata
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllFileMetadata=allFileMdObj.displayJson();
+/decalsShowAllFileMetadata=getAllFileMetadata;
+
+//--------------------------
+//Resource metadata count for user
+
+fileMdForUser=allFileMdObj.cforEach(
+	paramName="fileId",
+    op=#if(
+    	operator=fileMdObj.cget(uploadedBy_t=""),
+		operand="@userId",
+		eq=fileMdObj
+	)
+);
+
+resourceMetadataCountForUser=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=fileMdForUser.ccall(userId=decalsPostData.cget(userId="")).count()
+).cget(b="").displayJson();
+
+/decalsResourceMetadataCountForUser=resourceMetadataCountForUser;
+
+//--------------------------
+//Show file info
+
+fileInfo=#object(
+		fileName=inFile.filename(),
+		fileSizeBytes=inFile.fileSize(),
+		b64Contents=#fileToBase64(obj=inFile).getByParam(param=inFile.filename()),
+		mimeType=#mimeType(file=inFile)
+);
+
+fileInfoDj=fileInfo.displayJson();
+
+/decalsFileInfo=fileInfoDj;
+
+//--------------------------
+//Upload URL
+
+urlUpload=#object(
+    a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=#fileCreateMetadata(
+		fileMetadataDb,
+		username=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),		
+        id="@fileId",
+        type_t="url",
+        mime="application/x-url",
+        fsize="0",
+        fname=decalsPostData.cget(pageTitle=""),
+        title_t=decalsPostData.cget(pageTitle=""),
+        url_t=decalsPostData.cget(url=""),
+        fileIndex="0",
+        published_t="false"
+    ).buildArguments(remove="sessionId", hard="true"),
+    c=#solrAddDocs(
+    	url=#decalsDarSolrUrl(),
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+    ),   
+	z="@fileId"
+).ccall(
+	fileId=#generateUUID()
+).cget(z="").displayJson();
+    
+/decalsUrlUpload=urlUpload;
+
+//--------------------------
+//Upload file
+
+fileUpload=#object(
+    a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=#fileCreateMetadata(
+		fileMetadataDb,
+		username=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),		
+        id="@fileId",
+        type_t="file",
+        title_t=inFile.filename(),
+        url_t=#add(a=#decalsFileDownloadUrlPrefix(),b="@fileId"),
+        fileIndex="0",
+        published_t="false"
+    ).buildArguments(remove="sessionId", hard="true"),
+    c=#solrAddDocs(
+    	url=#decalsDarSolrUrl(),
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+    ),   
+	z="@fileId"
+).ccall(
+	fileId=#fileUpload(fileDb).ccall(fileIndex="0")
+).cget(z="").displayJson();
+    
+/decalsFileUpload=fileUpload;
+
+//--------------------------
+//Update file metadata
+
+resourceUpdateMetadata=#object(
+    a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+    b=#fileUpdateMetadata(fileMetadataDb,field="fileMetadata"),
+    c=#solrAddDocs(
+    	url=#decalsDarSolrUrl(),
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+    ),   
+	z=#object(msg="true")
+).ccall(
+	fileId=decalsPostData.cget(fileId="")
+).cget(z="").displayJson();
+    
+/decalsResourceUpdateMetadata=resourceUpdateMetadata;
+
+//--------------------------
+//Download file
+
+downloadFile=#fileGet(fileDb,id="@fileId");
+                  
+/decalsFileDownload = downloadFile;
+
+//--------------------------
+//Get file list for the given user
+
+sortObj=#object(field="@sortField",order="@sortOrder");
+
+getFilesByUser=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=#solrQuery(
+			url=#decalsDarSolrUrl(),
+	    	sq=#add(a="uploadedBy_t:",b=decalsPostData.cget(userId="")),
+	    	rows=decalsPostData.cget(rows=""),
+	    	idSort=decalsPostData.cget(idSort=""),
+	    	useCursor=decalsPostData.cget(useCursor=""),  
+	    	useMustMatchAll=decalsPostData.cget(useMustMatchAll=""),
+	    	start=decalsPostData.cget(start=""),
+	    	sort=sortObj.ccall(
+	    		sortField=decalsPostData.cget(sortField=""),
+	    		sortOrder=decalsPostData.cget(sortOrder="")
+	    	)
+	    )
+).cget(b="").displayJson();
+
+/decalsGetFilesByUser=getFilesByUser;
+
+//--------------------------
+//Generate file metadata
+
+getMetaglanceFileMetadata = #httpPost(
+        obj=#fileGet(fileDb,id="@fileId"),
+        contentType="text/plain",
+        multipart="true",
+        name=fileMdObj.cget(fileName_t=""),       
+        url=#decalsGenerateMetadataServiceUrl()
+);
+
+getMetaglanceUrlMetadata=#httpGet(
+        obj=#add(
+        	a=#decalsGenerateMetadataServiceUrl(),
+        	b="?url=",
+        	c="@url"
+        )
+);
+
+resourceMetadata=#if(
+	operator=fileMdObj.cget(type_t=""),
+	operand="file",
+	eq=getMetaglanceFileMetadata.ccall(fileId="@fileId"),
+	ne=getMetaglanceUrlMetadata.ccall(fileId="@fileId",url=fileMdObj.cget(url_t=""))
+);
+
+metadataGenerationFailedMessage=#string(str="Metadata could not be generated for this resource.");
+
+resourceMetadataWithCheck=#if(
+	operator=resourceMetadata.has(has="description_t"),
+	operand="true",
+	eq=resourceMetadata,
+	ne=#object(description_t=metadataGenerationFailedMessage)
+);
+
+updateFileMetadataDescription=#fileUpdateMetadataField(
+	fileMetadataDb,
+	fileId="@fileId",
+	description_t=#add(
+		a=fileMdObj.cget(description_t=""),
+		b=" ***AutoGenerated (",
+		c=#date(dateFormat="EEE, dd MMM yyyy HH:mm:ss z"),
+		d="): ",
+    	e=tempObj.cget(description_t=""),
+    	f=" ***"
+	),
+	updatedDate_l=#date(_raw="true")	
+);
+
+updateOtherFileMetadataFields=#object(
+	a=#fileUpdateMetadataField(
+		fileMetadataDb,
+		fileId="@fileId",
+		classification_t=tempObj.cget(classification_t=""), 
+		duration_f=tempObj.cget(duration_f=""),
+		environment_t=tempObj.cget(environment_t=""),
+		sec_level_t=tempObj.cget(level_t=""),
+		gradeLevel_t=tempObj.cget(gradeLevel_t=""),
+		language_t=tempObj.cget(language_t="")
+	),
+	b=#fileUpdateMetadataField(
+		fileMetadataDb,
+		fileId="@fileId",
+		isArray="true",
+		field="keywords_txt",
+		value=#listAdd(
+			a=fileMdObj.cget(keywords_txt=""),
+			b=#toArray(obj=#add(a="[",b=tempObj.cget(keywords_t=""),c="]"))
+		).removeDuplicates()
+	)
+);
+
+updateFileMetadataFields=#object(
+	a=resourceMetadataWithCheck.idxSet(tempDb,key="@tempId"),
+	b=updateFileMetadataDescription,
+	c=#if(
+		operator=tempObj.cget(description_t=""),
+		operand=metadataGenerationFailedMessage,
+		ne=updateOtherFileMetadataFields
+	),
+	d=deleteTempObj
+).ccall(tempId=#generateUUID());
+
+generateResourceMetadata=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=updateFileMetadataFields.ccall(fileId="@fileId"),
+	c=#solrAddDocs(
+    	url=#decalsDarSolrUrl(),
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")),
+	z=#object(msg="true")
+).ccall(
+	fileId=decalsPostData.cget(fileId="")
+).displayJson();
+
+/decalsGenerateResourceMetadata=generateResourceMetadata;
+
+//--------------------------
+//Delete resource (file/URL)
+
+deleteDocForResource=#object(
+	doc_type="resource_data",
+	doc_version=#decalsLrParaPubDocVersion(),
+	active=#toBoolean(obj="true"),
+	identity=#object(
+		submitter_type="agent",
+		submitter=#decalsLrPublishSubmitter(),
+		curator=#decalsLrPublishCurator()
+	),
+	publishing_node=#decalsLrPublishFromNode(),
+	resource_data_type="none",
+	TOS=#object(
+		submission_TOS="http://www.learningregistry.org/tos/cc0/v0-5/"
+	),
+	payload_placement="none",
+	replaces=#listAdd(a="@lrDocId")
+);
+
+publishDeleteToLr=#object(documents=#listAdd(item=deleteDocForResource)).httpPost(
+	url=#add(a=#decalsLrPublishNode(),b="publish"),
+	contentType="application/json;charset=UTF-8",
+	name="something",
+	multipart="false",
+	authToken=#decalsLrPublishToken()
+);
+#decalsPublishDeleteToLr = publishDeleteToLr;
+
+deleteResourceLrEntry=#if(
+	operator=fileMdObj.cget(lrDocId_t=""),
+	operand="",
+	ne=publishDeleteToLr.ccall(lrDocId=fileMdObj.cget(lrDocId_t=""))
+);
+
+deleteFileTypeInfo=#if(
+	operator=fileMdObj.cget(type_t=""),
+	operand="file",
+	eq=#object(
+		a=#decalsDeleteParadataLrEntry(resourceUrl=fileMdObj.ccall(fileId="@fileId").cget(url_t="")),
+		b=#decalsDeleteResourceParadata(resourceUrl=fileMdObj.ccall(fileId="@fileId").cget(url_t="")),
+		c=#decalsRemoveItemFromAllCollections(resourceUrl=fileMdObj.ccall(fileId="@fileId").cget(url_t=""))		
+	)
+);
+
+deleteResource=#object(
+	a=deleteFileTypeInfo.ccall(fileId="@fileId"),
+	b=#solrDeleteDocs(url=#decalsDarSolrUrl(),documents="@fileId"),
+	c=#if(operator="@published", operand="true",
+			eq=#object(
+					b=#solrDeleteDocs(url=#decalsRegistrySolrUrl(),documents=fileMdObj.ccall(fileId="@fileId").cget(url_t="")),	
+					c=deleteResourceLrEntry.ccall(fileId="@fileId"),
+				),
+		),
+	d=#fileDeleteMetadata(fileMetadataDb,id="@fileId"),		
+	e=#fileDeleteFile(fileDb,id="@fileId")
+).ccall(
+	published=fileMdObj.cget(published_t="")
+);
+
+deleteResourceFromApp=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=deleteResource.ccall(fileId=decalsPostData.cget(fileId="")),
+	z=#object(msg="true")
+).cget(z="").displayJson();
+
+/decalsDeleteResource=deleteResourceFromApp;
+
+//--------------------------
+//Transfer resources
+
+transferResource=#object(
+	a=fileMdObj.putInObject(
+		dest="uploadedBy_t",
+		item="@toUserId"
+	).putInObject(
+		dest="transferedFrom_txt",
+		item=#listAdd(
+			a=fileMdObj.cget(transferedFrom_txt=""),
+			b=#object(from="@fromUserId",on=#date(_raw="true"))
+		).removeDuplicates()
+	).idxSet(fileMetadataDb,key="@fileId"),
+	b=#solrAddDocs(url=#decalsDarSolrUrl(),documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true"))
+);
+
+transferAllResources=allFileMdObj.cforEach(
+	paramName="fileId",
+    op=#if(
+    	operator=fileMdObj.cget(uploadedBy_t=""),
+		operand="@fromUserId",
+		eq=transferResource.ccall(fileId="@fileId")
+	)
+);
+#decalsTransferAllResources = transferAllResources;
+
+transferAllResourcesFromApp=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=transferAllResources.ccall(fromUserId=decalsPostData.cget(fromUserId=""),toUserId=decalsPostData.cget(toUserId="")),
+	z=#object(msg="true")
+).cget(z="").displayJson();
+
+/decalsTransferAllResources=transferAllResourcesFromApp;
+
+
+//--------------------------
+// Delete User Resources
+
+deleteUserResources=allFileMdObj.cforEach(
+	paramName="fileId",
+    op=#if(
+    	operator=fileMdObj.cget(uploadedBy_t=""),
+		operand="@userId",
+		eq=deleteResource
+	)
+);
+#decalsDeleteUserResources = deleteUserResources;
+
+
+//--------------------------
+// Get Resource Learning Objectives
+ 
+getLearningObjectives = #solrSearch(solrURL=#decalsRegistrySolrUrl(), rows="0", facetFields=#toArray(obj=#add(a="['", b="learning_objectives_txt", c="']"))).cget(learning_objectives_txt="").displayJson(_collapse="true");
+ 
+/decalsGetResourceLearningObjectives = getLearningObjectives;
+
+
+//--------------------------
+// Duplicate Resource
+
+
+duplicateResource = #idxSet(
+						fileMetadataDb,
+						key="@fileId",
+						obj=#if(operator="@fileMdObj", operand="",
+									ne=#decode(obj="@fileMdObj").putInObject(
+																	dest="uploadedBy_t", 
+																	item=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId="")
+																).putInObject(
+																	dest="updatedDate_l",
+																	item=#date(_raw="true")
+																).putInObject(
+																	dest="published_t",
+																	item="false"
+																),
+									eq=#if(operator="@LRInfo", operand="",
+											ne=#object(
+												lrDocId_t=#decode(obj="@LRInfo").cget(id=""),
+												uploadedBy_t=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),
+												uploadDate_l=#date(_raw="true"),
+												updatedDate_l=#date(_raw="true"),
+												keywords_txt=#if(operator=#decode(obj="@LRInfo").keySet().has(has="keywords").debug(), operand="true",
+																	eq=#decode(obj="@LRInfo").cget(keywords="").toArray().union(a=#decode(obj="@collectionMetadata").cget(keywords="").toArray()),
+																	ne=#decode(obj="@collectionMetadata").cget(keywords="").toArray()
+																),
+												environment_t=#if(operator=#decode(obj="@LRInfo").keySet().has(has="grade_levels"), operand="true",
+																	eq=#object(
+																			a=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_KINDERGARTEN_GRADE_LEVEL()), operand="true",
+																					eq=#decals_PRIMARY_ENVIRONMENT(),
+																					ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_ELEMENTARY_GRADE_LEVEL()), operand="true",
+																							eq=#decals_PRIMARY_ENVIRONMENT(),
+																							ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_MIDDLE_SCHOOL_GRADE_LEVEL()), operand="true",
+																									eq=#decals_PRIMARY_ENVIRONMENT(),
+																									ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_HIGH_SCHOOL_GRADE_LEVEL()), operand="true",
+																											eq=#decals_SECONDARY_ENVIRONMENT(),
+																											ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_HIGHER_ED_GRADE_LEVEL()), operand="true",
+																													eq=#decals_HIGHER_ED_ENVIRONMENT(),
+																													ne=#if(operator=#toArray(obj="@gradeLevels").has(has=#decals_VOCATIONAL_GRADE_LEVEL()), operand="true",
+																															eq=#decals_VOCATIONAL_ENVIRONMENT(),
+																															ne=#decode(obj="@collectionMetadata").cget(environment=""),
+																														)
+																												)
+																										)
+																								)
+																						)
+																				)
+																		).ccall(
+																			gradeLevels=#decode(obj="@LRInfo").cget(grade_levels="")
+																		).cget(a=""),
+																	ne=#decode(obj="@collectionMetadata").cget(environment=""),
+																),
+												description_t=#if(operator="@LRInfo", operand="",
+																	ne=#if(operator=#decode(obj="@LRInfo").cget(description=""), operand="",
+																			ne=#decode(obj="@LRInfo").cget(description="")
+																		)
+																),
+												publisher_t=#if(operator=#decode(obj="@LRInfo").cget(publisher=""), operand="",
+																ne=#decode(obj="@LRInfo").cget(publisher="")
+															),
+												language_t=#if(operator=#decode(obj="@LRInfo").cget(language_t=""), operand="",
+																ne=#decode(obj="@LRInfo").cget(language_t="")
+															),
+												mimeType_t=#if(operator=#decode(obj="@LRInfo").cget(mimetype_t=""), operand="",
+																ne=#decode(obj="@LRInfo").cget(mimetype_t="")
+															),
+												title_t=#if(operator=#decode(obj="@LRInfo").cget(title=""), operand="",
+																ne=#decode(obj="@LRInfo").cget(title="")
+															),
+												type_t=#if(operator=#decode(obj="@LRInfo").cget(mimetype_t=""), operand="",
+															ne=#if(operator=#indexOf(str=#decode(obj="@LRInfo").cget(mimetype_t=""), substr="application"), operand="0",
+																	ge="url",
+																	lt=#if(operator=#indexOf(str=#decode(obj="@LRInfo").cget(mimetype_t=""), substr="html"), operand="0",
+																			ge="url",
+																			lt="file"
+																		)
+																),
+															eq="url"
+														),
+												url_t=#add(
+														a=#decode(obj="@LRInfo").cget(url=""),
+														b="#lr-copy-",
+														c=#generateUUID()
+													),
+												old_title_t=#if(operator=#decode(obj="@LRInfo").cget(title=""), operand="",
+																ne=#decode(obj="@LRInfo").cget(title="")
+															),
+												published_t="false"
+											),
+											eq=#error(msg="Unable to Duplicate Resource")
+										)
+							).ccall(
+								fileMdObj=fileMdObj.ccall(fileId="@oldFileId"),
+								LRInfo=decalsPostData.cget(itemInfo=""), 
+							)
+					);
+					
+startDuplicate = #object(
+					a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),,
+					b=duplicateResource,
+					c=#solrAddDocs(
+					    	url=#decalsDarSolrUrl(),
+					        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+						),   
+				).ccall(
+					oldFileId=decalsPostData.cget(fileId=""),
+					fileId=#generateUUID()
+				).cget(b="").displayJson(); 
+
+/decalsDuplicateResource = startDuplicate;
+										
+						
+//--------------------------
+// Add Similar Url
+
+addSimilarUrl = #object(
+					a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+					b=#fileCreateMetadata(
+							fileMetadataDb,
+							username=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),		
+					        id="@fileId",
+					        type_t="url",
+					        mime="application/x-url",
+					        fsize="0",
+					        fname=decalsPostData.cget(pageTitle=""),
+					        title_t=decalsPostData.cget(pageTitle=""),
+					        url_t=decalsPostData.cget(url=""),
+					        fileIndex="0",
+					        published_t="false",
+					        keywords_txt=#toArray(obj="@keywords_txt"),
+					        language_t="@language_t",
+					    ).buildArguments(remove="sessionId", hard="true"),
+					c=#solrAddDocs(
+					    	url=#decalsDarSolrUrl(),
+					        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true").debug()
+					    )
+				).ccall(
+					fileId=#generateUUID(),
+					keywords_txt=decalsPostData.debug().cget(similar="").toObject().cget(keywords=""),
+					language_t=decalsPostData.debug().cget(similar="").toObject().cget(language_t="")
+				).displayJson();
+				
+/decalsAddSimilarUrl = addSimilarUrl;
+					
+
+//--------------------------
+// Add Similar File
+
+addSimilarFile = #object(
+					a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+					b=#fileCreateMetadata(
+							fileMetadataDb,
+							username=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),		
+					        id="@fileId",
+					        type_t="file",
+					        title_t=inFile.filename(),
+					        url_t=#add(a=#decalsFileDownloadUrlPrefix(),b="@fileId"),
+					        fileIndex="0",
+					        published_t="false",
+					        keywords_txt=#toArray(obj="@keywords_txt"),
+					        language_t="@language_t",
+					    ).buildArguments(remove="sessionId", hard="true"),
+					c=#solrAddDocs(
+					    	url=#decalsDarSolrUrl(),
+					        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+					    )
+				).ccall(
+					fileId=#fileUpload(fileDb).ccall(fileIndex="0"),
+					keywords_txt=decalsPostData.cget(similar="").debug().toObject().cget(keywords=""),
+					language_t=decalsPostData.cget(similar="").toObject().cget(language_t="")
+				).displayJson();
+ 
+ /decalsAddSimilarFile = addSimilarFile;

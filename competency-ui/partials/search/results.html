@@ -1,0 +1,85 @@
+<div id="results" class="screen left">
+	<div class="row">
+		<div id="" class="small-12 columns">
+			<h3>
+				<span ng-hide="(search.query != '' && search.query != undefined) || appCache.context != contexts.model">
+					All Model Results
+				</span>
+				<span ng-hide="(search.query != '' && search.query != undefined) || appCache.context != contexts.competency">
+					All Competency Results
+				</span>
+				<span ng-hide="(search.query == '' || search.query == undefined) && (appCache.context == contexts.model || appCache.context == contexts.competency)">
+					{{appCache.context | capitalize}} Results for 
+					<strong id="searchString">
+						{{search.query}}
+					</strong>
+				</span>
+			</h3>
+			<a id="showSearch" class="button tiny" ng-click="showSearch(appCache.context);"> 
+				<i class="fa fa-search"></i>
+			</a> 
+			<a id="addItem" class="button tiny" ng-click="showCreate(appCache.context);" ng-hide="session.currentUser.id == session.guestUser.id"> 
+				<i class="fa fa-plus"></i>
+				Create New {{appCache.context | capitalize}}
+			</a>
+		</div>
+	</div>
+
+	<div class="row">
+		<div id="resultsWrapper" class="small-12 columns">
+
+			<div id="filters" >
+				<div id="model_filter" class='dropdown' ng-dropdown-checklist ng-model="search.model" ng-hide="appCache.context != contexts.competency">
+					<div id="label" style="display:inline-block;padding: 8px 20px 5px 10px;">
+					Models:
+					</div>
+					<div id="display">
+					    <span id="all" ng-hide="search.model !== search.ALL_MODELS">
+					    	All Models
+					    </span>
+					    <span id="list" ng-hide="search.model === search.ALL_MODELS">
+					    	<span ng-repeat="modelId in search.model">
+					    		<span ng-hide="$first">,</span>
+					    		{{appCache.modelCache[modelId].name}}
+					    	</span>
+					    </span>
+					</div>
+				    <div id="options" style="right:inherit;">
+			            <ul>
+			            	<li ng-repeat="model in appCache.modelCache" ng-on-repeat-done>
+			            		<input id="{{model.id}}" type="checkbox" value="{{model.id}}" data-name="{{model.name}}" 
+			            			ng-checked="search.model.indexOf('all') == 0 || search.model.indexOf(model.id) != -1"/>
+			            		<span title="{{model.name}}">{{model.name}}</span>
+			            	</li>
+			            </ul>
+				    </div>
+				</div> 
+			</div>
+
+			<ul id="resultsList">
+				<li>
+					<h2 class="subheader" ng-hide="search.resultLength != 0">
+						<i class="fa fa-circle-o-notch fa-spin"></i> Searching...
+					</h2> <span ng-hide="search.resultLength != -1"> No Results Found
+				</span>
+				</li>
+				<li ng-repeat="result in search.results" data-id="{{result.id}}"
+					ng-include="resultTemplate()"
+					ng-hide="search.resultLength == 0"></li>
+			</ul>
+
+
+			<br/><br/>
+			<!-- div class="pagination-centered">
+				<ul class="pagination" ng-hide="search.resultLength < 10">
+					<li class="arrow unavailable"><a>«</a></li>
+					<li class="current"><a>1</a></li>
+					<li><a>2</a></li>
+					<li class="unavailable"><a>…</a></li>
+					<li><a>{{resultPages(search.resultLength)}}</a></li>
+					<li class="arrow"><a>»</a></li>
+				</ul>
+			</div-->
+		</div>
+	</div>
+</div>

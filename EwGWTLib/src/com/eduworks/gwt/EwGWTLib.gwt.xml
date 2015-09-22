@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='ewgwtlib'>
+	<!-- Inherit the core Web Toolkit stuff. -->
+	<inherits name='com.google.gwt.user.User' />
+
+	<!-- Inherit the default GWT style sheet. You can change -->
+	<!-- the theme of your GWT application by uncommenting -->
+	<!-- any one of the following lines. -->
+
+	<inherits name='com.google.gwt.user.theme.clean.Clean' />
+
+	<inherits name='com.google.gwt.jsonp.Jsonp' />
+	<inherits name='com.google.gwt.json.JSON' />
+	<inherits name="org.vectomatic.libgwtfile" />
+	<!-- <inherits name="com.eduworks.gwt.EwGWTLib" /> -->
+
+	<entry-point class='com.eduworks.gwt.client.component.AppEntry' />
+
+	<!-- Specify the app entry point class. -->
+	<!-- Specify the paths for translatable code -->
+	<source path='client' />
+
+</module>

@@ -1,0 +1,74 @@
+//---------------------------------------
+//All functions publicly exposed in this library will be prefixed by 'solr'.
+//
+//---------------------------------------
+//---------------------------------------//---------------------------------------
+//--------------Service calls
+//==============
+//Adds one or more Solr documents defined by the post data field "addDocs"
+
+addDocs=#object(
+	a=#solrAddDocument(
+		solrURL="@url", 
+		documents=#toArray(obj="@documents")
+	),
+	f="true"
+).cget(f="");
+
+#solrAddDocs=addDocs;
+
+///solr/addDocs=addDocs;
+
+//==============
+//Deletes one or more Solr documents defined by the post data field "delDocs"
+deleteDocs=#object(
+	a=#solrDeleteDocument(
+		solrURL="@url", 
+		ids=#toArray(obj="@documents")
+	),
+	b="true"
+).cget(b="");
+
+#solrDeleteDocs=deleteDocs;
+
+///solr/deleteDocs=deleteDocs;
+
+//==============
+//Clears the entire Solr index (the ENTIRE Solr index...beware!)
+
+clearIndex=#object(
+	a=#solrClearIndex(solrURL="@url"),
+	b="true"
+).cget(b="");
+
+#solrClear=clearIndex;
+
+///solr/clearIndex=clearIndex;
+
+//==============
+//Performs a Solr search with the given query
+//pages needs to be set to zero if cursors are used	  
+query=#solrSearch(
+	solrURL="@url",
+	query="@sq",
+	bq="@boostQuery",
+	fields=#toArray(obj="@fields"),
+	sort=#toArray(obj="@sort"),
+	rows="@rows",
+	useCursor = "@useCursor",
+	cursor="@cursor", 
+	start="@start", 
+	idSort="@idSort",
+	useMustMatchAll="@useMustMatchAll"
+);
+
+#solrQuery=query;
+
+///solr/query=query;
+
+
+isValidPermission=#object(a="@permissionId").cget(a="");
+
+
+
+

@@ -1,0 +1,10 @@
+<h3 class="title">
+	<a title="{{result.firstName}} {{result.lastName}}"
+		ng-click="showView(appCache.context, result.id)">
+		{{result.firstName}} {{result.lastName}} </a> <a
+		ng-click="showView(appCache.context, result.id)"
+		ng-hide="result.firstName != '' && result.firstName != undefined">
+		[No Name] </a>
+</h3>
+<span class="info">Date Created: {{result.dateCreated}}</span>
+<span class="id">{{result.id}}</span>

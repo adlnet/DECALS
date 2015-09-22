@@ -1,0 +1,52 @@
+<span > 
+	<strong id="competencyText">Competency:</strong> 
+	<a ng-click="showView('competency', recordObj.competencyId, recordObj.competencyModelId)"
+	title="{{appCache.competencyCache[recordObj.competencyModelId][recordObj.competencyId].title}} 
+{{appCache.currentItem.competencies[recordObj.competencyId].id}}"
+style="max-width:{{titleContainerWidth}}px; white-space:nowrap; text-overflow: ellipsis; display:inline-block; overflow:hidden; vertical-align:bottom;">
+		{{appCache.competencyCache[recordObj.competencyModelId][recordObj.competencyId].title}}
+	</a>
+</span>
+
+
+<a id="editLink"
+	style='float: right; margin-bottom: 0px;'
+	ng-click="showEdit('record', recordObj.id, recordObj.userId)"> 
+	<i class="fa fa-pencil"></i>
+	Edit Validations
+</a>
+
+<a style='float: right; margin-bottom: 0px;margin-right:7px;' ng-hide="true"> 
+	<i class="fa fa-eye"></i>
+	View
+</a>
+
+<br />
+
+<span> 
+	<strong>Model:</strong> 
+	<a ng-click="showView('model', recordObj.competencyModelId)"
+		title="{{appCache.currentItem.competencies[recordObj.competencyId].modelId">
+		{{appCache.modelCache[recordObj.competencyModelId].name}} 
+	</a>
+</span>
+
+<br />
+
+
+<span> 
+	<strong>Level:</strong> 
+	<span title="{{appCache.levelCache[recordObj.levelId] ? appCache.levelCache[recordObj.levelId].description : appCache.levelCache[recordObj.competencyModelId][recordObj.levelId].description; }}">
+		{{appCache.levelCache[recordObj.levelId] ? appCache.levelCache[recordObj.levelId].name : appCache.levelCache[recordObj.competencyModelId][recordObj.levelId].name; }} 
+	</span>
+</span>
+
+<span style="float: right;"> <strong>Validations:</strong> <a>{{recordObj.validationIds.length}}</a>
+</span>
+
+<br />
+
+<span> 
+	<strong>Confidence:</strong> 
+	{{recordObj.confidence}}
+</span>

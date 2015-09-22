@@ -1,0 +1,172 @@
+<div id="edit-model" class="screen left editor">
+	<div class="row">
+		<div class="small-10 columns small-offset-2">
+			<h2 style="float: left;">
+				<i class="fa fa-pencil"></i> <span ng-hide="!create">Create</span> <span
+					ng-hide="create">Edit</span> Model
+			</h2>
+
+			<span style="float: right;"
+				ng-bind-template="(ID: {{appCache.editedItem.id}})"> (ID:) </span>
+		</div>
+	</div>
+	<div class="row">
+		<div class="small-2 columns panel">
+			<h4>Options</h4>
+			<ul class="side-nav">
+				<li><a ng-click="addDescription()"> <i class="fa fa-plus"></i>
+						Description
+				</a></li>
+			</ul>
+		</div>
+
+		<div class="small-10 columns">
+			<label> Title <small>required</small> <input type="text"
+				placeholder="Please enter a title"
+				ng-model="appCache.editedItem.name" />
+			</label>
+
+			<div id="description-block" class="block" data-minRequired="0">
+				<div class="row description"
+					ng-hide="appCache.editedItem.description == undefined">
+					<div class="small-11 columns">
+						<label> Description <input type="text"
+							placeholder="Enter a description for this model"
+							ng-model="appCache.editedItem.description" />
+						</label>
+					</div>
+					<div class="small-1 columns">
+						<a class="delete-clone" title="Delete this description"
+							ng-click="removeDescription()"> <i class="fa fa-trash-o"></i>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<fieldset>
+				<legend>Model Defaults</legend>
+				<div class="row">
+					<div id="levelDefaults" class="small-12 columns">
+						<label> Competency Levels: 
+						<select
+							id="model-default-levels" ng-change="showLevelOverlay();"
+							ng-model="defaultLevels"
+							ng-options="val as text for (val, text) in levelOptions">
+						</select> {{Object.keys(appCache.editedItem.levels)}}
+						</label>
+						<div ng-click="showLevelOverlay()" 
+							ng-hide="defaultLevels == 'TorF' || objectLength(appCache.editedItem.levels) == 0"
+							style="width: 90%; margin: auto; cursor: pointer;">
+							<span style="width: 80%;"> Name: </span> 
+							<span style="width: 15%; float: right;"> Rank: </span> 
+							<span ng-repeat="(id, levelObj) in appCache.editedItem.levels | orderByObj:'rank'">
+								<input type="text" disabled="disabled"
+									style="width: 80%; float: left; cursor: pointer;"
+									value="{{levelObj.name}}" ng-title="{{levelObj.id}}"></input>
+								<input type="text" disabled="disabled"
+									style="width: 15%; float: right; cursor: pointer;"
+									value="{{levelObj.rank}}"></input>
+							</span>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+			
+			<fieldset>
+				<legend>Model Permissions</legend>
+				<div class="row">
+					<div class="small-6 columns">
+						<label> 
+							<span>Privacy Level:</span> 
+							<select style="display:inline-block; width: 150px; margin-left:25px;" ng-model="appCache.editedItem.accessControl.type">
+								<option value="public">Public</option>
+								<option value="private">Private</option>
+							</select>
+						</label>
+					</div>
+				</div>
+				<div class="row">
+					<div class="small-4 columns">
+						<label>
+							<span>Admin:</span>
+							<select size="5" ng-model="selectedPermission.admin" ng-focus="changedSelectedPermissionType('admin')">
+								<option ng-repeat="userId in appCache.editedItem.accessControl.admin" value="{{userId}}">
+									{{appCache.profileCache[userId].firstName +' '+ appCache.profileCache[userId].lastName}} 
+									[{{userId}}]
+								</option>
+							</select> 
+						</label>
+					</div>
+					<div class="small-4 columns">
+						<label>
+							<span>Users:</span>
+							<select size="5" ng-model="selectedPermission.user" ng-focus="changedSelectedPermissionType('user')">
+								<option ng-repeat="userId in appCache.editedItem.accessControl.user" value="{{userId}}">
+									{{appCache.profileCache[userId].firstName +' '+ appCache.profileCache[userId].lastName}}
+									[{{userId}}]
+								</option>
+							</select> 
+						</label>
+					</div>
+					<div class="small-4 columns">
+						<label>
+							<span>Agents:</span>
+							<select size="5" ng-model="selectedPermission.agent" ng-focus="changedSelectedPermissionType('agent')">
+								<option ng-repeat="userId in appCache.editedItem.accessControl.agent" value="{{userId}}">
+									{{appCache.profileCache[userId].firstName +' '+ appCache.profileCache[userId].lastName}}
+									[{{userId}}]
+								</option>
+							</select> 
+						</label>
+						
+						<a style="float:right;" ng-click="startAddPermission()">
+							<i class="fa fa-plus"></i>
+							Add Permission
+						</a>
+						<a style="float:right;margin-right: 20px;" ng-click="removePermission()">
+							<i class="fa fa-trash-o"></i>
+							Remove
+						</a>
+					</div>
+				</div>
+			</fieldset>
+						
+						
+				
+			<!-- fieldset>
+				<legend>External Source</legend>
+				<div class="switch round">
+					<input id="hasModelSource" type="checkbox"
+						onchange="$('#edit-model #source-block').slideToggle();">
+					<label for="hasModelSource"></label>
+				</div>
+				<div id="source-block" class="block" data-minRequired="0"
+					style="display: none;">
+					<label> Title <small>required</small> <input type="text"
+						placeholder="Please enter a title for this source" />
+					</label> <label> Description <small>required</small> <input
+						type="text" placeholder="Please describe this source" />
+					</label> <label> Structure <select>
+							<option>Not defined</option>
+							<option>List</option>
+							<option>Taxonomy</option>
+							<option>Ontology</option>
+					</select>
+					</label>
+
+					<div id="srcProperty-block" class="block" data-minRequired="0"></div>
+
+					<button class="secondary tiny"
+						onclick="addClonedInput('srcProperty')">
+						<i class="fa fa-plus"></i> Source Property
+					</button>
+					<button class="secondary tiny">Resynchronize</button>
+				</div>
+			</fieldset-->
+
+			<button ng-click="saveEdits();">Save</button>
+			<button class="secondary" ng-click="goBack();">Cancel</button>
+		</div>
+
+	</div>
+</div>

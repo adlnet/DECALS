@@ -1,0 +1,106 @@
+<project name="levr-core" default="levr-core-dist" basedir=".">
+	<description>
+  		LEVR    
+ 	</description>
+	
+	<property name="levr.core.name" value="levr-core" />
+	<property name="levr.core.build.dir" value="../levr-core/web/WEB-INF/classes" />
+	<property name="levr.core.src" value="../levr-core/src/java" />
+	<property name="levr.core.dist" value="../levr-core/dist" />
+	<property name="levr.core.deps" value="../levr-core/deps" />
+	<property name="levr.core.lib" value="../levr-core/lib" />
+	<property name="levr.core.web.lib" value="../levr-core/web/WEB-INF/lib" />
+	<property name="levr.core.web" value="../levr-core/web/WEB-INF" />
+	<property name="levr.core.etc" value="../levr-core/etc" />
+	<import file="../eduworks-common/build.xml" />
+
+	<!-- used to depend on compile -->
+	<target name="levr-core-docs" depends="" description="generates documentation">
+		<javadoc sourcepath="${src}" defaultexcludes="yes" destdir="${doc}" version="true" use="true" public="true" windowtitle="LEVR" packagenames="com.eduworks.*" classpathref="compile.classpath" source="1.4">
+			<doctitle>
+				&lt;h1&gt;Levr API Specification&lt;/h1&gt;
+			</doctitle>
+			<bottom>
+				&lt;font size=&quot;-1&quot;&gt;&lt;a href=&quot;mailto:support@eduworks.com&quot;&gt;Feedback&lt;/a&gt;.&lt;/font&gt;
+			</bottom>
+		</javadoc>
+	</target>
+
+	<target name="levr-core-init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<mkdir dir="${levr.core.build.dir}" />
+		<mkdir dir="${levr.core.dist}" />
+		<mkdir dir="web/WEB-INF/classes" />
+		<mkdir dir="web/WEB-INF/lib" />
+	</target>
+
+	<target name="levr-core-deps">
+	</target>
+
+	<target name="levr-core-compile" depends="eduworks-common-libs, levr-core-init, levr-core-deps" description="compile the source ">
+		<path id="levr-core-classpath">
+			<pathelement path="${levr.core.build.dir}" />
+			<fileset dir="${eduworks.common.lib.dir}">
+				<include name="**/**/lib/*.jar" />
+				<include name="**/**/jars/*.jar" />
+				<include name="**/**/bundles/*.jar" />
+			</fileset>
+			<fileset dir="${eduworks.common.dist}">
+				<include name="${eduworks.common.name}-${eduworks.common.version}.jar" />
+				<include name="${eduworks.common.name}-models.jar" />
+			</fileset>
+		</path>
+	    
+		<javac srcdir="${levr.core.src}" destdir="${levr.core.build.dir}" debug="true" source="1.5" classpathref="levr-core-classpath" />
+		<copy todir="${levr.core.build.dir}">
+			<fileset dir="${levr.core.src}">
+				<include name="*.xml" />
+				<include name="*.json" />
+				<include name="*.class" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="levr-core-jar" depends="levr-core-compile" description="generate the distribution">
+		<mkdir dir="${levr.core.dist}" />
+		<jar destfile="${levr.core.dist}/${levr.core.name}-${levr.core.version}.jar">
+			<fileset dir="${levr.core.build.dir}">
+				<include name="*.xml" />
+				<include name="*.json" />
+				<include name="**/*.class" />
+			</fileset>
+		</jar><jar destfile="${levr.core.dist}/${levr.core.name}.jar">
+			<fileset dir="${levr.core.build.dir}">
+				<include name="*.xml" />
+				<include name="*.json" />
+				<include name="**/*.class" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="levr-core-clean" description="clean up">
+		<delete dir="web/WEB-INF/lib" />
+		<delete dir="web/WEB-INF/classes" />
+		<delete dir="web/WEB-INF/etc" />
+		<delete dir="${levr.core.build.dir}" />
+		<delete dir="${levr.core.dist}" />
+	</target>
+
+	<target name="levr-core-test" depends="levr-core-compile" description="Run JUnit Tests">
+		<!-- clear out the old test results and setup new ones -->
+		<deltree dir="junit" />
+		<mkdir dir="junit" />
+		<junit printsummary="on" newenvironment="true" maxmemory="1024m" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
+			<classpath refid="master-classpath" />
+			<batchtest todir="junit">
+				<formatter type="brief" usefile="false" />
+				<formatter type="xml" usefile="true" />
+				<fileset dir="${build.dir}">
+					<include name="**/*Test.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+</project>

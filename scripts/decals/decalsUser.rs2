@@ -1,0 +1,167 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+safeUserRecord=#userGet(userDb,userId="@userId").remove(
+	password="",
+	sessionId="",
+	lastIp="",	
+	datePasswordUpdated=""
+);
+
+//============================
+//User
+//============================
+
+userObj=#idxGet(userDb,key="@userId").toObject();
+allUserObj=#idxKeys(userDb).cforEach(paramName="userId",op=userObj);
+
+checkUserExists=#userExists(
+	userDb,
+	userId="@userId"
+);
+#decalsCheckUserExists = checkUserExists;
+
+//--------------------------
+//Show all users
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllUsers=allUserObj.displayJson();
+/decalsShowAllUsers=getAllUsers;
+
+//--------------------------
+//Create user
+
+putUserInDb=#userCreate(
+		userId=decalsPostData.cget(userId=""),
+        password=decalsPostData.cget(password=""),
+        userDb
+);
+
+addNewUserFields=#userUpdateField(
+	userDb, 
+	userId=decalsPostData.cget(userId=""), 
+	dateCreated=#date(_raw="true"),	
+	datePasswordUpdated=#date(_raw="true"),
+	firstName=decalsPostData.cget(firstName=""),
+	lastName=decalsPostData.cget(lastName=""),
+	email=decalsPostData.cget(email=""),
+	preferences=#decalsNewPreferencesObj(),
+);
+
+createCompetencyProfile = #competencyCreateUser(userId=decalsPostData.cget(userId=""), password=decalsPostData.cget(password=""));
+
+addCompetencyUserInfo = #competencyUpdateUser(
+							userId=decalsPostData.cget(userId=""),
+							firstName=decalsPostData.cget(firstName=""),
+							lastName=decalsPostData.cget(lastName=""),
+							email=decalsPostData.cget(email=""),
+							currentUser=decalsPostData.cget(userId="")
+						);
+
+createUser=#if(
+	operator=checkUserExists.ccall(userId=decalsPostData.cget(userId="")),
+    operand="true",
+    eq=#object(msg="User exists"),
+    ne=#object(
+		a=putUserInDb,
+		b=addNewUserFields,
+		c=createCompetencyProfile,
+		d=addCompetencyUserInfo,
+		e=#object(msg="true")
+	).cget(e="")    
+).displayJson();
+ 
+/decalsCreateUser=createUser;
+
+
+//--------------------------
+// Get user info
+
+getUser=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=safeUserRecord.ccall(userId=decalsPostData.cget(userId=""))
+).cget(b="").displayJson();
+
+/decalsGetUser=getUser;
+
+//--------------------------
+// Get user list
+
+safeUserList=#idxKeys(userDb).cforEach(paramName="userId",op=safeUserRecord);
+
+getUserList=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=safeUserList
+).cget(b="").displayJson();
+
+/decalsGetUserList=getUserList;
+
+
+
+//--------------------------
+// Reset user password
+
+resetUserPassword=#userUpdateField(
+	userDb, 
+	userId="@userId",
+	datePasswordUpdated=#date(_raw="true"),
+	password=#bCryptHash(
+		password=decalsPostData.cget(newPassword=""),
+		rounds="10"
+	)	
+);
+
+resetUserPasswordFromAdmin=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=#decalsCheckHasUserManagerPrivileges(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=resetUserPassword.ccall(userId=decalsPostData.cget(userId="")),
+	d=#object(msg="true")
+).cget(d="").displayJson();
+
+/decalsResetUserPasswordFromAdmin=resetUserPasswordFromAdmin;
+
+//--------------------------
+// Delete user
+
+deleteUser=#idxDelete(userDb,key="@userId");
+
+deleteUserAndResources=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=#decalsCheckHasUserManagerPrivileges(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=#decalsDeleteUserResources(userId=decalsPostData.cget(userId="")),
+	d=#decalsDeleteOldSession(userId=decalsPostData.cget(userId="")),
+	e=#decalsRemoveUserFromAllCollections(userId=decalsPostData.cget(userId="")),
+	f=#decalsRemoveUserFromAllGroups(userId=decalsPostData.cget(userId="")),
+	g=#decalsDeleteUserGroups(userId=decalsPostData.cget(userId="")),
+	h=#catch(
+			try=#competencyDeleteUser(userId=decalsPostData.cget(userId=""), currentUser=decalsPostData.cget(userId="")),
+			runtime=""
+		),
+	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
+	z=#object(msg="true")
+).cget(z="").displayJson();
+
+/decalsDeleteUserAndResources = deleteUserAndResources;
+
+deleteUserTransferResources=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=#decalsCheckHasUserManagerPrivileges(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
+	c=#decalsTransferAllResources(fromUserId=decalsPostData.cget(userId=""),toUserId=decalsPostData.cget(toUserId="")),
+	d=#decalsDeleteOldSession(userId=decalsPostData.cget(userId="")),
+	e=#decalsRemoveUserFromAllCollections(userId=decalsPostData.cget(userId="")),	
+	f=#decalsRemoveUserFromAllGroups(userId=decalsPostData.cget(userId="")),
+	g=#decalsDeleteUserGroups(userId=decalsPostData.cget(userId="")),
+	h=#catch(
+			try=#competencyDeleteUser(userId=decalsPostData.cget(userId=""), currentUser=decalsPostData.cget(userId="")),
+			runtime=""
+		),
+	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
+	z=#object(msg="true")
+).cget(z="").displayJson();
+
+/decalsDeleteUserTransferResources = deleteUse;

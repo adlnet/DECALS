@@ -1,0 +1,1328 @@
+<div id="content">
+	<div id="userHome" class="userScreen">
+	
+		<!-- ********************************Header/Navigation******************************** -->
+		<div class="pageHeader">
+			<div class="row">
+				<div class="medium-5 columns" style="text-align:left;padding-top:.5em;">
+					<dl class="sub-nav">
+    					<dd id="goToMyContributionsText" class="active"><a id="goToMyContributions">Contributions</a></dd>
+    					<dd id="goToMyCollectionsText"><a id="goToMyCollections">Collections</a></dd>
+    					<dd id="goToMyGroupsText"><a  id="goToMyGroups">My Groups</a></dd>
+  					</dl>					
+				</div>
+				<div class="medium-7 columns" style="text-align:right;">
+					<h3>Welcome back, <span id="headerUsername" class="username"></span>!</h3>
+				</div>				
+			</div>
+		</div>
+		
+		<!-- ********************************Contributions******************************** -->
+				
+		<div id="userMyContributions" class="row">
+			<div class="large-4 columns" style="padding-top:10px;">
+				<div id="myContributionsNavigation" class="row">
+					<div class="small-12 columns">												
+						<h5>My Contributions:</h5>
+						<br>
+						<button style="padding:12px" title="Add a contribution" class="small" data-reveal-id="modalAddContent" data-reveal>
+							<i class="fa fa-plus"></i> Add a Contribution
+						</button>																				
+					</div>
+				</div>
+				<div class="row">
+					<div id="contributionAlertMessages" class="small-11 columns"></div>
+				</div>				
+			</div>			
+			<div class="large-8 columns" style="padding-top: 10px;">
+				<div id="myContributionsSearchBusy" class="row" style="display:none;text-align:center">
+			    	<div class="small-12 columns">
+			        	<img src="images/loading.gif"/>
+			            <p class="searchBusy">Searching...</p>
+			        </div>	
+			    </div>           				
+				<div id="numberOfMyContributionsSearchResults" class="row" style="display:none">
+				   	<div class="small-12 columns">
+				       	<p id="myContributionsSearchResultsCounter" class="resultCounter"></p>
+				       	<br/>
+				   	</div>	
+				</div>		
+				<div id="emptyMyContributions" class="row" style="display:none">
+					<div class="small-3 columns">
+						<img src="images/splash-mastery.png" class="noEntries" style="display:inline">
+					</div>
+					<div class="small-9 columns">
+						<p class="noEntries">                          	
+							If you would like to contribute to the resource repository and 
+							<a href="http://learningregistry.org/" target="Learning Registry">Learning Registry</a>, you can easily contribute 
+							resources by clicking the 'Add a Contribution' button to the left.
+						</p>				       	
+					</div>	
+				</div>	
+				<div class="row">
+					<div class="medium-12 columns">
+						<div id="myContributionsSearchResults"></div>
+					</div>
+				</div>
+			</div>
+		</div>	
+		
+		<!-- ********************************Collections******************************** -->
+		<div id="userMyCollections" style="display:none" class="row">
+			<div class="large-4 columns" style="padding-top:10px;">
+				<div class="row">
+					<div class="small-12 columns">												
+						<h5>My Collections:</h5>
+						<div id="myCollectionsNavigation" style="display:none;">						
+							<div id="myCollectionsSelections"></div>
+							<div id="myCollectionsMoreSelections">	
+								<ul class="side-nav" role="navigation" title="More Collections" style="padding:0px">
+									<li role="menuitem"><a id="myCollectionsMoreSelectionsLink"><i class="fa fa-arrow-circle-down"></i> More...</a></li>
+								</ul>
+							</div>	
+							<div id="myCollectionsLessSelections" style="display: none">	
+								<ul class="side-nav" role="navigation" title="Less Collections" style="padding:0px">
+									<li role="menuitem"><a id="myCollectionsLessSelectionsLink"><i class="fa fa-arrow-circle-up"></i> Less...</a></li>
+								</ul>
+							</div>
+						</div>												
+					</div>
+				</div>
+				<div class="row">
+					<div class="small-12 columns">
+						<br>
+						<button onclick="document.getElementById('addCollectionForm').reset();" style="padding:12px" title="Build a new collection" class="small" data-reveal-id="modalAddCollection" data-reveal>
+							<i class="fa fa-plus"></i> Build a New Collection
+						</button>						
+					</div>
+				</div>				
+			</div>			
+			<div class="large-8 columns">
+				<br>
+				<div id="myCollectionsSearchBusy" class="row" style="display:none;">
+			    	<div class="small-12 columns" style="display:inline;text-align:center"><img src="images/loading.gif"/><p class="searchBusy">Searching...</p></div>	
+			    </div>           				
+				<div id="emptyMyCollections" class="row" style="display:none">
+					<div class="small-3 columns">
+						<img src="images/splash-mastery.png" class="noEntries" style="display:inline">
+					</div>
+					<div class="small-9 columns">
+						<p class="noEntries">                          	
+							If you would like to build a collection of resources, you can easily begin by clicking the 'Build a New Collection' button to the left.
+							Once a collection is built, you can add <a href="http://learningregistry.org/" target="Learning Registry">Learning Registry</a>
+							resources to it from the 'Search' tab above.
+						</p>				       	
+					</div>	
+				</div>					
+				<div id="currentCollectionContainer" class="row" style="display:none;">									
+						<div class="row">
+							<div class="small-6 columns" >
+								<h3>
+									<i class="fa fa-suitcase"></i> 
+									<span id="curColName" style="font-size: 20px;text-overflow: ellipsis;white-space: nowrap;max-width: 90%;overflow: hidden;display: inline-block;"></span>
+								</h3>
+							</div>
+							<div class="small-6 columns" style="margin-top:1em;padding: 0px;">							
+								<ul id="curColModifyButtons" class="button-group radius">
+    								<li style="padding-right:2px">
+    									<form id="curColExportForm" method="post" target="_blank" enctype="multipart/form-data">
+    										<input type="hidden" id="curColSessionId" name="sessionId"/>
+    										<input type="hidden" id="curColId" name="collectionId"/>
+    										<input type="submit" value="TRADEM Export" id="curColExportLink" title="Export Collection in a Package consumable by TRADEM" class="curColButton button secondary"/>
+    									</form>
+    								</li>
+    								<li style="padding-right:2px">
+    									<button id="curColSaveLink" title="Save collection changes" type="submit" class="curColButton secondary">
+											<i class="fa fa-save"></i> <b>Save</b>
+										</button>
+    								</li>
+    								<li style="padding-right:2px">
+    									<button id="curColResetLink" title="Reset collection changes" type="button" class="curColButton secondary">
+											<i class="fa fa-refresh"></i> <b>Reset</b>
+										</button>
+									</li> 
+									<li>
+    									<button id="curColDeleteLink" title="Delete collection" type="button" class="curColButton alert">
+											<i class="fa fa-trash-o"></i> <b>Delete</b>
+										</button>
+									</li>    							
+  								</ul>
+							</div>
+						</div> 
+					 	<div id="curColDescContainer" class="row">
+					 		<div class="small-12 columns">
+					 			<strong>Description:</strong> 
+					 			<div id="curColDesc" style="margin-left:10px;"></div> 
+					 		</div>
+					 	</div>
+					 	<div id="curColDescTextAreaContainer" class="row" style="display:none;">
+					 		<div class="small-12 columns">
+					 			<strong>Description:</strong> 
+					 			<textarea id="curColDescTextArea" onkeydown="document.getElementById('curColChangedMessage').style.display='block';" style="overflow:auto; resize:none; margin-bottom:0px;margin-left:10px;" rows="2" placeholder="Please describe your collection."></textarea>
+					 		</div>					 		
+					 	</div>
+					 	<div id="curColMetadataContainer" class="row" style="display:none;">
+					 		<div class="small-12 columns">
+					 			<strong>Keywords:</strong> 
+					 			<div id="curColKeywords" style="margin-left:10px;">
+					 				
+					 			</div> 
+					 			<strong>Coverage:</strong> 
+					 			<div id="curColCoverage" style="margin-left:10px;">
+					 				
+					 			</div>
+					 			<strong>Environment:</strong> 
+					 			<div id="curColEnvironment" style="margin-left:10px;">
+					 				
+					 			</div>
+					 			<strong>Objectives:</strong> 
+					 			<div id="curColObjectives" style="margin-left:10px;">
+					 				
+					 			</div> 
+					 		</div>
+					 	</div>
+					 	<div id="curColMetadataEditContainer" class="row" style="display:none;">
+					 		<div class="small-12 columns">
+					 			<strong>Keywords:</strong> 
+					 			<textarea id="curColKeywordsTextArea" onkeydown="document.getElementById('curColChangedMessage').style.display='block';" style="overflow:auto; resize:none; margin-bottom:0px;margin-left:10px;" rows="1" placeholder="Attach keywords to your collection (Comma Separated)"></textarea>
+					 			<strong>Coverage:</strong> 
+					 			<div id="curColEditCoverage" style="margin-left:10px;">
+					 				<input id="curColCoverageInput" type="text" onkeydown="document.getElementById('curColChangedMessage').style.display='block';" placeholder="Define coverage of collection."/>
+					 			</div>
+					 			<strong>Environment:</strong> 
+					 			<div style="margin-left:10px;">
+					 				<select id="curColSelectEnvironment" size="1" onclick="document.getElementById('curColChangedMessage').style.display='block';">
+					 					<option value="" disabled selected>Select collection environment</option>
+										<option value="Primary Education">Grades 1-8 (Primary Education)</option>
+										<option value="Secondary Education">High school (Secondary Education)</option>
+										<option value="Higher Education">Post high school (Higher Education)</option>
+										<option value="University First Cycle">University basic course (1st cycle)</option>
+										<option value="University Second Cycle">University specialized course (2nd cycle)</option>
+										<option value="University Postgraduate">University Graduate level (Postgraduate)</option>
+										<option value="Technical School First Cycle">Technical school core course (1st Cycle)</option>
+										<option value="Technical School Second Cycle">Technical School specialized course (2nd Cycle)</option>
+										<option value="Professional Formation">Professional Development (Formation)</option>
+										<option value="Continuing Education">Continuing Education</option>
+										<option value="Vocational">Vocational</option>
+									</select>
+					 			</div>
+					 			<strong>Objectives:</strong> 
+					 			<div id="curColEditObjectives" style="margin-left:10px;">
+					 				<ul id="curColObjectivesList">
+					 					<li id="noObjectivesItem" class="curColEmpty">No Objectives Set</li>
+					 				</ul>
+					 				<a id="addObjectiveLink" href="#">Add Objective</a>
+					 				<div id="editMetadataCreateObjectiveWrapper" style="display: none;" class="large-6 columns">
+										<input id="editMetadataNewObjectiveTitle" type="text" placeholder="Title" value="">
+										<input id="editMetadataNewObjectiveDesc" type="text" placeholder="Description" value="">												
+										<button id="editMetadataCreateObjectiveApply" class="tiny radius" onclick="document.getElementById('curColChangedMessage').style.display='block';">Apply</button> 
+										<button id="editMetadataCreateObjectiveCancel" class="tiny radius secondary" >Cancel</button>  
+										<a id="editMetadataCreateObjectiveHelp" href="#" title="How to write an objective"><img src="images/help.png">Help</a>
+									</div>
+					 			</div>
+					 		</div>					 		
+					 	</div>
+					 	<div id="curColDescEditContainer" class="row">
+					 		<a id="curColDescEdit" title="Edit Metadata" style="font-size:12px;color:#008cba;">
+					 			<i class="fa fa-pencil"></i> (Edit)
+					 		</a>
+					 		<a id="curColMetadataToggle" data-toggle="show" title="Show Metadata" style="font-size: 12px;color: #008cba;">
+					 			(Show Metadata)
+					 		</a>
+					 	</div>
+					 	<hr>
+						<div class="row">	
+							<div id="colSubNav" class="small-8 columns" style="text-align:left;">
+								<dl class="sub-nav">
+    								<dd id="curColItemsText" class="active">
+    									<a id="curColItemsLink">Items <span id="curColItemCount"></span></a>
+    								</dd>
+    								<dd id="curColUsersText">
+    									<a id="curColUsersLink">Users <span id="curColUserCount"></span></a>
+    								</dd>
+    								<dd id="curColGroupsText">
+    									<a id="curColGroupsLink">Groups <span id="curColGroupCount"></span></a>
+    								</dd>
+  								</dl>					
+							</div>				
+							<div id="colAddBtns" class="small-4 columns">
+								<button id="curColAddItemLink" title="Add collection item" type="button" class="curColButton secondary radius">
+									<i class="fa fa-plus-square"></i> <b>Add Item</b>
+								</button>	
+								<button id="curColAddUserLink" title="Add collection user" type="button" class="curColButton secondary radius" style="display:none">
+									<i class="fa fa-plus-square"></i> <b>Add User</b>
+								</button>
+								<button id="curColAddGroupLink" title="Add collection group" type="button" class="curColButton secondary radius" style="display:none">
+									<i class="fa fa-plus-square"></i> <b>Add Group</b>
+								</button>
+							</div>				
+						</div>
+						<div class="row">	
+							<div class="small-12 columns" id="curColItems">
+								<div class="row">
+									<div id="curColItemContainer" class="small-12 columns"></div>
+								</div>
+							</div>
+						</div>
+						<div class="row">	
+							<div class="small-12 columns" id="curColUsers" style="display:none">
+								<div class="row">
+									<div id="curColUserContainer" class="small-12 columns"></div>
+								</div>
+							</div>
+						</div>
+						<div class="row">	
+							<div class="small-12 columns" id="curColGroups" style="display:none">
+								<div class="row">
+									<div id="curColGroupContainer" class="small-12 columns"></div>
+								</div>
+							</div>
+						</div>
+						<div id="curColChangedMessage" class="row" style="display:none;">
+					 		<div data-alert class="alert-box warning round" style="padding:10px 20px; margin: 20px;">
+								Changes have been made to this collection. Don't forget to save them!
+							</div>
+					 	</div>					 	
+					<div id="curColSaveSuccess" class="row" style="display:none;">
+				 		<div data-alert class="alert-box success round" style="padding:10px 20px; margin: 20px;">
+							Collection saved.
+							<a href="#" class="close">&times;</a>
+						</div>
+				 	</div>																		
+				</div>			
+			</div>
+		</div>
+		
+		<!-- ********************************Groups******************************** -->
+		<div id="userMyGroups" style="display:none" class="row">
+			<div class="large-4 columns" style="padding-top:10px;">
+				<div class="row">
+					<div class="small-12 columns">												
+						<h5>My Groups:</h5>
+						<div id="myGroupsNavigation" style="display:none;">						
+							<div id="myGroupsSelections"></div>
+							<div id="myGroupsMoreSelections">	
+								<ul class="side-nav" role="navigation" title="More Groups" style="padding:0px">
+									<li role="menuitem"><a id="myGroupsMoreSelectionsLink"><i class="fa fa-arrow-circle-down"></i> More...</a></li>
+								</ul>
+							</div>	
+							<div id="myGroupsLessSelections" style="display: none">	
+								<ul class="side-nav" role="navigation" title="Less Groups" style="padding:0px">
+									<li role="menuitem"><a id="myGroupsLessSelectionsLink"><i class="fa fa-arrow-circle-up"></i> Less...</a></li>
+								</ul>
+							</div>
+						</div>												
+					</div>
+				</div>
+				<div class="row">
+					<div class="small-12 columns">
+						<br>
+						<button onclick="document.getElementById('addGroupForm').reset();" style="padding:12px" title="Create a new group" class="small" data-reveal-id="modalAddGroup" data-reveal>
+							<i class="fa fa-plus"></i> Create a New Group
+						</button>						
+					</div>
+				</div>				
+			</div>			
+			<div class="large-8 columns">
+				<br>
+				<div id="myGroupsSearchBusy" class="row" style="display:block;">
+			    	<div class="small-12 columns" style="display:inline;text-align:center"><img src="images/loading.gif"/><p class="searchBusy">Searching...</p></div>	
+			    </div>  
+				<div id="emptyMyGroups" class="row" style="display:none">
+					<div class="small-3 columns">
+						<img src="images/app-users-front.png" class="noEntries" style="display:inline">
+					</div>
+					<div class="small-9 columns">
+						<p class="noEntries">                          	
+							If you would like to build a group of users, you can easily begin by clicking the 'Create a New Group' button to the left.
+							Once a group is built, you can use it to add collection permissions to multiple users at the same time.
+						</p>				       	
+					</div>	
+				</div>
+				<div id="currentGroupContainer" class="row" style="display:none;">
+					<div class="row">
+						<div class="small-8 columns">
+							<h3><i class="fa fa-users"></i> <span id="curGroupName" style="font-size: 20px;"></span></h3>
+						</div>
+						<div class="small-4 columns" style="margin-top:1em;padding: 0px;">							
+							<ul id="curGrpModifyButtons" class="button-group radius">
+   								<li style="padding-right:2px">
+   									<button id="curGrpAddUserLink" title="Add a user" type="button" class="curGrpButton secondary">
+										<i class="fa fa-plus-square-o"></i> <b>Add Users</b>
+									</button>
+   								</li>   	
+   								<li>
+   									<button id="curGrpDeleteLink" title="Delete group" type="button" class="curGrpButton alert">
+										<i class="fa fa-trash-o"></i> <b>Delete</b>
+									</button>
+								</li> 							    							
+ 							</ul>
+						</div>						
+					</div>
+					<div class="row">
+						<div class="small-12 columns"><h5>Group Users <span id="currentGroupUserCount" style="font-size: .75em;font-style: italic;color: #666;"></span></h5></div>
+					</div>
+					<div class="row">
+						<div id="currentGroupDetailsContainer"  class="small-12 columns">
+						</div>
+					</div>		
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</div>
+
+<!-- ********************************End Content DIV******************************** -->
+
+<!-- ********************************MODAL DIALOGS******************************** -->
+<!-- Delete Collection Group Confirm Modal -->    
+<div id="modalDeleteCollectionGroupConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-users"></i> Remove collection group?</h2>
+    <p>Are you sure you wish to remove <span id="delColGroupGroupName" style="font-style:italic; font-weight:bold;"></span> from <span id="delColGroupColName" style="font-style:italic; font-weight:bold;"></span>?</p> 
+    <div data-alert class="alert-box info radius" style="background-color:#FFFFA6;border-color:red">
+  		<b>Note:</b> The collection must still be <b>saved</b> before any changes become permanent!  
+	</div>   
+    <form id="delColGroupForm" data-abide="ajax"> 
+    	<input type="hidden" id="delColGroupGroupId"/>   	
+    	<input type="hidden" id="delColGroupColId"/>
+		<div id="delColGroupSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small alert">Remove</button>
+				<button type="button" onclick="$('#modalDeleteCollectionGroupConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Add Collection Group Modal -->    
+<div id="modalAddCollectionGroup" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-users"></i> Add new collection group?</h2>
+    <p>Add a group to <span id="addGroupCollectionName" style="font-style:italic; font-weight:bold;"></span>:</p>
+    <div data-alert class="alert-box info radius"  style="background-color:#FFFFA6;border-color:red">
+  		<b>Note:</b> The collection must still be <b>saved</b> before any changes become permanent!  
+	</div>
+    <div id="addCollectionGroupPickList">
+	    <p>Add new collection group:<p/>
+	    <div class="row">
+			<div class="small-12 columns">
+				<div id="addCollectionGroupListContainer"></div>
+			</div>
+		</div>
+		<div id="addCollectionGroupCancelButton" class="row">
+			<div class="large-12 columns">			
+				<button type="button" onclick="$('#modalAddCollectionGroup').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>	
+	</div>	
+	<div id="addCollectionGroupConfirm" style="display:none">		
+		<form id="addCollectionGroupForm" data-abide="ajax">
+			<div class="row">
+            	<div class="small-12 columns" style="padding:0px; margin-top:.75em;">
+              		Grant members of <span id="addCollectionGroupName" style="font-style: italic;"></span> the following collection access:&nbsp;&nbsp;
+              		<select id="addCollectionGroupAccess" style="width:70px;">
+                    	<option value="view" selected="selected">view</option>
+                    	<option value="modify">modify</option>  
+                	</select>
+              	</div>
+  			</div>
+			<input type="hidden" id="addCollectionGroupId"/>
+	    	<input type="hidden" id="addCollectionGroupHName"/>
+	    	<input type="hidden" id="addCollectionGroupType"/>	    	
+	    	<div class="row">
+				<div class="large-12 columns">			
+					<button type="submit" class="small">Add</button>
+					<button type="button" onclick="$('#modalAddCollectionGroup').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+				</div>
+			</div>
+		</form>	
+	</div>    	
+	<a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Add Group User Modal -->    
+<div id="modalAddGroupUser" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-user"></i> Add group users?</h2>
+    <p>Add users to <span id="addUserGroupName" style="font-style:italic; font-weight:bold;"></span></p>
+    <div id="addGroupUserPickList">
+	    <div class="row">
+			<div class="small-12 columns">
+				<div id="addGroupUserListContainer"></div>
+			</div>
+		</div>
+		<div id="addGroupUserListButtons" class="row">
+			<div class="large-12 columns">			
+				<button id="addGroupUserOkBtn" type="button" class="small">Ok</button>
+				<button type="button" onclick="$('#modalAddGroupUser').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>	
+	</div>	
+	<div id="addGroupUserConfirm" style="display:none">		
+		<div class="row">
+           	<p>Add the <b><i><span id="addGroupUserCount"></span></i></b> chosen user(s) to the group?</p>            	
+ 		</div>
+		<div id="addGroupUserSubmitBtns" class="row">
+			<div class="large-12 columns">			
+				<button id="addGroupUserAddBtn" type="submit" class="small">Add</button>
+				<button type="button" onclick="$('#modalAddGroupUser').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+		<div class="row">    		
+			<div id="addGroupUserBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+		</div>			
+	</div>    	
+	<a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Delete Group User Confirm Modal -->    
+<div id="modalDeleteGroupUserConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-user"></i> Remove group user?</h2>
+    <p>Are you sure you wish to remove <span id="delGroupUserUserName" style="font-style:italic; font-weight:bold;"></span> from <span id="delGroupUserGroupName" style="font-style:italic; font-weight:bold;"></span>?</p> 
+    <form id="delGroupUserForm" data-abide="ajax"> 
+    	<input type="hidden" id="delGroupUserUserId"/>   	
+    	<input type="hidden" id="delGroupUserGroupId"/>
+		<div id="delGroupUserSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small alert">Remove</button>
+				<button type="button" onclick="$('#modalDeleteGroupUserConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <div class="row">    		
+		<div id="delGroupUserBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Add Group Modal -->    
+<div id="modalAddGroup" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-users"></i> Create a group</h2>
+    <p>Start creating your new group</p>
+    <form id="addGroupForm" data-abide="ajax">
+    	<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-info"></i> Name <input type="text" id="addGroupName" name="name" required></label> 
+					<small class="error">Enter the group name</small>
+				</div>
+			</div>
+		</div>
+		<!-- USER PICKLIST HERE -->
+		<div id="addGroupSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small">Create</button>
+				<button type="button" onclick="$('#modalAddGroup').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <div class="row">    		
+		<div id="addGroupBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+	<div class="row" id="addGroupSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				Group has been created.
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalAddGroup').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Delete Group Confirm Modal -->    
+<div id="modalDeleteGroupConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-users"></i> Delete group?</h2>
+    <p>Are you sure you wish to delete the group <span id="deleteGroupName" style="font-style:italic; font-weight:bold;"></span>?</p>    
+    <form id="deleteGroupForm" data-abide="ajax"> 
+    	<input type="hidden" id="deleteGroupId"/>   	
+		<div id="deleteGroupSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small alert">Delete</button>
+				<button type="button" onclick="$('#modalDeleteGroupConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <div class="row">    		
+		<div id="deleteGroupBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+	<div class="row" id="deleteGroupSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				Group has been deleted.
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalDeleteGroupConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Add to collection modal -->
+<div id="modalAddToCollection" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-briefcase"></i> Add to collection</h2>    
+    <div id="addToCollectionPickList">
+    	<p>Add <span id="addToCollectionResourceTitle" style="font-style:italic; font-weight:bold;"></span> to collection:</p>
+	    <div class="row">
+			<div class="small-12 columns">
+				<div id="addToCollectionListContainer"></div>
+			</div>
+		</div>
+		<div id="addToCollectionCancelButton" class="row">
+			<div class="large-12 columns">			
+				<button type="button" onclick="$('#modalAddToCollection').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>	
+	</div>       
+	<div id="addToCollectionConfirm" style="display:none">		
+		<form id="addToCollectionForm" data-abide="ajax">
+			<div class="row">
+				<p>
+            		Add <span id="addToCollectionConfirmResourceTitle" style="font-style:italic; font-weight:bold;"></span>&nbsp;
+            		(<span id="addToCollectionResourceUrl" style="font-style:italic; color:#666;"></span>) to
+            		&nbsp;<span id="addToCollectionConfirmCollectionName" style="font-style:italic; font-weight:bold;"> </span>?
+            	</p>            	
+  			</div>
+			<input type="hidden" id="addToCollectionCollectionId"/>
+	    	<input type="hidden" id="addToCollectionResourceTitleHidden"/>
+	    	<input type="hidden" id="addToCollectionResourceUrlHidden"/>
+	    	<input type="hidden" id="addToCollectionResourceDescriptionHidden"/>
+	    	<input type="hidden" id="addToCollectionResourceId"/>
+	    	<div id="addToCollectionConfirmButtons" class="row">
+				<div class="large-12 columns">			
+					<button type="submit" class="small">Add</button>
+					<button type="button" onclick="$('#modalAddToCollection').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+				</div>
+			</div>
+		</form>	
+		<div id="addToCollectionBusy" style="display:none" class="row">    	
+			<img src="images/status-busy.gif" style="display:inline"/>
+		</div>
+	</div>
+	<div class="row" id="addToCollectionExists" style="display:none">
+		<div data-alert="" class="alert-box alert radius">
+  			<div class="row">
+      			<div class="small-8 columns" style="padding-top:.75em">         
+  					This resource already exists in this collection.  Would you like to replace it?
+      			</div>          
+  				<div class="small-4 columns">			
+					<button style="margin:0px" id="addToCollectionReplace" type="button" class="tiny">Yes</button>
+					<button style="margin:0px" type="button" onclick="$('#modalAddToCollection').foundation('reveal', 'close');" class="tiny secondary">No</button>
+          		</div>
+  			</div>			
+		</div>
+	</div>
+	<div class="row" id="addToCollectionSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				The resource has been added to your collection.
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalAddToCollection').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Delete Collection Item Confirm Modal -->    
+<div id="modalDeleteCollectionItemConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-file"></i> Remove collection item?</h2>
+    <p>Are you sure you wish to remove <span id="delColItemItemName" style="font-style:italic; font-weight:bold;"></span> from <span id="delColItemColName" style="font-style:italic; font-weight:bold;"></span>?</p> 
+    <div data-alert class="alert-box info radius" style="background-color:#FFFFA6;border-color:red">
+  		<b>Note:</b> The collection must still be <b>saved</b> before any changes become permanent!  
+	</div>   
+    <form id="delColItemForm" data-abide="ajax"> 
+    	<input type="hidden" id="delColItemItemId"/>   	
+    	<input type="hidden" id="delColItemColId"/>
+		<div id="delColItemSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small alert">Remove</button>
+				<button type="button" onclick="$('#modalDeleteCollectionItemConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Delete Collection User Confirm Modal -->    
+<div id="modalDeleteCollectionUserConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-user"></i> Remove collection user?</h2>
+    <p>Are you sure you wish to remove <span id="delColUserUserName" style="font-style:italic; font-weight:bold;"></span> from <span id="delColUserColName" style="font-style:italic; font-weight:bold;"></span>?</p> 
+    <div data-alert class="alert-box info radius" style="background-color:#FFFFA6;border-color:red">
+  		<b>Note:</b> The collection must still be <b>saved</b> before any changes become permanent!  
+	</div>   
+    <form id="delColUserForm" data-abide="ajax"> 
+    	<input type="hidden" id="delColUserUserId"/>   	
+    	<input type="hidden" id="delColUserColId"/>
+		<div id="delColUserSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small alert">Remove</button>
+				<button type="button" onclick="$('#modalDeleteCollectionUserConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Add Collection Item Modal -->    
+<div id="modalAddCollectionItem" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-file"></i> Add a collection item?</h2>
+    <p>Add an item to <span id="addItemCollectionName" style="font-style:italic; font-weight:bold;"></span>:</p>
+    <div data-alert class="alert-box info radius"  style="background-color:#FFFFA6;border-color:red">
+  		<b>Note:</b> The collection must still be <b>saved</b> before any changes become permanent!  
+	</div>
+    <form id="addCollectionItemForm" data-abide="ajax"> 
+    	<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-info"></i> Title <input type="text" id="addCollectionItemTitle" name="title" required> </label> 
+					<small class="error">Enter the URL title</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-globe"></i> URL <input type="url" id="addCollectionItemUrl" name="url" required> </label> 
+					<small class="error">Enter the URL (ex: http://www.eduworks.com)</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-info"></i> Description <textarea style="overflow:auto; resize:none;" id="addCollectionItemDesc" rows="4" placeholder="Please enter an item description." required></textarea></label> 
+					<small class="error">Enter the item description</small>
+				</div>
+			</div>
+		</div>
+    	<div id="addCollectionItemSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small">Add</button>
+				<button type="button" onclick="$('#modalAddCollectionItem').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>		
+    </form>   
+    <div class="row" id="addCollectionItemExists" style="display:block">
+		<div data-alert="" class="alert-box alert radius">
+  			<div class="row">
+      			<div class="small-8 columns" style="padding-top:.75em">         
+  					This item already exists in this collection.  Would you like to replace it?
+      			</div>          
+  				<div class="small-4 columns">			
+					<button style="margin:0px" id="addCollectionItemReplace" type="button" class="tiny">Yes</button>
+					<button style="margin:0px" type="button" onclick="$('#modalAddCollectionItem').foundation('reveal', 'close');" class="tiny secondary">No</button>
+          		</div>
+  			</div>			
+		</div>
+	</div> 
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Add Collection User Modal -->    
+<div id="modalAddCollectionUser" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-user"></i> Add new collection user?</h2>
+    <p>Add a user to <span id="addUserCollectionName" style="font-style:italic; font-weight:bold;"></span>:</p>
+    <div data-alert class="alert-box info radius"  style="background-color:#FFFFA6;border-color:red">
+  		<b>Note:</b> The collection must still be <b>saved</b> before any changes become permanent!  
+	</div>
+    <div id="addCollectionUserPickList">
+	    <p>Add new collection user:<p/>
+	    <div class="row">
+			<div class="small-12 columns">
+				<div id="addCollectionUserListContainer"></div>
+			</div>
+		</div>
+		<div id="addCollectionUserCancelButton" class="row">
+			<div class="large-12 columns">			
+				<button type="button" onclick="$('#modalAddCollectionUser').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>	
+	</div>	
+	<div id="addCollectionUserConfirm" style="display:none">		
+		<form id="addCollectionUserForm" data-abide="ajax">
+			<div class="row">
+            	<div class="small-12 columns" style="padding:0px; margin-top:.75em;">
+              		Grant <span id="addCollectionUserName" style="font-style: italic;"></span> the following collection access:&nbsp;&nbsp;             	
+                	<select id="addCollectionUserAccess" style="width:70px">
+                    	<option value="view" selected="selected">view</option>
+                    	<option value="modify">modify</option>  
+                	</select>
+              	</div>
+  			</div>
+			<input type="hidden" id="addCollectionUserId"/>
+	    	<input type="hidden" id="addCollectionUserFirstName"/>
+	    	<input type="hidden" id="addCollectionUserLastNameName"/>
+	    	<div class="row">
+				<div class="large-12 columns">			
+					<button type="submit" class="small">Add</button>
+					<button type="button" onclick="$('#modalAddCollectionUser').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+				</div>
+			</div>
+		</form>	
+	</div>    	
+	<a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Reset Collection Confirm Modal -->    
+<div id="modalResetCollectionConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-User"></i> Reset collection?</h2>
+    <p>Are you sure you wish to reset the collection <span id="resetCollectionName" style="font-style:italic; font-weight:bold;"></span>?</p>    
+    <form id="resetCollectionForm" data-abide="ajax"> 
+    	<input type="hidden" id="resetCollectionId"/>   	
+		<div id="resetCollectionSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small">Reset</button>
+				<button type="button" onclick="$('#modalResetCollectionConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <div class="row">    		
+		<div id="resetCollectionBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+	<div class="row" id="resetCollectionSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				Collection has been reset.
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalResetCollectionConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Delete Collection Confirm Modal -->    
+<div id="modalDeleteCollectionConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-suitcase"></i> Delete collection?</h2>
+    <p>Are you sure you wish to delete the collection <span id="deleteCollectionName" style="font-style:italic; font-weight:bold;"></span>?</p>    
+    <form id="deleteCollectionForm" data-abide="ajax"> 
+    	<input type="hidden" id="deleteCollectionId"/>   	
+		<div id="deleteCollectionSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small alert">Delete</button>
+				<button type="button" onclick="$('#modalDeleteCollectionConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <div class="row">    		
+		<div id="deleteCollectionBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+	<div class="row" id="deleteCollectionSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				Collection has been deleted.
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalDeleteCollectionConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Add Collection Modal -->    
+<div id="modalAddCollection" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-suitcase"></i> Build a collection</h2>
+    <p>Start building your new collection</p>
+    <form id="addCollectionForm" data-abide="ajax">
+    	<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-info"></i> Name <input type="text" id="addCollectionName" name="name" required></label> 
+					<small class="error">Enter the collection name</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-info"></i> Description <textarea style="overflow:auto; resize:none;" id="addCollectionDesc" rows="4" placeholder="Please enter a collection description." required></textarea></label> 
+					<small class="error">Enter the collection description</small>
+				</div>
+			</div>
+		</div>
+		<div id="addCollectionSubmitButtons" class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small">Build</button>
+				<button type="button" onclick="$('#modalAddCollection').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+    </form>
+    <div class="row">    		
+		<div id="addCollectionBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+	<div class="row" id="addCollectionSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				Collection has been built.
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalAddCollection').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- LR Publish Modal -->    
+<div id="modalContentLrPublishConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-globe"></i> Publish to the Learning Registry?</h2>
+    <p>Publish <span id="contentLrPublishFileName" style="font-style:italic; font-weight:bold;"></span>?</p>
+    <p>
+    	By publishing your contribution to the <a href="http://learningregistry.org/" target="Learning Registry">Learning Registry</a>, other people
+    	will learn about and have access to your resource.
+    	<br>
+    	<br>
+    	The current <a href="http://learningregistry.org/" target="Learning Registry">Learning Registry</a> publish node is: <label id="contentLrPublishNodeName"></label> 
+    <p/>
+    <form id="contentLrPublishForm" data-abide="ajax">
+    	<input type="hidden" id="contentLrPublishResourceId"/>
+    	<div class="row">
+			<div class="large-12 columns">			
+				<button id="contentLrPublishSubmitBtn" type="submit" class="small">Publish</button>
+				<button id="contentLrPublishCancelBtn" type="button" onclick="$('#modalContentLrPublishConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>	
+	</form>  
+	<div class="row">    		
+		<div id="publishContentBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>	
+	<div class="row" id="contentLrPublishSuccess" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box info">
+				Your contribution has been successfully published.  The learning registry ID is:
+				<br> 
+				<br>
+				<b><span id="contentLrPublishSuccessLrId"></span></b>
+			</div>				
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalContentLrPublishConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>
+	<div class="row" id="contentLrPublishFail" style="display:none">
+		<div class="large-10 columns">
+			<div class="alert-box warning">
+				Your contribution could not be published.  The following error was generated: 
+				<br> 
+				<br>
+				<b><span id="contentLrPublishErrorMessage"></span></b>
+			</div>	
+		</div>
+		<div class="large-2 columns"><button type="button" onclick="$('#modalContentLrPublishConfirm').foundation('reveal', 'close');" class="small secondary">OK</button></div>
+	</div>	 
+    <a class="close-reveal-modal">&#215;</a>
+</div>    
+
+<!-- Content Generate Metadata Modal -->    
+<div id="modalContentGenerateMdConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-bolt"></i> Generate metadata?</h2>
+    <p>Generate metadata for <span id="contentGenerateMdFileName" style="font-style:italic; font-weight:bold;"></span>?</p>
+    <p>
+    	Automatic metadata generation will append your description and keywords with automatically generated values.  Other values will be overwritten.
+    	Metadata cannot be generated for certain resources.  If this occurs, a note will be made in the item's description.
+    	<br>
+    	<br>
+    	Note: Generation can take some time (especially for larger resources).  You do not have to remain logged into the application during the 
+    	process. The resource will be updated once the process is complete.
+    <p/>
+    <form id="contentGenerateMdForm" data-abide="ajax">
+    	<input type="hidden" id="contentGenerateMdResourceId"/>
+    	<div class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small">Generate</button>
+				<button type="button" onclick="$('#modalContentGenerateMdConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>		
+	</form>   
+    <a class="close-reveal-modal">&#215;</a>
+</div>    
+
+<!-- Delete Content Modal -->    
+<div id="modalDeleteContentConfirm" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-trash-o"></i> Delete your contribution?</h2>
+    <p>Are you sure you wish to delete <span id="deleteContentFileName" style="font-style:italic; font-weight:bold;"></span>?</p>
+    <p>
+    	The resource (along with all associated metadata, comments, and ratings) will be removed from the repository and 
+    	<a href="http://learningregistry.org/" target="Learning Registry">Learning Registry.</a>
+    <p/>
+    <form id="deleteContentForm" data-abide="ajax">
+    	<input type="hidden" id="deleteContentResourceId"/>
+    	<div class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small alert">Delete</button>
+				<button type="button" onclick="$('#modalDeleteContentConfirm').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>
+		<div class="row">    		
+			<div id="deleteContentBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+		</div>
+	</form>   
+    <a class="close-reveal-modal">&#215;</a>
+</div>    
+
+<!-- Add Content Modal -->    
+<div id="modalAddContent" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-bank"></i> Contribute to the Repository</h2>
+    <p>What would you like to add?</p>
+    <button data-reveal-id="modalAddContent-file" onclick="document.getElementById('uploadFileForm').reset();"><i class="fa fa-file-o"></i> File ...</button>
+    <button data-reveal-id="modalAddContent-webpage" onclick="document.getElementById('addWebpageForm').reset();"><i class="fa fa-globe"></i> Webpage ...</button>
+    <button class="secondary" onclick="$('#modalAddContent').foundation('reveal', 'close');">Cancel</button>    
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Add Webpage Modal -->          
+<div id="modalAddContent-webpage" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-globe"></i> Share a Webpage</h2>
+    <h5>Enter the URL you would like to contribute.</h5>        
+    <form id="addWebpageForm" method="POST" data-abide="ajax">
+		<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-info"></i> Title <input type="text" id="addWebpageTitle" name="title" required> </label> 
+					<small class="error">Enter the URL title</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-globe"></i> URL <input type="url" id="addWebpageUrl" name="url" required> </label> 
+					<small class="error">Enter the URL (ex: http://www.eduworks.com)</small>
+				</div>
+			</div>
+		</div>
+		<button type="submit"><i class="fa fa-upload"></i> Contribute</button> 
+    	<button type="reset" class="secondary" data-reveal-id="modalAddContent">Back</button>
+    	<button type="reset" class="secondary" onclick="$('#modalAddContent-webpage').foundation('reveal', 'close');">Cancel</button>
+    	<div class="row">
+    		<div id="addWebpageErrorContainer" style="display:none"></div>
+			<div id="addWebpageBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+		</div>
+	</form>    
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+      
+<!-- Add File Modal -->          
+<div id="modalAddContent-file" class="reveal-modal small" data-reveal>
+    <h2><i class="fa fa-file-o"></i> Upload a File</h2>
+    <h5>Browse for the file you wish to upload.</h5>
+    <form id="uploadFileForm" method="POST" data-abide="ajax">
+		<input type="file" id="uploadFileData" name="filedata">
+		<input type="hidden" id="decalsData" name="decalsData" />		
+	</form>        
+    <button onclick="$('#modalAddContent-file').foundation('reveal', 'close');" id="uploadFileBtn"><i class="fa fa-upload"></i> Upload</button> 
+    <button type="reset" class="secondary" data-reveal-id="modalAddContent">Back</button>
+    <button type="reset" class="secondary" onclick="$('#modalAddContent-file').foundation('reveal', 'close');">Cancel</button>
+    <div class="row">
+    	<div id="uploadFileErrorContainer" style="display:none"></div>
+		<div id="uploadFileBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Edit Content Modal -->
+<div id="modalEditContent" class="reveal-modal small" data-reveal>		
+	<form id="editContentForm" data-abide="ajax">
+		<input type="hidden" id="editContentResourceId"/>
+		<div id="editContentFull">
+			<div class="row">
+				<div id="editContentHeaderContainer" class="ecText">				
+					<h4><i class="fa fa-book"></i> Edit your contribution: <span id="editContentFileName" style="font-style: italic;">test.jpg</span></h4>    							
+				</div>
+			</div>
+			<div class="row">
+				<p class="ecPreview">Preview</p>
+			</div>
+			<div class="row">
+				<div id="editContentPreviewContainer" class="ecDoc"><p id="editContentPreviewNone"><i style="color:#A4A4A4">No Preview Available</i></p></div>
+			</div>			
+			<div id="editContentDescriptionContainer" class="row">
+				<div class="row">
+					<div class="small-2 columns meta-label" style="padding-right:5px"><b>Description</b></div>
+					<div class="small-10 columns" style="padding-left:14px">
+						<span id="editContentDescription" class="meta-value editable">Click to edit</span>
+						<textarea style="display:none;" rows="4" class="value-input" placeholder="Please describe your contribution.">Click to edit</textarea>
+					</div>
+				</div>
+			</div>	
+			<div id="editContentMetadataContainer" class="row">
+				<div id="editContentMetadataHide" class="small-12 columns"><a class="finger">Show more properties</a></div>
+				<div id="editContentMetadataShow" class="small-12 columns" style="display:none;">
+					<div id="ecmGeneralSection" class="ecmSection">
+						<a class="ecmSectionHeader">General</a>
+						<div id="ecmGeneralMetadata" class="section-content">
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Title</div>
+								<div class="small-10 columns">
+									<span id="editContentTitle" class="meta-value editable">Click to edit</span>
+									<input style="display:none;" type="text" class="value-input" placeholder="A title is required" value="Click to edit">
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">File Name</div>
+								<div class="small-10 columns"><span id="editContentMdFileName" class="meta-value">test.jpg</span></div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Keywords</div>
+								<div class="small-10 columns">
+									<span id="editContentKeywords" class="meta-value editable">Click to edit</span> 
+									<input style="display: none;" type="text" class="value-input" placeholder="Add comma separated words" value="Click to edit">
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Objectives</div>
+								<div class="small-10 columns">
+									<div id="editContentDisplayObjectives" class="meta-value">
+										<ul id="editContentObjectivesList" class="objList" ></ul>
+										<a id="editContentCreateObjective" href="#">Create New</a>
+										<div id="editContentCreateObjectiveWrapper" style="display: none;">
+											<input id="editContentNewObjectiveTitle" type="text" placeholder="Title" value="">
+											<input id="editContentNewObjectiveDesc" type="text" placeholder="Description" value="">												
+											<button id="editContentCreateObjectiveApply" class="tiny radius">Apply</button> 
+											<button id="editContentCreateObjectiveCancel" class="tiny radius secondary" >Cancel</button>  
+											<a id="editContentCreateObjectiveHelp" href="#" title="How to write an objective"><img src="images/help.png">Help</a>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Competencies</div>
+								<div class="small-10 columns">
+									<div id="editContentDisplayCompetencies" class="meta-value">
+										<ul id="editContentCompetencyList" class="objList" ></ul>
+										<span id="editContentAddCompetency" style="cursor:pointer; color: #0066cc;">Align with Competency</span>
+										<div id="editContentAddCompetencyWrapper" style="display: none;">
+											<input id="editContentAddCompetencyUri" type="text" placeholder="Competency URI" value="">	
+											<div id="editCompetencySearching" style="text-align:center;margin-bottom:10px;" class="hidden">
+												<i class="fa fa-circle-o-notch fa-spin"></i>
+												Finding Competency...
+											</div>
+											<input id="editContentAddCompetencyTitle" type="text" class="hidden" disabled="disabled" value="">
+											<input id="editContentAddCompetencyDescription" type="text" class="hidden" disabled="disabled" value="">												
+											<div id="editContentAddCompetencyApply" class="button tiny radius" >Apply</div> 
+											<button id="editContentAddCompetencyCancel" class="tiny radius secondary" onclick="$('#editContentAddCompetencyWrapper').slideUp('slow'); return false;">Cancel</button>  
+										</div>
+									</div>
+								</div>
+							</div>
+							<hr>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Classification</div>
+								<div class="small-10 columns">
+									<span id="editContentSecurityClassification" class="meta-value editable">Unclassified</span> 
+									<select id="editContentSecurityClassificationDd" class="value-input" style="display: none;">
+										<option id="detailClass1">Unclassified</option>
+										<option id="detailClass2">Confidential</option>
+										<option id="detailClass3">Secret</option>
+										<option id="detailClass4">Top Secret</option>										
+									</select>
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Level</div>
+								<div class="small-10 columns">
+									<span id="editContentSecurityLevel" class="meta-value editable">None</span> 
+									<select id="editContentSecurityLevelDd" class="value-input" style="display: none;">
+										<option id="detailLevel1">None</option>
+										<option id="detailLevel2">For Official Use Only (FOUO)</option>										
+									</select>
+								</div>
+							</div>							
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Distribution</div>
+								<div class="small-10 columns">
+									<span id="editContentDistribution" class="meta-value editable">Statement A (Public)</span> 
+									<select id="editContentDistributionDd" class="value-input" style="display: none;">
+										<option id="detailDistribution1">Statement A (Public)</option>										
+										<option id="detailDistribution2">Statement B</option>
+										<option id="detailDistribution3">Statement C</option>
+										<option id="detailDistribution4">Statement D</option>
+										<option id="detailDistribution5">Statement E</option>
+										<option id="detailDistribution6">Statement F</option>
+										<option id="detailDistribution7">Statement X</option>
+										<option id="detailDistribution8">LR - Legal Restrictions</option>
+										<option id="detailDistribution9">NR - No restriction</option>
+										<option id="detailDistribution10">CP - Cleared for Public</option>
+										<option id="detailDistribution11">CG - Cleared for US Gov</option>
+										<option id="detailDistribution12">CD - Cleared for DoD</option>
+										<option id="detailDistribution13">RD - Restrictions on DoD</option>
+										<option id="detailDistribution14">NF - NOFORN</option>
+										<option id="detailDistribution15">OT - Other</option>
+									</select>
+								</div>
+							</div>
+							<hr>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">File Format</div>
+								<div class="small-10 columns">
+									<span id="editContentFileFormat" class="meta-value">fileformat</span>
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Publisher</div>
+								<div class="small-10 columns">
+									<span id="editContentPublisher" class="meta-value editable">Click to edit</span>
+									<input style="display: none;" type="text" class="value-input" placeholder="Who published this content?" value="Click to edit">
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Owner</div>
+								<div class="small-10 columns">
+									<span id="editContentOwner" class="meta-value editable">Click to edit</span>
+									<input style="display: none;" type="text" class="value-input" placeholder="Who own's this content?" value="Click to edit">
+								</div>
+							</div>
+						</div>
+					</div>
+					<div id="ecmEducationalSection" class="ecmSection collapsed">
+	                    <a class="ecmSectionHeader">Educational</a>
+	                    <div id="ecmEducationalMetadata" class="section-content" style="display:none;">
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Coverage</div>
+								<div class="small-10 columns">
+									<span id="editContentCoverage" class="meta-value editable">Click to edit</span>
+									<input style="display: none;" type="text" class="value-input" placeholder="Examples: time, culture, geography or region" value="Click to edit">
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Interactivity</div>
+								<div class="small-10 columns">
+									<span id="editContentInteractivity" class="meta-value editable">Click to edit</span>
+									<select class="value-input" size="1" style="display: none;">
+										<option value="Very High">Very High: Game, simulation or manipulative</option>
+										<option value="High">High: Survey, quiz, or exercise</option>
+										<option value="Medium">Medium: Form or email reply</option>
+										<option value="Low">Low: Branching document or links</option>
+										<option value="Very Low">Very Low: Read, view or listen</option>
+									</select>
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Environment</div>
+								<div class="small-10 columns">
+									<span id="editContentEnvironment" class="meta-value editable">Click to edit</span>
+									<select class="value-input" size="1" style="display: none;">
+										<option value="Primary Education">Grades 1-8 (Primary Education)</option>
+										<option value="Secondary Education">High school (Secondary Education)</option>
+										<option value="Higher Education">Post high school (Higher Education)</option>
+										<option value="University First Cycle">University basic course (1st cycle)</option>
+										<option value="University Second Cycle">University specialized course (2nd cycle)</option>
+										<option value="University Postgraduate">University Graduate level (Postgraduate)</option>
+										<option value="Technical School First Cycle">Technical school core course (1st Cycle)</option>
+										<option value="Technical School Second Cycle">Technical School specialized course (2nd Cycle)</option>
+										<option value="Professional Formation">Professional Development (Formation)</option>
+										<option value="Continuing Education">Continuing Education</option>
+										<option value="Vocational">Vocational</option>
+									</select>
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Skill Level</div>
+								<div class="small-10 columns">
+									<span id="editContentSkill" class="meta-value editable">Click to edit</span>
+									<select class="value-input" size="1" style="display: none;">
+										<option value="Recruit">Recruit</option>
+										<option value="Apprentice">Apprentice</option>
+										<option value="Journeyman">Journeyman</option>
+										<option value="Master">Master</option>
+									</select>
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Language</div>
+								<div class="small-10 columns">
+									<span id="editContentLanguage" class="meta-value editable">en</span> 
+									<select class="value-input" size="1" style="display: none;">
+										<option value="en" selected="selected">English</option>
+										<option value="ar">Arabic</option>
+										<option value="hy">Armenian</option>
+										<option value="bg">Bulgarian</option>
+										<option value="ca">Catalan</option>
+										<option value="zh">Chinese</option>
+										<option value="hr">Croatian</option>
+										<option value="cs">Czech</option>
+										<option value="da">Danish</option>
+										<option value="nl">Dutch</option>
+										<option value="et">Estonian</option>
+										<option value="fi">Finnish</option>
+										<option value="fr">French</option>
+										<option value="de">German</option>
+										<option value="el">Greek</option>
+										<option value="he">Hebrew</option>
+										<option value="hu">Hungarian</option>
+										<option value="is">Icelandic</option>
+										<option value="ga">Irish</option>
+										<option value="it">Italian</option>
+										<option value="ja">Japanese</option>
+										<option value="ko">Korean</option>
+										<option value="lv">Latvian</option>
+										<option value="lt">Lithuanian</option>
+										<option value="mt">Maltese</option>
+										<option value="no">Norwegian</option>
+										<option value="pl">Polish</option>
+										<option value="pt">Portuguese</option>
+										<option value="ro">Romanian</option>
+										<option value="ru">Russian</option>
+										<option value="sk">Slovak</option>
+										<option value="sl">Slovenian</option>
+										<option value="es">Spanish</option>
+										<option value="sv">Swedish</option>
+										<option value="tr">Turkish</option>
+										<option value="uk">Ukrainian</option>
+										<option value="29">Other</option>
+									</select>
+								</div>
+							</div>
+						</div>
+	                </div>	                
+	                <div id="ecmTechnicalSection" class="ecmSection collapsed">
+	                    <a class="ecmSectionHeader">Technical</a>
+	                    <div id="ecmTechnicalMetadata" class="section-content" style="display:none;">
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Size</div>
+								<div class="small-10 columns">
+									<span id="editContentFileSize" class="meta-value">filesize</span>									
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Duration</div>
+								<div class="small-10 columns">
+									<span id="editContentDuration" class="meta-value editable">Click to edit</span> 
+									<input style="display: none;" type="text" class="value-input" placeholder="hh:mm:ss" value="Click to edit">
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Requirements</div>
+								<div class="small-10 columns">
+									<span id="editContentTechnicalRequirements" class="meta-value editable">Click to edit</span>
+									<input style="display: none;" type="text" class="value-input" placeholder="Operating system, browser or media player" value="Click to edit">
+								</div>
+							</div>
+						</div>
+	                </div>
+	                <div id="ecmRelatedSection" class="ecmSection collapsed">
+	                    <a class="ecmSectionHeader">Related Material</a>
+	                    <div id="ecmRelatedMetadata" class="section-content" style="display:none;">
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Is part of</div>
+								<div class="small-10 columns">
+									<span id="editContentPartOf" class="meta-value editable">Click to edit</span>
+									<input style="display: none;" type="text" class="value-input" placeholder="Asset ID" value="Click to edit">
+								</div>
+							</div>
+							<div class="row meta">
+								<div class="small-2 columns meta-label">Requires</div>
+								<div class="small-10 columns">
+									<span id="editContentRequires" class="meta-value editable">Click to edit</span>
+									<input style="display: none;" type="text" class="value-input" placeholder="XXXXXXXXX" value="Click to edit">
+								</div>
+							</div>
+						</div>
+	                </div>                
+				</div>
+			</div>		
+		</div>
+		<div class="row">
+			<div class="large-12 columns">			
+				<button type="submit" class="small" style="margin-bottom: 0px;">Submit</button>
+				<button type="button" style="margin-bottom: 0px;" onclick="$('#modalEditContent').foundation('reveal', 'close');" class="small secondary">Cancel</button>
+			</div>
+		</div>	
+	</form>	
+	<div class="row">    	
+		<div id="editContentBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+	</div>
+</div>

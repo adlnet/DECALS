@@ -1,0 +1,210 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY structure-user "http://www.competency.services/structure-user#" >
+    <!ENTITY structure-competency "http://www.competency.services/structure-competency#" >
+]>
+
+
+<rdf:RDF xmlns="&structure-user;"
+     xml:base="&structure-user;"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <owl:Ontology rdf:about="&structure-user;">
+        <owl:imports rdf:resource="&structure-competency;"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.competency.services/structure-user#recordCompetency -->
+
+    <owl:ObjectProperty rdf:about="&structure-user;recordCompetency">
+        <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
+        <rdfs:range rdf:resource="&structure-competency;Competency"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-user#recordLevel -->
+
+    <owl:ObjectProperty rdf:about="&structure-user;recordLevel">
+        <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
+        <rdfs:range rdf:resource="&structure-competency;CompetencyLevel"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-user#recordValidation -->
+
+    <owl:ObjectProperty rdf:about="&structure-user;recordValidation">
+        <rdfs:range rdf:resource="&structure-user;RecordValidation"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.competency.services/structure-user#recordCompetencyModel -->
+
+    <owl:DatatypeProperty rdf:about="&structure-user;recordCompetencyModel">
+        <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-user#recordConfidence -->
+
+    <owl:DatatypeProperty rdf:about="&structure-user;recordConfidence">
+        <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-user#recordUpdated -->
+
+    <owl:DatatypeProperty rdf:about="&structure-user;recordUpdated">
+        <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
+        <rdfs:range rdf:resource="&xsd;dateTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-user#validationAgent -->
+
+    <owl:DatatypeProperty rdf:about="&structure-user;validationAgent">
+        <rdfs:domain rdf:resource="&structure-user;RecordValidation"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-user#validationConfidence -->
+
+    <owl:DatatypeProperty rdf:about="&structure-user;validationConfidence">
+        <rdfs:domain rdf:resource="&structure-user;RecordValidation"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-user#validationDate -->
+
+    <owl:DatatypeProperty rdf:about="&structure-user;validationDate">
+        <rdfs:domain rdf:resource="&structure-user;RecordValidation"/>
+        <rdfs:range rdf:resource="&xsd;dateTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.competency.services/structure-user#validationEvidence -->
+
+    <owl:DatatypeProperty rdf:about="&structure-user;validationEvidence">
+        <rdfs:domain rdf:resource="&structure-user;RecordValidation"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.competency.services/structure-user#CompetencyRecord -->
+
+    <owl:Class rdf:about="&structure-user;CompetencyRecord">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-user;recordCompetency"/>
+                <owl:allValuesFrom rdf:resource="&structure-competency;Competency"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-user;recordLevel"/>
+                <owl:allValuesFrom rdf:resource="&structure-competency;CompetencyLevel"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-user;recordCompetencyModel"/>
+                <owl:allValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-user;recordCompetency"/>
+                <owl:someValuesFrom rdf:resource="&structure-competency;Competency"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-user;recordCompetencyModel"/>
+                <owl:someValuesFrom rdf:resource="&xsd;string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&structure-user;recordLevel"/>
+                <owl:someValuesFrom rdf:resource="&structure-competency;CompetencyLevel"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.competency.services/structure-user#RecordValidation -->
+
+    <owl:Class rdf:about="&structure-user;RecordValidation"/>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#Competency -->
+
+    <owl:Class rdf:about="&structure-competency;Competency"/>
+    
+
+
+    <!-- http://www.competency.services/structure-competency#CompetencyLevel -->
+
+    <owl:Class rdf:about="&structure-competency;CompetencyLevel"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net -->
+

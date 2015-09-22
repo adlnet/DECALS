@@ -1,0 +1,162 @@
+dbConfiguration={
+	indexDir="db",
+	remote="true",
+	remoteHost="http://localhost:9722/api/custom/",
+	remoteHostPassword=#md5(obj="password"),
+	listen="true",
+	listenPassword=#md5(obj="password")
+};
+dbVariables={
+	databaseName=#if(
+		operator="@database",
+		operand="",
+		eq="db",
+		ne="@databaseName"
+	),
+	index="@index",
+	key="@key",
+	obj=#toObject(obj="@obj")
+};
+db={
+	dbVariables,
+	dbConfiguration
+};
+dbo=#object(db);
+config=#object(dbConfiguration);
+remoteHostPassword=config.cget(remoteHostPassword="");
+listenPassword=config.cget(listenPassword="");
+
+postObj=#fileFromDatastream().getIndex(index="0").fileToString().toObject();
+
+remote=#object(
+	dbVariables,
+	password=remoteHostPassword,
+).remotingPost(
+	remoteHost=config.cget(remoteHost="")
+)
+
+put=#idxPut(db);
+putRemote=remote.call(remoteName="dbPut");
+putListen=#if(
+	operator=config.cget(listen=""),
+	operand="true",
+	eq=#if(
+		operator=postObj.cget(password=""),
+		operand=listenPassword,
+		eq=put.call(_params=postObj),
+		ne=#error(msg="Incorrect Password")
+	)
+);
+/dbPut=putListen;
+put=#if(
+	operator=config.cget(remote=""),
+	operand="true",
+	eq=putRemote,
+	ne=put
+);
+#dbPut=put;
+
+get=#idxGet(db);
+getRemote=remote.call(remoteName="dbGet");
+getListen=#if(
+	operator=config.cget(listen=""),
+	operand="true",
+	eq=#if(
+		operator=postObj.cget(password=""),
+		operand=listenPassword,
+		eq=get.call(_params=postObj),
+		ne=#error(msg="Incorrect Password")
+	)
+);
+/dbGet=getListen;
+get=#if(
+	operator=config.cget(remote=""),
+	operand="true",
+	eq=getRemote,
+	ne=get
+);
+#dbGet=get;
+
+keys=#idxDelete(db);
+keysRemote=remote.call(remoteName="dbDelete");
+keysListen=#if(
+	operator=config.cget(listen=""),
+	operand="true",
+	eq=#if(
+		operator=postObj.cget(password=""),
+		operand=listenPassword,
+		eq=keys.call(_params=postObj),
+		ne=#error(msg="Incorrect Password")
+	)
+);
+/dbDelete=keysListen;
+keys=#if(
+	operator=config.cget(remote=""),
+	operand="true",
+	eq=keysRemote,
+	ne=keys
+);
+#dbDelete=keys;
+
+values=#idxValues(db);
+valuesRemote=remote.call(remoteName="dbValues");
+valuesListen=#if(
+	operator=config.cget(listen=""),
+	operand="true",
+	eq=#if(
+		operator=postObj.cget(password=""),
+		operand=listenPassword,
+		eq=values.call(_params=postObj),
+		ne=#error(msg="Incorrect Password")
+	)
+);
+/dbValues=valuesListen;
+values=#if(
+	operator=config.cget(remote=""),
+	operand="true",
+	eq=valuesRemote,
+	ne=values
+);
+#dbValues=values;
+
+delete=#idxDelete(db);
+deleteRemote=remote.call(remoteName="dbDelete");
+deleteListen=#if(
+	operator=config.cget(listen=""),
+	operand="true",
+	eq=#if(
+		operator=postObj.cget(password=""),
+		operand=listenPassword,
+		eq=delete.call(_params=postObj),
+		ne=#error(msg="Incorrect Password")
+	)
+);
+/dbDelete=deleteListen;
+delete=#if(
+	operator=config.cget(remote=""),
+	operand="true",
+	eq=deleteRemote,
+	ne=delete
+);
+#dbDelete=delete;
+
+clear=#idxKeys(db).cforEach(paramName="key",op=delete);
+clearRemote=remote.call(remoteName="dbClear");
+clearListen=#if(
+	operator=config.cget(listen=""),
+	operand="true",
+	eq=#if(
+		operator=postObj.cget(password=""),
+		operand=listenPassword,
+		eq=clear.call(_params=postObj),
+		ne=#error(msg="Incorrect Password")
+	)
+);
+/dbClear=clearListen;
+clear=#if(
+	operator=config.cget(remote=""),
+	operand="true",
+	eq=clearRemote,
+	ne=clear
+);
+#dbClear=clear;

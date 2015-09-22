@@ -1,0 +1,117 @@
+//---------------------------------------//---------------------------------------
+//---------------Helpers
+//==============
+sessionDB = {
+	indexDir = #competencyUserDirectory(),
+	databaseName=#competencyUserDBName(),
+	index="1"
+};
+
+userDB = {
+	indexDir = #competencyUserDirectory(),
+	databaseName = #competencyUserDBName(),
+	index = "0"
+};
+
+incrementCompetencySessionLength = #sessionUpdate(sessionDB, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")).string(str="true");
+
+#competencyIncrementSessionLength = incrementCompetencySessionLength;
+
+checkSession = #if(operator=#sessionRead(sessionDB, sessionId="@sessionId").displayJson(_collapse="true"), operand=#add(a="{", b="}"), 
+						eq=#string(str="false"),
+						ne=#if(operator=#sessionRead(sessionDB, sessionId="@sessionId").get(expires=""), operand=#date(_raw="true"),
+								lt=#object(
+										a=#sessionDelete(sessionDB, sessionId="@sessionId"),
+										b=#competencyThrowSessionExpired()
+									),
+								ge=incrementCompetencySessionLength
+							)
+				);
+
+//---------------------------------------//---------------------------------------
+//---------------Service Functions
+//==============
+// LOGIN 
+//--------------
+// #competencySessionLogin
+//--------------
+// userId:
+// password:
+//==============
+
+deleteSession = #if(operator="@sessionId", operand="", ne=#sessionDelete());
+
+tryLogin = #catch(try=#userLogin(userDB), runtime=#competencyThrowBadPassword());
+
+loginWithSession = #if(operator=tryLogin, operand="true", 
+							ne=#competencyThrowFailedLogin(),
+							eq=#object(
+									deleteOld = #userGet(userDB, userId="@userId").get(sessionId="").if(operator="@obj", operand="", eq="", ne="@obj").toParameter(op=deleteSession, paramName="sessionId"),
+									sessionId = "@sessionId",
+									sessionInfo = #sessionRead(sessionDB), 
+									setUserSession = #userUpdate(userDB, userId="@userId", sessionId="@sessionId"),
+									userInfo = #userGet(userDB, userId="@userId").remove(password=""),
+								).call(
+									sessionId=#sessionCreate(sessionDB, expires=#date(addHours="1", _raw="true"))
+								).buildArguments(remove="password", hard="true").get(userInfo="")
+					);
+					
+checkLoginWithSession = #object(
+								a=#competencyErrorUserIdSet(),
+								b=#competencyErrorUserExists(),
+								c=#competencyErrorPasswordSet(),
+								d=loginWithSession
+							).get(d="");  
+							
+#competencySessionLogin = checkLoginWithSession;    
+
+//==============
+// Retrieve Session User
+//--------------
+// #competencySessionUser
+//--------------
+// sessionId:
+//==============
+getSessionUsername = #if(operator=checkSession, operand="true",
+							eq=#sessionRead(sessionDB, sessionId="@sessionId").cget(userId=""),
+							ne=""
+						);
+						
+#competencySessionUser = getSessionUsername;
+
+//==============
+// Retrieve Session User Info
+//--------------
+// #competencySessionUser
+//--------------
+// sessionId:
+//==============
+getSessionUserInfo = #if(operator=checkSession, operand="true",
+							eq=#sessionRead(
+									sessionDB, 
+									sessionId="@sessionId"
+								).cget(
+									userId=""
+								).toParameter(
+									op=#competencyReadUser(currentUser=#competencySessionUser(sessionId="@sessionId")), 
+									paramName="userId"
+								),
+							ne=""
+						);
+						
+#competencySessionUserInfo = getSessionUserInfo;
+
+//==============
+// Validate if Session is Active
+//--------------
+// #competencySessionValidate
+//--------------
+// sessionId:
+//==============
+
+validate = #if(operator=checkSession, operand="true",
+					eq="true",
+					ne=#competencyThrowBadSessionId()
+			);
+			
+#competencySessionValidate = validate;

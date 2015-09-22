@@ -1,0 +1,29 @@
+<div id="results" class="screen left">
+	<div class="row">
+		<div id="" class="small-12 columns">
+			<h3>
+				Competency Models:
+			</h3>
+		</div>
+	</div>
+
+	<div class="row">
+		<div id="resultsWrapper" class="small-12 columns">
+			<ul id="resultsList">
+				<li ng-repeat="mode in models" id="{{model.id}}"
+					ng-include="'search/modelResult.html'"></li>
+			</ul>
+
+			<div class="pagination-centered">
+				<ul class="pagination" ng-hide="search.resultLength < 10">
+					<li class="arrow unavailable"><a>«</a></li>
+					<li class="current"><a>1</a></li>
+					<li><a>2</a></li>
+					<li class="unavailable"><a>…</a></li>
+					<li><a>{{resultPages(search.resultLength)}}</a></li>
+					<li class="arrow"><a>»</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>

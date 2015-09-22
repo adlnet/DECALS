@@ -1,0 +1,112 @@
+<div id="edit-record" class="screen left editor">
+	<div class="row">
+		<div class="columns" ng-class="small-12">
+			<h2>
+				<i class="fa fa-pencil"></i> User Profile
+			</h2>
+		</div>
+	</div>
+	<div class="row">
+		<!--div class="small-2 columns panel"  ng-hide="create">
+      <h4>Options</h4>
+      <ul class="side-nav">
+        <li>
+          <a onclick="showOverlay('add-competency')">
+            <i class="fa fa-plus"></i> 
+            Competency Record
+          </a>
+        </li>
+      </ul>
+    </div-->
+
+		<div class="columns small-12">
+			<div class="row">
+				<div class="small-4 columns">
+					<label> Username <small>required</small> <input type="text"
+						placeholder="Username" ng-disabled="!create"
+						ng-model="appCache.editedItem.id" />
+					</label>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="small-4 columns">
+					<label> Password <small>required</small> <input
+						type="password" placeholder="Password"
+						ng-disabled="!create && !changePassword"
+						ng-model="appCache.editedItem.password" />
+					</label>
+				</div>
+
+				<div class="small-4 columns" style='float: left;'>
+					<label> Re-enter Password <small>required</small> <input
+						type="password" placeholder="Re-enter Password"
+						ng-disabled="!create && !changePassword"
+						ng-model="newPasswordCheck" />
+					</label>
+				</div>
+
+				<div class="small-2 columns" style="float: left;" ng-hide="create">
+					<a class="delete-clone" title="Change Password"
+						ng-click="editPassword()"> <i class="fa fa-pencil"
+						style="display: inline;" ng-hide="changePassword"></i> <i
+						class="fa fa-times" style="display: inline;"
+						ng-hide="!changePassword"></i>
+					</a>
+				</div>
+			</div>
+
+			<fieldset>
+				<legend>Personal Information</legend>
+
+				<div class="row">
+					<div class="small-4 columns">
+						<label> First Name <small>required</small> <input
+							type="text" placeholder="First name"
+							ng-model="appCache.editedItem.firstName" />
+						</label>
+					</div>
+					<div class="small-4 columns" style="float: left">
+						<label> Last Name <input type="text"
+							placeholder="Last name" ng-model="appCache.editedItem.lastName" />
+						</label>
+					</div>
+
+				</div>
+
+				<div class="row">
+					<div class="small-6 columns">
+						<label> Email Address <small>required</small> <input
+							type="text" placeholder="Email Address"
+							ng-model="appCache.editedItem.email" />
+						</label>
+					</div>
+				</div>
+			</fieldset>
+
+			<div id="competency-block" class="block" data-minRequired="0">
+
+				<!--
+              <fieldset><legend>XXXXXXXX <a title="Delete competency" data-reveal-id="modalDeleteComp"><i class="fa fa-trash-o"></i></a></legend>
+                  <div id="record-block" class="block" data-minRequired="0">
+                      <div class="row">
+                          <div class="small-11 columns">
+                              <a onclick="editCompetencyRecords('CompTitleHere');" title="Edit record" >Master (agent)</a>
+                          </div>
+                          <div class="small-1 columns">
+                              <a data-reveal-id="modalDeleteComp" title="Delete record"><i class="fa fa-trash-o"></i></a>
+                          </div>
+                      </div>
+                  </div>
+                  <button onclick="showOverlay('edit-record-competency');" class="tiny secondary"><i class="fa fa-plus"></i> Record</button>
+              </fieldset>
+-->
+
+			</div>
+
+			<button ng-click="saveEdits();" ng-disabled="savingProfile">Save</button>
+			<button class="secondary" ng-click="goBack();">Cancel</button>
+		</div>
+
+	</div>
+</div>

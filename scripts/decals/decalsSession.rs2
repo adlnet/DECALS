@@ -1,0 +1,165 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+sessionDb={
+	indexDir=#decalsSessionDbDirectory(),
+	databaseName=#decalsSessionDbName(),
+	index=#decalsSessionDbIndexName() 
+};
+
+invalidSessionError=#error(code="401",msg=#object(error="Invalid session"));
+sessionExpiredError=#error(code="401",msg=#object(error="Session expired"));
+
+//============================
+//Session
+//============================
+
+sessionObj=#idxGet(sessionDb,key="@sessionId").toObject();
+allSessionObj=#idxKeys(sessionDb).cforEach(paramName="sessionId",op=sessionObj);
+
+//--------------------------
+//Check session
+
+//change this to 'checkSession' for real session checking
+checkSession = #if(	
+	operator=#sessionValidate(sessionDb, sessionId="@sessionId"), 
+	operand="false", 
+	eq=invalidSessionError,
+	ne=#if(
+		operator=#sessionRead(sessionDb, sessionId="@sessionId").get(expires=""), 
+		operand=#date(_raw="true"),
+		lt=#object(
+			a=#sessionDelete(sessionDb, sessionId="@sessionId"),
+		    b=sessionExpiredError
+		),
+	    ge=#object(
+	    		a=#sessionUpdate(sessionDb, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")).string(str="true"),
+	    		b=#competencyIncrementSessionLength(),
+	    ).cget(a="")
+	)
+);
+
+//this 'checkSession' is used for testing
+//checkSession = #string(str="true");
+
+#decalsCheckSession = checkSession;
+
+checkSessionDj = #if(operator=checkSession, operand="true",
+						eq=#sessionRead(sessionDb, sessionId="@sessionId").cget(userId="")
+					).ccall(sessionId=decalsPostData.cget(sessionId="")).displayJson();
+/decalsTestCheckSession = checkSessionDj;
+ 
+//--------------------------
+//Show all sessions
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllSessions=allSessionObj.displayJson();
+/decalsShowAllSessions=getAllSessions;
+
+//--------------------------
+//Get session metadata
+
+retrieveSessionMetadata = #sessionRead(sessionDb,sessionId="@sessionId");
+#decalsRetrieveSessionMetadata = retrieveSessionMetadata;
+
+retrieveSessionMetadataDj = retrieveSessionMetadata.displayJson();
+/showSessionMetadata=retrieveSessionMetadataDj;
+
+sessionUserId=retrieveSessionMetadata.cget(userId="");
+#decalsSessionUserId = sessionUserId;
+
+//--------------------------
+//Login
+
+tryLogin=#if(
+	operator=#userLogin(
+		userDb,
+		userId="@userId", 
+        password="@password"
+	),
+    operand="true",
+    eq="true",
+    ne="false"
+);
+
+deleteOldSession=#if(
+	operator=#userGet(
+		userDb, 
+		userId="@userId"
+	).get(sessionId=""), 
+	operand="", 
+	ne=#sessionDelete(
+		sessionDb, 
+		sessionId=#userGet(
+			userDb, 
+			userId="@userId"
+		).get(sessionId="")
+	)
+);
+#decalsDeleteOldSession = deleteOldSession;
+
+addUserLoginFields=#userUpdateField(
+	userDb, 
+	sessionId="@sessionId",
+	competencySessionId="@competencySessionId", 
+	lastLogin=#date(_raw="true")
+);
+
+//invalid password here would fail out with {"error":"Authentication Failed."}
+loginWithSessionMgt=#if(
+	operator=tryLogin.ccall(userId="@userId",password="@password"),
+    operand="true",
+    eq=#object(
+	    	a=deleteOldSession.ccall(userId="@userId"),
+	    	b=addUserLoginFields.ccall(
+	    							sessionId="@sessionId", 
+	    							competencySessionId=#competencySessionLogin(
+	    													password=decalsPostData.cget(password=""),
+	    													userId="@userId"
+	    												).cget(sessionId="")
+	    						).buildArguments(remove="password", hard="true"),
+	    	c="@sessionId"
+	    ).ccall(
+	    	sessionId=#sessionCreate(
+	    		sessionDb, 
+	    		expires=#date(addHours="1", _raw="true")
+	    	)
+	    ).buildArguments(remove="password", hard="true"),
+).cget(c="");
+
+login=#if(
+	operator=#decalsCheckUserExists(userId=decalsPostData.cget(userId="")),
+    operand="true",
+    eq=loginWithSessionMgt.ccall(
+    	userId=decalsPostData.cget(userId=""),
+    	password=decalsPostData.cget(password=""),
+    ),
+    ne=#object(msg="Invalid username")	    
+).displayJson(); 
+ 
+/decalsLogin=login;
+
+//--------------------------
+//Logout
+
+clearUserSession=#userUpdateField(
+	userDb, 
+	sessionId="",
+	competencySessionId=""
+);
+
+logout=#object(
+    a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=deleteOldSession,
+	c=clearUserSession,
+	d=#object(msg="true")
+).ccall(
+    	userId=decalsPostData.cget(userId="")
+).cget(d="").displayJson();
+
+/decalsLogout=logout;

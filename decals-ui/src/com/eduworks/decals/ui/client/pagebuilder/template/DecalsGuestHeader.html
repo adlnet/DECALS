@@ -1,0 +1,32 @@
+<div id="defaultHeader" class="row">
+	<div class="medium-12 columns">
+		<a href="http://www.adlnet.gov/">
+			<h1 class="logo"><img src="images/logo-adl.png"> ADVANCED <span>DISTRIBUTED LEARNING</span> </h1>
+		</a>
+	</div>
+</div>
+
+<div id="searchHeader" class="row" style="display: none">
+	<div class="large-2 medium-2 small-3 columns">
+		<a href="index.html"><h1 class="logo"><img src="images/logo-adl.png"></h1></a>
+	</div>
+	<div class="large-10 medium-10 small-9 columns">
+		<input id="interactiveSearchHeaderInput" type="text" placeholder="Search">
+		<span id="interactiveSearchIcon" style="position: absolute;right: 18px;top: 11px;width: 32px;height: 35px;cursor: pointer;"></span>
+	</div>
+</div>
+
+<nav>
+	<div class="row">
+		<div class="medium-10 columns hide-on-login">
+			<ul id="searchTypes" class="tabs">
+				<li id="interactiveTab" class="tab active"><a id="interactiveSearchTabLink">Interactive Search</a></li>
+				<li id="basicTab" class="tab"><a id="basicSearchTabLink">Basic Search</a></li>
+			</ul>
+		</div>		
+		<div class="medium-2 columns" style="padding-top: 10px;">
+			<a data-reveal-id="modalRegister" data-reveal onclick="document.getElementById('register').reset();"><i class="fa fa-user"></i> Sign-up</a> | 
+			<a data-reveal-id="modalLogin" data-reveal>Login</a>
+		</div>
+	</div>
+</nav>

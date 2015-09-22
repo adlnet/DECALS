@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="decals-ui" basedir="." default="dist">
+	<property name="project.dir" value="."/>
+	<property file="${project.dir}/build.properties"/>
+	<property file="${project.dir}/module.properties"/>
+	
+	<property name="build.number" value="${build.major.number}.${build.minor.number}.${build.compile.number}"/>
+	
+	<target name="majorVersion">
+	    <propertyfile file="build.properties">
+	    	<entry key="build.major.number" type="int" operation="+" value="1" pattern="0"/>
+	    	<entry key="build.minor.number" type="int" value="0"/>
+	    	<entry key="build.compile.number" type="int" value="0"/>
+	    </propertyfile>
+	</target>
+	
+	<target name="minorVersion">
+	    <propertyfile file="build.properties">
+	    	<entry key="build.minor.number" type="int" operation="+" value="1" pattern="0"/>
+	    	<entry key="build.compile.number" type="int" value="0"/>
+	    </propertyfile>
+	</target>
+	
+	<target name="compileVersion">
+	    <propertyfile file="build.properties">
+	    	<entry key="build.compile.number" type="int" operation="+" value="1" pattern="0"/>
+	    </propertyfile>
+	</target>
+	
+	<target name="setModuleVersion" depends="compileVersion">
+		<propertyfile file="war/js/module.properties">
+			<entry key="module.version" value="${build.number}" />
+		</propertyfile>
+	</target>
+
+	<property name="src.dir" value="src"/>
+	<property name="gwt.home" value="${gwt.home.location}"/>
+	<target name="gwt-compile" description="GWT compile to JavaScript" depends="setModuleVersion">
+		<echo>${build.number}</echo>
+		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+		    <classpath>
+		        <pathelement location="${src.dir}" />
+		        <pathelement location="../russel-ui/src" />
+		        <pathelement location="../EwGWTLib/src" />
+		        <pathelement location="../russel-ui/war/WEB-INF/classes" />
+		        <pathelement location="../EwGWTLib/war/WEB-INF/classes" />
+		        <pathelement location="../EwGWTLib/lib/lib-gwt-file-0.3.jar" />
+		        <pathelement location="../EwGWTLib/lib/smartgwt.jar" />
+		        <pathelement location="../EwGWTLib/lib/smartgwt-skins.jar" />
+		        <pathelement location="${gwt.home}\gwt-2.6.0\validation-api-1.0.0.GA.jar" />
+		        <pathelement location="${gwt.home}\gwt-2.6.0\validation-api-1.0.0.GA-sources.jar" />
+		        <pathelement location="${gwt.home}\gwt-2.6.0\gwt-dev.jar" />
+		        <pathelement location="${gwt.home}\gwt-2.6.0\gwt-user.jar" />
+		    </classpath>
+		    <jvmarg value="-Xmx2g" />
+		    <arg line="-style"/>
+			<arg value="PRETTY" />
+		    <arg value="com.eduworks.decals.ui.decals_ui" />
+		</java>  
+	</target>
+	
+	<target name="gwt-dist" description="Packaging">
+		<delete dir="war/WEB-INF" />
+		<copy tofile="war/decals_ui/gwt/clean/clean.css" file="clean.css"/>
+		<copy tofile="war/decals_ui/sc/skins/Enterprise/skin_styles.css" file="skin_styles.css"/>
+		<zip destfile="decals-ui.zip">
+			<fileset dir="war">
+			</fileset>
+		</zip>
+	</target>
+	
+	<target name="dist">
+		<echo>${build.number}</echo>
+		<copy tofile="war/decals_ui/gwt/clean/clean.css" file="clean.css"/>
+		<copy tofile="war/decals_ui/sc/skins/Enterprise/skin_styles.css" file="skin_styles.css"/>
+		<scp todir="" trust="yes">
+			<fileset dir="war" excludes="WEB-INF/">
+				<exclude name="**/.svn" />
+				<modified>
+		        	 <param name="cache.cachefile" value="localdev.cache"/>
+		       	</modified>
+			</fileset>
+		</scp>
+	</target>
+	
+</project>

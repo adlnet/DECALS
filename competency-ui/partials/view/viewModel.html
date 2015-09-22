@@ -1,0 +1,81 @@
+<div id="compDetails" class="overlay active scroll" ng-escape="goBack()">
+	<div class="content">
+		<span class="exit close-overlay" title="Cancel" ng-click="goBack()">
+			<i class="fa fa-times fa-5x"></i>
+		</span>
+		<div class="row">
+			<div class="small-8 columns small-centered">
+
+				<h3 class="info-title">{{appCache.currentItem.name}}</h3>
+				<h4 class="subheader info-description">
+					{{appCache.currentItem.description}}</h4>
+				<p>
+					<span class="info-id-entry">
+						{{appCache.currentItem.uri}}
+					</span>
+				</p>
+				<p>
+					<strong>Privacy:</strong> 
+					<span>
+						{{(appCache.currentItem.accessControl.type ? appCache.currentItem.accessControl.type : "") | capitalize}}
+					</span>
+				</p>
+				<hr>
+				<p>
+					<strong>Default Levels:</strong> <br /> 
+					<span ng-hide="appCache.currentItem.levels[objectKeys(appCache.currentItem.levels)[0]].name != undefined">
+						<i class="fa fa-circle-o-notch fa-spin"></i> Loading Levels
+					</span>
+					
+					<span ng-hide="appCache.currentItem.levels[objectKeys(appCache.currentItem.levels)[0]].name == undefined"
+						ng-repeat="(i,levelObj) in appCache.currentItem.levels | orderByObj:'rank'"
+						title="[{{levelObj.id}}] (Rank {{levelObj.rank}})">
+						{{levelObj.name}} <span ng-hide="true">- {{levelObj.description}} </span>
+						<br />
+					</span>
+
+				</p>
+				<hr ng-hide="appCache.currentItem.imports.length == 0">
+				<p ng-hide="appCache.currentItem.imports.length == 0">
+					<strong>Imported Models:</strong> 
+					<br /> 
+					<span
+						ng-repeat="modelId in appCache.currentItem.imports"
+						title="{{modelId}}">
+						<a ng-click="showView('model', modelId)">{{appCache.modelCache[modelId].name}}</a><span ng-hide="$last">,</span>
+					</span>
+
+				</p>
+
+				<hr ng-hide="appCache.currentItem.sourceInfo == undefined">
+				<p ng-hide="appCache.currentItem.sourceInfo == undefined">
+					<strong>External Source:</strong> <br /> <span
+						class="info-source-description">
+						{{appCache.currentItem.sourceInfo}} </span> ( <span
+						class="info-source-structure"> {{appCache.currentModel.id}}
+					</span> ) <br /> <span class="info-source-id-url">
+						{{appCache.currentModel.uri}} </span>
+				</p>
+
+				<hr>
+
+				<button class="secondary small"
+					ng-click="showEdit(appCache.context, appCache.currentItemId, appCache.currentModelId)"
+					ng-hide="appCache.currentItemId == 'model-default' || appCache.currentItem.accessControl.admin.indexOf(session.currentUser.id) == -1">
+					<i class="fa fa-pencil"></i> Edit
+				</button>
+
+				<button class="secondary small" ng-click="showResults(contexts.competency, undefined, appCache.currentItem.id)">
+        			<i class="fa fa-sitemap"></i> 
+        			View Competencies
+      			</button>
+				
+				<button class="secondary small" ng-click="showPublicModelPage(appCache.currentItem.id)" ng-hide="appCache.currentItem.accessControl.type != 'public'">
+        			<i class="fa fa-list-alt"></i> 
+        			View Public Page
+      			</button>
+
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,212 @@
+//---------------------------------------//---------------------------------------
+//---------------Helpers
+//==============
+
+// TODO: I removed this from use because we want people to specify where the level will go... Leaving it though in case we want to change maybe?
+optionalModelId = #if(operator="@modelId", operand="", eq=#competencyDefaultModel(), ne="@modelId");
+
+firstChar = #string(str="@str", op="substr", begin="0", end="1");
+
+removedFirst = #string(str="@str", op="substr", begin="1");
+simpleId = #if(operator=firstChar, operand=":", eq=removedFirst, ne="@str");
+
+//---------------------------------------//---------------------------------------
+//---------------Service Functions
+//==============
+// Create Competency Level
+//--------------
+// #competencyCreateLevel
+//--------------
+// modelId:
+// levelName:
+// levelRank:
+// levelDescription:
+//==============
+
+createLevelValues = #object().putInObject(
+	dest=":competencyLevelRank",
+	item="@levelRank"
+).putInObject(
+	dest=":competencyLevelName",
+	item="@levelName"
+).putInObject(
+	dest=":competencyLevelDescription",
+	item="@levelDescription"
+).displayJson(_collapse="true");
+
+createLevelParams = {
+	directory=#competencyDirectory(),
+	ontologyId="@modelId",
+	classId="CompetencyLevel",
+	vals=createLevelValues
+};
+
+createLevel = #ontologyCreateInstance(createLevelParams);
+
+checkCreateLevel = #object( 
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorModelNotDefault(),
+	d=#competencyErrorUserOrAgentWriteAccess(),
+	e=#competencyErrorLevelNameSet(),
+	f=#competencyErrorLevelDescriptionSet(),
+	g=#competencyErrorLevelRankSet(),
+	h=#competencyErrorLevelRankValue(),
+	i=createLevel
+).get(i="");
+
+#competencyCreateLevel = checkCreateLevel;
+
+
+//==============
+// Read Competency Level
+//--------------
+// #competencyReadLevel
+//--------------
+// modelId:
+// levelId:
+//==============
+
+readLevelParams = {
+	directory=#competencyDirectory(),
+	ontologyId=#competencyGetModelUri(),  
+	instanceId="@levelId"
+};
+
+readLevel = #ontologyReadInstance(readLevelParams);
+
+checkReadLevel = #object(	
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorUserOrAgentReadAccess(),
+	d=#competencyErrorLevelIdSet(),
+	e=#competencyErrorLevelExists(),
+	f=readLevel
+).get(f="");
+
+#competencyReadLevel = checkReadLevel;
+
+
+//==============
+// Read All Competency Levels in a Model
+//--------------
+// #competencyReadAllLevels
+//--------------
+// modelId:
+//==============
+
+readAllCompParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(),  
+	classId="CompetencyLevel"
+};
+
+readAllLevels = #ontologyReadClassInstances(readAllCompParams);
+
+readAll = #object(
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorUserOrAgentReadAccess(),
+	d=readAllLevels
+).get(d="");
+#competencyReadAllLevels = readAll;
+
+
+//==============   
+// Update Competency Level
+//--------------
+// #competencyUpdateLevel
+//--------------
+// modelId:
+// levelId:
+// levelName:
+// levelRank:
+// levelDescription:
+//==============
+
+addName = #object(
+	a=#competencyErrorLevelNameSet(),
+	b=#toObject(obj="@object").putInObject(dest=":competencyLevelName", item=#toArray(obj="@levelName"))
+).cget(b="");
+
+addRank = #object(
+	a=#competencyErrorLevelRankSet(),
+	b=#competencyErrorLevelRankValue(),
+	c=#toObject(obj="@object").putInObject(dest=":competencyLevelRank", item=#toArray(obj="@levelRank"))
+).cget(c="");
+
+addDescription = #object(
+	a=#competencyErrorLevelDescriptionSet(),
+	b=#toObject(obj="@object").putInObject(dest=":competencyLevelDescription", item=#toArray(obj="@levelDescription"))
+).cget(b="");
+
+addNameIfSet = #paramExists(paramName="levelName", true=addName, false="@object");
+addRankIfSet = #paramExists(paramName="levelRank", true=addRank, false="@object");
+addDescriptionIfSet = #paramExists(paramName="levelDescription", true=addDescription, false="@object");
+
+updateLevelValues = #competencyReadLevel(
+						modelId="@modelId", 
+						levelId="@levelId"
+					).getByParam(
+						param="@levelId"
+					).toParameter(
+						op=addNameIfSet, 
+						paramName="object"
+					).toParameter(
+						op=addRankIfSet, 
+						paramName="object"
+					).toParameter(
+						op=addDescriptionIfSet, 
+						paramName="object"
+					).displayJson(_collapse="true");
+
+updateLevelParams = {
+	directory=#competencyDirectory(),
+	ontologyId=#competencyGetModelUri(),  
+	instanceId="@levelId",
+	vals=updateLevelValues
+};
+
+updateLevel = #ontologyUpdateInstance(updateLevelParams);
+
+checkUpdateLevel = #object(
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorUserOrAgentWriteAccess(),
+	d=#competencyErrorLevelIdSet(),
+	e=#competencyErrorLevelExists(),
+	f=#competencyErrorLevelNotDefault(),
+	g=updateLevel
+).get(g="");
+
+#competencyUpdateLevel = checkUpdateLevel;
+
+
+//==============
+// Delete Competency Level
+//--------------
+// #competencyDeleteLevel
+//--------------
+// modelId:
+// levelId:
+//==============
+
+deleteLevelParams = {
+	directory=#competencyDirectory(),
+	ontologyId=#competencyGetModelUri(),  
+	instanceId="@levelId"
+};
+
+deleteLevel = #ontologyDeleteInstance(deleteLevelParams).string(str="true");
+
+checkDeleteLevel = #object(
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorUserOrAgentWriteAccess(),
+	d=#competencyErrorLevelIdSet(),
+	e=#competencyErrorLevelExists(),
+	f=#competencyErrorLevelNotDefault(),
+	g=deleteLevel
+).get(g="");
+
+#competencyDeleteLevel = checkDeleteLevel;

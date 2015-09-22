@@ -1,0 +1,85 @@
+<div id="search-model" class="overlay active">
+	<div class="content">
+		<div class="row">
+			<div class="content small-8 columns small-centered">
+				<span class="exit close-overlay" title="Cancel" ng-click="goBack()">
+					<i class="fa fa-times fa-5x"></i>
+				</span>
+				<h4 style="color: white;">Find an existing {{appCache.context}}
+				</h4>
+				<div class="row">
+					<div class="small-10 large-11 columns" style="padding-right: 0px">
+						<input type="text" placeholder="{{searchBarMessage}}" ng-model="query"
+							ng-enter="runSearch()" ng-escape="goBack()" ng-focus)>
+					</div>
+					<div class="small-2 large-1 columns" style="padding: 0px;">
+						<a class="button postfix secondary"
+							ng-click="runSearch()"> <i
+							class="fa fa-search"></i>
+						</a>
+					</div>
+				</div>
+				<div class="row" id="filters">
+					<div style="float:right">
+						<div class='dropdown' ng-dropdown-checklist ng-model="model" ng-hide="appCache.context != contexts.competency">
+							<div id="label" style="display:inline-block;padding: 8px 20px 5px 10px;">
+							Models: 
+							</div>
+							<div id="display" style="color:white;">
+							    <span id="all" ng-hide="model != search.ALL_MODELS && model != ''">
+							    	All Models
+							    </span>
+							    <span id="list" ng-hide="model == search.ALL_MODELS">
+							    	<span ng-repeat="modelId in model">
+							    		<span ng-hide="$first">,</span>
+							    		{{appCache.modelCache[modelId].name}}
+							    	</span>
+							    </span>
+							</div>
+						    <div id="options" style="color: black;">
+					            <ul>
+					            	<li ng-repeat="modelObj in appCache.modelCache" ng-on-repeat-done>
+					            		<input type="checkbox" value="{{modelObj.id}}" data-name="{{modelObj.name}}" 
+					            			ng-checked="model.indexOf('all') == 0 || model.indexOf(modelObj.id) != -1 || model == ''"/>
+					            		<span title="{{modelObj.name}}">{{modelObj.name}}</span>
+					            	</li>
+					            </ul>
+						    </div>
+						</div> 
+					</div>
+				</div>
+				<div id="upload" style="">
+					<!-- h4 style="color: white;">Add a new {{appCache.context}}</h4-->
+
+					<a class="button small secondary"
+						ng-hide="appCache.context != 'model' || true"> <i
+						class="fa fa-download"></i> Import
+					</a>
+					<a class="button small secondary"
+						ng-click="viewAll()"> 
+						<i class="fa fa-list"></i> 
+						View All
+					</a>
+					<!-- a class="button small secondary"
+						ng-click="search.query = ''; showResults(appCache.context, search.query, search.model)"
+						ng-hide="appCache.context != 'competency' "> <i
+						class="fa fa-list" 
+						></i> View All
+					</a>  
+					<a class="button small secondary"
+						ng-click="search.viewAllUsers()"
+						ng-hide="appCache.context != 'profile' "> <i
+						class="fa fa-list" 
+						></i> View All
+					</a--> 
+					<a class="button small secondary"
+						ng-click="showCreate(appCache.context);"
+						ng-hide="session.currentUser.id == session.guestUser.id"> <i
+						class="fa fa-plus"></i> Create {{appCache.context | capitalize}}
+					</a>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>

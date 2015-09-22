@@ -1,0 +1,784 @@
+//---------------------------------------
+//---------------Helpers
+//---------------------------------------
+
+modelDB = {
+	indexDir = #competencyModelDirectory(),
+	databaseName = #competencyModelDBName(),
+	index = "0"
+};
+
+getModelInfo = #idxGet(modelDB, key="@k").toObject().remove(directory="");
+
+
+getModelUri = #idxGet(modelDB, key="@modelId").toObject().cget(uri="");
+#competencyGetModelUri = getModelUri;
+
+// TODO: Add Logging to each Service
+
+
+//---------------------------------------
+//---------------Service Functions
+//---------------------------------------
+
+//==============
+// GET ALL Competency Model Identifiers
+//--------------
+// #competencyGetModelIds  
+//==============
+
+ids = #idxKeys(modelDB);
+#competencyGetModelIds = ids;
+
+  
+//==============
+// CREATE Competency Model
+//--------------
+// #competencyCreateModel
+//--------------
+// modelName:
+// modelDescription:
+// modelPrivacy: 
+//==============
+
+structureId = #competencyStructureURI();
+
+createModelParams = {
+	directory = #competencyDirectory(),
+	ontologyId = "@modelId",
+};
+
+// 	1) Generate Unique UUID
+generateUnique = #generateUUID();
+generateModelName = #add(a="model-", b=generateUnique);
+recurseCheck = #execute(service="recurse", modelId=generateModelName);
+ 
+checkAndRegen = #if(operator=#competencyCheckModelExists(), operand="true", eq=recurseCheck, ne="@modelId");
+#recurse = checkAndRegen; 
+generateAndCheckUUID = generateModelName.toParameter(op=checkAndRegen, paramName="modelId");
+
+
+//	2) Create Ontology (Use UUID as ontologyId)
+createOntology = #ontologyCreate(createModelParams);
+createOntWithUUID = generateAndCheckUUID.toParameter(op=createOntology, paramName="modelId").toObject();
+
+//	3) Add Info to Model DB (key:IRI , obj: {ontologyId/filename, directory, ontologyName, ontologyDescription?, users (array, if empty/null anyone can view), admin (array, if empty anyone can edit)})
+createModelInDB = #idxSet(modelDB, key=#get(obj="@modelInfo", ontologyId=""), obj="@modelInfo");
+createAndAddToDB = createOntWithUUID.putInObject(
+	dest="name", 
+	item="@modelName"
+).putInObject(
+	dest="description", 
+	item="@modelDescription"
+).putInObject(
+	dest="accessControl",
+	item=#object(
+				agent=#toArray(
+							obj=#if(operator="@currentAgent", operand="", 
+										eq="[]", 
+										ne="@currentAgent"
+									)
+						),
+				admin=#toArray(
+							obj=#if(operator="@currentUser", operand="", 
+										eq="[]", 
+										ne="@currentUser"
+								)
+						),
+				user=#toArray(obj="[]"),
+				type=#if(operator="@modelPrivacy", operand="",
+							eq="public",
+							ne=#if(operator="@modelPrivacy", operand="public",
+										eq="public",
+										ne=#if(operator="@modelPrivacy", operand="private",
+												eq="private",
+												ne=#competencyThrowModelPrivacyValue()
+											)
+								)
+						)
+			 ),
+).putInObject(
+	dest="creator",
+	item=#if(operator="@currentUser", operand="", 
+					ne=#add(
+							a="user-", 
+							b="@currentUser"
+						),
+					eq=#add(
+							a="agent-", 
+							b="@currentAgent"
+						)
+			)
+).putInObject(
+	dest="defaultLevels",
+	item=#competencyDefaultLevels()
+).putInObject(
+	dest="dateCreated",
+	item=#competencyNow()
+).putInObject(
+	dest="dateUpdated",
+	item=#competencyNow()
+).putInObject(
+	dest="imports",
+	item=#add(a="[", b="]"),
+).toParameter(op=createModelInDB, paramName="modelInfo");
+
+// 	4) Add Structure Import to New Ontology
+addStructure = #object(a=#ontologyAddImport(directory=#competencyDirectory(), ontologyId="@newOntId", importId=structureId), b="@newOntId").cget(b="");
+
+createWithStructure = createAndAddToDB.toObject().get(ontologyId="").toParameter(op=addStructure, paramName="newOntId");
+
+checkCreate = #object(
+						a=#competencyErrorUserOrAgentExists(),
+						b=#competencyErrorModelNameSet(), 
+						c=#competencyErrorModelPrivacyValue(),
+						d=createWithStructure
+					).get(d="").toParameter(op=getModelInfo, paramName="k");
+
+#competencyCreateModel = checkCreate;
+
+//==============
+// CREATE DEFAULT Competency Model
+//--------------
+// #competencyCreateDefaultModel
+//==============
+
+checkDeleteOldDefault = #if(operator=#indexOf(str="@uri", substr="model-default"), operand="-1",
+							ne=#ontologyDelete(directory=#competencyDirectory(), ontologyId="@uri"),
+						);
+
+deleteOld = #decode(obj="@uris").cforEach(op=checkDeleteOldDefault, paramName="uri", threaded="false");
+
+getDefault = #idxGet(modelDB, key=#competencyDefaultModel()).toObject();
+
+createDefault = #competencyDefaultModel().toParameter(op=createOntology, paramName="modelId").toObject().putInObject(
+	dest="name", 
+	item="Default Competencies"
+).putInObject(
+	dest="description", 
+	item="Default Bucket for New Competencies to be placed in"
+).putInObject(
+	dest="accessControl",
+	item=#object(
+				type="public"
+			),
+).putInObject(
+	dest="defaultLevels",
+	item=#competencyDefaultLevels()
+).putInObject(
+	dest="imports",
+	item=#add(a="[", b="]"),  
+).toParameter(op=createModelInDB, paramName="modelInfo").toObject().get(ontologyId="").toParameter(op=addStructure, paramName="newOntId");
+  
+checkDefault = #if(operand=#decode(obj="@uris").has(has=#add(a=#competencyDefaultURI(), b="model-default")), operator="true", 
+						eq=getDefault, 
+						ne=#object(
+								a=deleteOld,
+								b=createDefault
+							)
+					).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory()));
+
+#competencyCreateDefaultModel = checkDefault;
+
+
+
+//==============
+// READ Competency Model Details
+//--------------
+// #competencyReadModel
+//--------------
+// modelId: 
+//==============
+
+getInfo = #competencyErrorModelIdSet().competencyErrorModelExists().toParameter(op=getModelInfo, paramName="k");
+
+competencyReadModel = #object(
+							a=#competencyErrorUserOrAgentReadAccess(),
+							b=getInfo
+						).get(b="");
+
+#competencyReadModel = competencyReadModel;
+
+
+
+//==============
+// READ ALL Competency Model Details
+//--------------
+// #competencyReadAllModels
+//==============
+
+checkModelReadable = #if(operator=#competencyCheckUserOrAgentReadAccess(), operand="true",
+							eq=getModelInfo.ccall(k="@modelId"),
+							ne="false"
+						);
+
+getAllInfo = #idxKeys(modelDB).forEach(op=checkModelReadable, paramName="modelId").removeFromObject(item="false");
+#competencyReadAllModels = getAllInfo;
+
+
+//==============
+// UPDATE Competency Model Details
+//--------------
+// #competencyUpdateModel
+//--------------
+// modelId:
+// modelName:
+// modelDescription:
+// modelDefaultLevels
+//==============
+
+clearArrayBars=#string(str="@modelDefaultLevels", op="substr", begin="1").string(str="@obj", op="reverse").string(str="@obj", op="substr", begin="1").string(str="@obj", op="reverse");
+
+trim= #string(str="@val", op="trim", chars="'| ", trimQuotes="true");
+firstChar = #string(str="@str", op="substr", begin="0", end="1");
+getDefaultLevelsArray =  #if(operator=#call(obj=firstChar, str="@modelDefaultLevels"), operand="[", eq=clearArrayBars, ne="@modelDefaultLevels").split(split=",").forEach(op=trim, paramName="val", aggregation="appendArray");
+
+updateModelName = #idxPut(modelDB, key="@modelId", name="@modelName");
+updateModelDescription = #idxPut(modelDB, key="@modelId", description="@modelDescription");
+updateLevels = #idxPut(modelDB, key="@modelId", defaultLevels=getDefaultLevelsArray);
+
+checkDefaultLevels = getDefaultLevelsArray.forEach(
+												op=#competencyErrorLevelExists(), 
+												paramName="levelId"
+											).string(str="true");
+
+updateDefaultLevels = #if(operator=checkDefaultLevels, operand="true", eq=updateLevels);
+
+updateDateUpdated = #idxPut(modelDB, key="@modelId", dateUpdated=#competencyNow());
+
+updateModelInfo = #object(
+	a=#competencyErrorUserOrAgentExists(),
+	b=#competencyErrorUserOrAgentWriteAccess(),
+	c1=#paramExists(paramName="modelName", true=#competencyErrorModelNameSet()),
+	c2=#paramExists(paramName="modelName", true=updateModelName),
+	d=#paramExists(paramName="modelDescription", true=updateModelDescription),
+	f=#paramExists(paramName="modelDefaultLevels", true=updateDefaultLevels),
+	g=#if(operator=#paramExists(paramName="modelName", true="true",
+								false=#paramExists(paramName="modelDescription", true="true",
+													false=#paramExists(paramName="modelDefaultLevels", true="true", false="false")
+										)
+					), 
+			operand="true",
+			eq=updateDateUpdated
+		),
+	h=#idxGet(modelDB, key="@modelId").toObject(),
+).get(h="");  
+
+
+update = #competencyErrorModelIdSet().toParameter(
+											op=#competencyErrorModelNotDefault(), 
+											paramName="modelId"
+									).toParameter(
+											op=#competencyErrorModelExists(), 
+											paramName="modelId"
+									).toParameter(
+											op=updateModelInfo, 
+											paramName="modelId"
+									);
+
+#competencyUpdateModel = update;
+
+//==============
+// UPDATE Competency Model Access Control
+//--------------
+// #competencyUpdateModelAccessControl
+//--------------
+// modelId:
+// modelPrivacy:
+// modelAdmin
+// modelUser
+// modelAgent
+//==============
+
+updateModelPrivacy = #idxPut(
+						modelDB, 
+						key="@modelId", 
+						accessControl=getModelInfo.call(
+														k="@modelId"
+													).get(
+														accessControl=""
+													).toObject(
+													).putInObject(
+														dest="type",
+														item="@modelPrivacy"
+													)
+						);
+
+updateModelAdmin = #idxPut(
+						modelDB, 
+						key="@modelId", 
+						accessControl=getModelInfo.call(
+														k="@modelId"
+													).get(
+														accessControl=""
+													).toObject(
+													).putInObject(
+														dest="admin", 
+														item=#toArray(obj="@modelAdmin")
+													)
+						);
+
+updateModelUser = #idxPut(
+						modelDB, 
+						key="@modelId", 
+						accessControl=getModelInfo.call(
+														k="@modelId"
+													).get(
+														accessControl=""
+													).toObject(
+													).putInObject(
+														dest="user", 
+														item=#toArray(obj="@modelUser")
+													)
+						);
+
+updateModelAgent = #idxPut(
+						modelDB, 
+						key="@modelId", 
+						accessControl=getModelInfo.call(
+														k="@modelId"
+													).get(
+														accessControl=""
+													).toObject(
+													).putInObject(
+														dest="agent", 
+														item=#toArray(obj="@modelAgent")
+													)
+						);
+
+updateModelAC = #object(
+	a=#competencyErrorUserOrAgentExists(),
+	b=#competencyErrorUserOrAgentWriteAccess(),
+	c=#paramExists(paramName="modelPrivacy", true=#competencyErrorModelPrivacyValue()),
+	d=#paramExists(paramName="modelAdmin", true=#object(
+													a=#toArray(obj="@modelAdmin").forEach(op=#competencyErrorUserExists(), paramName="userId"),
+													b=#competencyErrorModelAdminValue(),
+												)
+					),
+	e=#paramExists(paramName="modelUser", true=#toArray(obj="@modelUser").forEach(op=#competencyErrorUserExists(), paramName="userId")),
+	f=#paramExists(paramName="modelAgent", true=#toArray(obj="@modelAgent").forEach(op=#competencyErrorAgentExists(), paramName="agentId")),
+	g=#paramExists(paramName="modelPrivacy", true=updateModelPrivacy),
+	h=#paramExists(paramName="modelAdmin", true=updateModelAdmin),
+	i=#paramExists(paramName="modelUser", true=updateModelUser),
+	j=#paramExists(paramName="modelAgent", true=updateModelAgent),
+	k=#if(operator=#paramExists(paramName="modelPrivacy", true="true",
+								false=#paramExists(paramName="modelAdmin", true="true",
+													false=#paramExists(paramName="modelUser", true="true",
+																		false=#paramExists(paramName="modelAgent", true="true", false="false")
+															)
+										)
+					), 
+			operand="true",
+			eq=updateDateUpdated
+		),
+	l=#idxGet(modelDB, key="@modelId").toObject(),
+).get(l="");  
+
+updateAC = #competencyErrorModelIdSet().toParameter(
+											op=#competencyErrorModelNotDefault(), 
+											paramName="modelId"
+									).toParameter(
+											op=#competencyErrorModelExists(), 
+											paramName="modelId"
+									).toParameter(
+											op=updateModelAC, 
+											paramName="modelId"
+									);
+									
+#competencyUpdateModelAccessControl = updateAC;
+
+//==============
+// UPDATE Competency Model Source Info
+//--------------
+// #competencyUpdateModelSource
+//--------------
+// modelId:
+// sourceTitle:
+// sourceStructure:
+// sourceIdCatalog 
+// sourceIdEntry
+//==============
+
+addSourceInfoToDB = #idxPut(modelDB, key="@modelId", sourceInfo=#decode(obj="@sourceInfo"));
+
+addTitle = #toObject(obj="@object").putInObject(dest="sourceTitle", item="@sourceTitle");
+addStructure = #toObject(obj="@object").putInObject(dest="sourceStructure", item="@sourceStructure");
+addIdEntry = #toObject(obj="@object").putInObject(dest="sourceIdEntry", item="@sourceIdEntry");
+addIdCatalog = #toObject(obj="@object").putInObject(dest="sourceIdCatalog", item="@sourceIdCatalog");
+
+setIdCatalog = #toObject(obj="@object").putInObject(dest="sourceIdCatalog", item="URI");
+
+
+addTitleIfSet = #paramExists(paramName="sourceTitle", true=addTitle, false="@object");
+addStructureIfSet = #paramExists(paramName="sourceStructure", true=addStructure, false="@object");
+addIdEntryIfSet = #paramExists(paramName="sourceIdEntry", true=addIdEntry, false="@object");
+addIdCatalogIfSet = #paramExists(paramName="sourceIdCatalog", true=addIdCatalog, false=setIdCatalog);
+
+updateModelSource =  #object().toParameter(
+	op=addTitleIfSet, 
+	paramName="object"
+).toParameter(
+	op=addStructureIfSet, 
+	paramName="object"
+).toParameter(
+	op=addIdEntryIfSet, 
+	paramName="object"
+).toParameter(
+	op=addIdCatalogIfSet, 
+	paramName="object"
+).toParameter(op=addSourceInfoToDB, paramName="sourceInfo");
+										
+updateSourceInfo = #competencyErrorModelIdSet().toParameter(
+													op=#competencyErrorModelNotDefault(), 
+													paramName="modelId"
+												).toParameter(
+													op=#competencyErrorModelExists(), 
+													paramName="modelId"
+												).toParameter(
+													op=updateModelSource, 
+													paramName="modelId"
+												);
+
+competencyUpdateModelSource = #object(
+									a=#competencyErrorUserOrAgentExists(),
+									b=#competencyErrorUserOrAgentWriteAccess(),
+									c=updateSourceInfo
+								).get(c="");
+
+#competencyUpdateModelSource = competencyUpdateModelSource;
+
+//==============
+// DELETE Competency Model
+//--------------
+// #competencyDeleteModel
+//--------------
+// modelId:
+//==============
+
+deleteModelParams = {
+	directory = #competencyDirectory(),
+	ontologyId = "@modelId",
+};
+
+deleteOnt = #ontologyDelete(deleteModelParams);
+deleteOntFromDB = #idxDelete(modelDB, key="@modelId").get(ontologyId="").toParameter(op=deleteOnt, paramName="modelId");
+
+checkDelete = #object(
+					a=#competencyErrorUserOrAgentExists(),
+					b=#competencyErrorUserOrAgentWriteAccess(),
+					c=deleteOntFromDB,
+					d=#if(operator=#competencyCheckModelExists(), operator="true",
+								eq="false",
+								ne="true"
+						)
+				).get(d="");
+
+delete = #competencyErrorModelIdSet().toParameter(
+											op=#competencyErrorModelNotDefault(), 
+											paramName="modelId"
+										).toParameter(
+											op=#competencyErrorModelExists(), 
+											paramName="modelId"
+										).toParameter(
+											op=checkDelete, 
+											paramName="modelId"
+										);
+
+#competencyDeleteModel = delete;
+
+
+
+//==============
+//  Add Import To Competency Model  
+//--------------
+// #competencyModelAddImport     
+//--------------
+// modelId:
+// importId:
+//==============  
+
+checkModelPrivacy = #if(operator=#competencyReadModel(modelId="@importId").cget(accessControl="").cget(type=""), operand="public",
+							ne=#error(msg=#object(code="import", msg="Cannot Import a Private Model"))
+						);
+
+checkSame = #if(operator="@importedModel", operand="@importId", eq=#competencyThrowAlreadyImported(), ne="");
+
+checkIfImported = #idxGet(modelDB, key="@modelId").get(imports="").toArray().forEach(op=checkSame, paramName="importedModel");
+
+createMergedList = #if(operator="@existingList", operand="", eq=#toArray(obj="@importId"), ne=#toArray(obj="@existingList").append(item="@importId"));
+
+importedOntologyList = #idxGet(modelDB, key="@modelId").get(imports="").toParameter(op=createMergedList, paramName="existingList");
+
+addImportToDB = #idxPut(modelDB, key="@modelId", imports=importedOntologyList);
+
+addImportParams = {
+	directory = #competencyDirectory(),
+	ontologyId="@modelId",
+	importId="@importId"
+};
+
+addImport = #object(
+	a1=#competencyErrorUserOrAgentExists(),
+	a2=#competencyErrorUserOrAgentWriteAccess(),
+	a23=checkModelPrivacy,
+	a3=#competencyErrorModelIdSet(),
+	a34=#if(operator="@importId", operand="", eq=#error(msg=#object(code="empty", msg="<importId> parameter cannot be empty"))),
+	a4=#competencyErrorModelNotDefault(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorModelIdSet(modelId="@importId"),
+	d=#competencyErrorModelExists(modelId="@importId"),
+	e=checkIfImported,
+	f=#ontologyAddImport(addImportParams),
+	g=addImportToDB,
+	h=#if(operator=#competencyCheckModelNotDefault(modelId="@importId"), operand="true",
+			eq=#if(operator=#competencyCheckUserOrAgentWriteAccess(modelId="@importId"), operand="true",
+					eq=#if(operator=#competencyReadModel(modelId="@modelId").cget(accessControl="").cget(type=""), operand="public",
+							eq=#object(
+									a=#ontologyAddImport(directory = #competencyDirectory(), ontologyId="@importId",importId="@modelId"),
+									b=addImportToDB.call(modelId="@importId",importId="@modelId"),
+								)
+						)
+				),
+		)
+).get(g=""); 
+
+#competencyModelAddImport = addImport;
+
+
+
+//==============
+// IMPORT Competency Model From URL
+//--------------
+// #competencyImportModelFromURL
+//--------------
+// modelName:
+// modelDescription:
+// modelURL:
+//==============
+
+// TODO: Import Competency Model
+
+//==============
+// IMPORT Competency Model From File
+//--------------
+// #competencyImportModelFromFile
+//--------------
+// modelName:
+// modelDescription:
+// modelFile:
+//==============
+
+
+
+getMultipartPostData = #getFileFromPost(name="@field").fileToString();
+
+importFile = getMultipartPostData.call(field="test-file1").parseXml(); 
+
+getObjectsAndFramework = #object(
+	competencies = #get(obj="@object", CurriculumInventory="").get(Expectations="").getByParam(param="CompetencyObject"),
+	framework = #get(obj="@object", CurriculumInventory="").get(Expectations="").getByParam(param="CompetencyFramework")
+);
+
+separateFramework = #object(
+	competencies=#get(obj="@object", competencies=""),
+	relations=#get(obj="@object", framework="").getByParam(param="cf:Relation"),
+	imports=#get(obj="@object", framework="").getByParam(param="cf:Includes"),
+	sourceInfo = #get(obj="@object", framework="").getByParam(param="lom:lom").getByParam(param="lom:general")
+);
+
+splitFramework = importFile.toParameter(
+	op=getObjectsAndFramework, 
+	paramName="object"
+).toParameter(
+	op=separateFramework,
+	paramName="object"
+);
+							
+importRelationships = #string(str="test");
+
+#importRelationships = importRelationships;
+
+extractTitle = #decode(obj="@comp").getByParam(param="lom:lom").getByParam(param="lom:general").getByParam(param="lom:title").getByParam(param="lom:string");
+
+extractSourceId=#object(
+	sourceIdEntry=#decode(obj="@comp").getByParam(param="lom:lom").getByParam(param="lom:general").getByParam(param="lom:identifier").getByParam(param="lom:entry"),
+	sourceIdCatalog=#decode(obj="@comp").getByParam(param="lom:lom").getByParam(param="lom:general").getByParam(param="lom:identifier").getByParam(param="lom:catalog")
+);
+
+createCompetency = #execute(service="competencyCreate", modelId="@modelId", competencyTitle=extractTitle).keySet().getIndex(index="0");
+
+createCompetencyWithSource = #object(
+	competencyId="@competencyId",
+	addSource = #execute(service="competencyUpdateSourceId", modelId="@modelId", competencyId="@competencyId", paramObj=extractSourceId)
+).call(competencyId=createCompetency);
+
+createCompetencies = #decode(obj="@framework").get(competencies="").forEach(op=createCompetencyWithSource, paramName="comp", aggregation="appendArray").buildArguments(remove="framework", hard="true");
+
+importCompetencies = #object(
+	modelId="@modelId",
+	competencyIds = createCompetencies,
+	aframework = #decode(obj="@framework")
+);
+
+extractSourceTitle = #get(obj="@framework", sourceInfo="").getByParam(param="lom:title").getByParam(param="lom:string");
+extractSourceIdEntry = #get(obj="@framework", sourceInfo="").getByParam(param="lom:identifier").getByParam(param="lom:entry");
+extractSourceIdCatalog = #get(obj="@framework", sourceInfo="").getByParam(param="lom:identifier").getByParam(param="lom:catalog");
+
+addSourceInfo = #buildArguments(
+	obj=#competencyUpdateModelSource(),
+	key="modelId", value="@modelId", 
+	key1="sourceTitle", value1=extractSourceTitle, 
+	key2="sourceStructure", value2="Medbiq Framework", 
+	key3="sourceIdEntry", value3=extractSourceIdEntry, 
+	key4="sourceIdCatalog", value4=extractSourceIdCatalog,
+	remove="framework", hard="true"
+);
+
+addModelSource = #object(
+	modelId="@modelId",
+	x="@modelId",
+	model="#call(obj=addSourceInfo, modelId=@modelId)",  
+	framework=#decode(obj="@framework"),
+);
+
+createModel = #buildArguments(obj=#competencyCreateModel(), remove="framework", hard="true", key="modelName", value=extractSourceTitle).get(ontologyId="");
+
+importModel = #object(
+	modelId=createModel,
+	framework=#decode(obj="@framework")
+);
+
+splitFileAndCreateModel = splitFramework.toParameter(op=importModel, paramName="framework");
+
+import = addModelSource.buildArguments(arguments=splitFileAndCreateModel).displayJson(_collapse="true");
+
+/test/import = import;
+  
+  
+//==============
+// Backup Competency Model  
+//--------------
+// #competencyExportModelBackup     
+//--------------
+// modelId:
+// backupRestoreKey:
+//==============  
+
+backupModelInfo = getModelInfo.ccall(k="@modelId").displayJson(_collapse="true").fileSave(path=#add(a=#competencyBackupDirectory(), b="@modelId", c="/", d="@modelId", e=".info"));
+
+backupTDB = #ontologyTDBExport(
+				tdbDirectory=#competencyDirectory(), 
+				exportDirectory=#add(a=#competencyBackupDirectory(), b="@modelId"), 
+				identifier="@modelId",
+				extension=".rdf"
+			);
+
+checkThenBackup = #object(
+	a=#competencyErrorBackupRestoreKeyValue(),
+	b=#competencyErrorModelExists(),
+	c=#if(operator=#fileExists(safe="false",path="@directoryPath"), operand="true", 
+				ne=#createDirectory(safe="false", path="@directoryPath")
+			).ccall(directoryPath=#add(a=#competencyBackupDirectory(), b="@modelId")),
+	d=backupTDB,
+	e=backupModelInfo,
+).string(str="true");
+
+#competencyExportModelBackup = checkThenBackup;
+
+//==============
+// Restore Backup Competency Model  
+//--------------
+// #competencyRestoreModelBackup     
+//--------------
+// modelId:
+// modelInfo
+// modelRDF
+// backupRestoreKey
+//==============  
+
+checkRestoredAdmin = #decode(obj="@modelInfo").cget(accessControl="").cget(admin="").cforEach(op=#competencyCheckUserExists(), paramName="userId").removeFromObject(item="false").keySet();
+checkRestoredUser = #decode(obj="@modelInfo").cget(accessControl="").cget(user="").cforEach(op=#competencyCheckUserExists(), paramName="userId").removeFromObject(item="false").keySet();
+checkRestoredAgent = #decode(obj="@modelInfo").cget(accessControl="").cget(agent="").cforEach(op=#competencyCheckAgentExists(), paramName="userId").removeFromObject(item="false").keySet();
+
+checkType = #if(operator=#decode(obj="@modelInfo").cget(accessControl="").cget(type=""), operand="public",
+					eq=#decode(obj="@ACObj").putInObject(dest="type", item="public"),
+					ne=#if(operator=#decode(obj="@modelInfo").cget(accessControl="").cget(admin="").toArray().cforEach(op=#competencyCheckUserExists(), paramName="userId").removeFromObject(item="false").count(), operand="0",
+							eq=#decode(obj="@ACObj").putInObject(dest="type", item="public"),
+							ne=#decode(obj="@ACObj").putInObject(dest="type", item="private")
+						)
+				);
+
+restoredAccessControl = #object(
+							admin=checkRestoredAdmin,
+							user=checkRestoredUser,
+							agent=checkRestoredAgent,
+						).toParameter(op=checkType, paramName="ACObj");
+	
+
+addToDB = #object(
+	ontologyId=#decode(obj="@modelInfo").cget(ontologyId=""),
+	uri=#add(a=#competencyDefaultURI(), b="@modelId"),
+	directory=#competencyDirectory(),
+	name=#decode(obj="@modelInfo").cget(name=""),	
+	description=#decode(obj="@modelInfo").cget(description=""),
+	accessControl=restoredAccessControl,
+	creator=#decode(obj="@modelInfo").cget(creator=""),
+	defaultLevels=#decode(obj="@modelInfo").cget(defaultLevels=""),
+	dateCreated=#decode(obj="@modelInfo").cget(dateCreated=""),
+	dateUpdated=#competencyNow(),
+	imports=#decode(obj="@modelInfo").cget(imports=""),
+	dateRestoredFromBackup=#competencyNow(),
+).toParameter(op=createModelInDB, paramName="modelInfo");
+  
+fixUriPrefix =  #object(
+				b=#setCache(
+						name="start", 
+						item=#indexOf(
+								str="@modelRDF", 
+								substr="xmlns:j.1="
+							).add(a="11").debug()
+					),
+				c=#setCache(
+						name="end", 
+						item=#indexOf(
+								str=#string(op="substr", str="@modelRDF", begin=#getCache(name="start")), 
+								substr="structure-competency#"
+								).debug()
+					),
+				d=#setCache(name="oldUri", item=#string(
+													op="substr", 
+													str="@modelRDF", 
+													begin=#getCache(name="start"), 
+													end=#add(
+															a=#getCache(name="start").toDouble(), 
+															b=#getCache(name="end").toDouble()
+														)
+												).debug()
+					),
+				e=#string(
+						str="@modelRDF",
+						op="replace", 
+						regex=#getCache(name="oldUri"), 
+						with=#competencyDefaultURI()
+					).fileSave(path="@importPath")
+			).ccall(
+				cacheId=#generateUUID()
+			);
+
+addToTDB = #object(
+				a=#fileSave(obj="@modelRDF", path="@importPath"),
+				a=fixUriPrefix,
+				b=#ontologyTDBLoader(input="@importPath", tdbDirectory=#competencyDirectory())
+			).ccall(importPath=#add(a=#competencyImportDirectory(), b="@modelId", c=".rdf"));
+
+restoreBackup = #object(
+					a=#competencyErrorBackupRestoreKeyValue(),
+					b=#if(operator=#competencyCheckModelExists(modelId="@modelId"), operand="true",
+							eq=#error(msg="Model Already Exists With That modelID")
+						),
+					c=addToTDB,
+					d=addToDB,
+				).string(str="true");
+
+#competencyRestoreModelBackup = restoreBackup;
+

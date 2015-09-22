@@ -1,0 +1,357 @@
+<div id="content">
+
+	<!-- ********************************Interactive Search******************************** -->		 
+	<div id="interactiveSearch" class="guestScreen">
+		<div class="subheader">
+			<div class="row">
+				<div class="medium-12 columns">
+					<h3 id="interactiveSearchDescHeader">Experience the power of Interactive Search</h3>
+				</div>
+				<!-- 
+				<div class="medium-2 columns">
+					<a data-reveal-id="modalRegister" data-reveal onclick="document.getElementById('register').reset();">Sign-up</a> | 
+					<a data-reveal-id="modalLogin" data-reveal>Login</a>
+				</div>
+				 -->
+			</div>
+		</div>
+		<div class="row">
+			<div class="medium-12 columns">
+				<p class="searchTitle">Explore the Learning Registry</p>
+				<input id="interactiveSearchInput" type="text" placeholder="Search">
+				<p id="interactiveSearchFooter" class="searchBeta">Interactive Search <strong>Beta</strong></p>
+				<div id="whatIsThis" class="infoBox">
+					<a class="link collapsed">What is Interactive Search?</a>
+					<div class="moreInfo" style="display: none;">
+						<div class="row">
+							<div class="medium-12 columns">
+								<p>Interactive Search does more than just offer search results, it asks you the right follow-up questions to make sure you get the most out of every search experience.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>			
+		</div>		
+	</div>
+
+	<!-- ********************************Basic Search******************************** -->	
+	<div id="basicSearch" class="guestScreen" style="display:none">
+		<div class="subheader">
+			<div class="row">
+				<div class="medium-12 columns">
+					<h3>Access a Wide Range of Learning Registry Resources</h3>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="medium-12 columns">
+				<p class="searchTitle">Explore the Learning Registry</p>
+				<input id="basicSearchInput" type="text" placeholder="Search">
+				<span id="basicSearchIcon" style="position: absolute;right: 18px;top: 40px;width: 32px;height: 35px;cursor: pointer;"></span>				
+				<div id="basicSearchBusy" class="row" style="display:none;text-align:center">
+                	<div class="small-12 columns">
+                    	<img src="images/loading.gif"/>
+                    	<p class="searchBusy">Searching...</p>
+                	</div>	
+           		</div>            				
+				<div id="numberOfBasicSearchResults" class="row" style="display:none">
+                	<div class="small-12 columns">
+                    	<p style="font-weight:bold" id="basicSearchResultsCounter" class="resultCounter"></p>
+                    	<br/>
+                	</div>	
+           		</div>	
+				<div id="basicSearchResults" style="display:none"></div>
+				<div id="whatIsThisBasicSearch" class="infoBox">
+					<a class="link collapsed">What is Basic Search?</a>
+					<div class="moreInfo" style="display: none;">
+						<div class="row">
+							<div class="medium-12 columns">
+								<p>The basic search allows you to search for and analyze Learning Registry resources that cover a variety of topics and disciplines.</p>
+							</div>
+						</div>
+					</div>
+				</div>				
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- ********************************End Content DIV******************************** -->
+
+<!-- ********************************Interactive Search Typing******************************** -->
+<div id="interactiveSearchTyping" class="guestScreen" style="display:none">
+	<div class="row">
+		<div class="medium-12 columns" style="text-align:center">
+			<p class="searchTitle" style="background-color:white; margin:0; padding:10px">Interactive Search...</p>
+			<img src="images\splash-search.png" />											
+		</div>
+	</div>
+</div>
+
+<!-- ********************************Interactive Search Results******************************** -->
+<div id="interactiveSearchResultsScreen" style="display:none">
+
+	<div id="interactiveSearchResultsFilterTools" style="display:none">
+		<div class="row">
+			<div id="interactiveSearchResultsWordDefinitionContainer" style="display:none" class="small-12 columns"></div>			
+		</div>
+		<div class="row"><div class="small-12 columns">&nbsp;&nbsp;</div></div>
+		<div class="row"><div id="interactiveSearchAppliedGradeLevelsContainer" style="display:none" class="small-12 columns"></div></div>
+		<div class="row"><div id="interactiveSearchBreadCrumbs" style="display:none" class="small-12 columns"></div></div>
+		<div class="row" style="display:none;"><div class="small-12 columns">&nbsp;&nbsp;</div></div>
+		<div class="row" style="display:none;">
+			<div id="realSearchQuery" class="small-12 columns"></div>			
+		</div>		
+		<hr/>
+	</div>
+
+	<div class="row">
+		<div class="medium-4 columns">
+			<div id="intSrchFilterNavigation" class="row" style="display:none;">
+				<div class="small-12 columns">
+					<h5 id="intSrchFilterNavQuestionLabel">Are you looking for:</h5>
+					<ul class="side-nav" role="navigation" title="Refine your search">
+						<li id="intSrchFilterNavAnswer1Li" role="menuitem"></li>
+						<li id="intSrchFilterNavAnswer2Li" role="menuitem"></li>
+						<li id="intSrchFilterNavAnswer3Li" role="menuitem"></li>						
+						<li id="intSrchFilterNavAnswerGlKgLi" role="menuitem">
+							<input type="checkbox" id="intSrchGlKgCb" checked="checked" style="margin:0px"/>
+							<span class="gradeLevelChoice"> Kindergarten</span>
+						</li>
+						<li id="intSrchFilterNavAnswerGlEsLi" role="menuitem">
+							<input type="checkbox" id="intSrchGlEsCb" checked="checked" style="margin:0px"/>
+							<span class="gradeLevelChoice"> Elementary School</span>
+						</li>
+						<li id="intSrchFilterNavAnswerGlMsLi" role="menuitem">
+							<input type="checkbox" id="intSrchGlMsCb" checked="checked" style="margin:0px"/>
+							<span class="gradeLevelChoice"> Middle School</span>
+						</li>
+						<li id="intSrchFilterNavAnswerGlHsLi" role="menuitem">
+							<input type="checkbox" id="intSrchGlHsCb" checked="checked" style="margin:0px"/>
+							<span class="gradeLevelChoice"> High School</span>
+						</li>
+						<li id="intSrchFilterNavAnswerGlCuLi" role="menuitem">
+							<input type="checkbox" id="intSrchGlCuCb" checked="checked" style="margin:0px"/>
+							<span class="gradeLevelChoice"> College / University</span>
+						</li>
+						<li id="intSrchFilterNavAnswerGlVtpLi" role="menuitem">
+							<input type="checkbox" id="intSrchGlVtpCb" checked="checked" style="margin:0px"/>
+							<span class="gradeLevelChoice"> Vocational / Technical / Professional</span>
+						</li>						
+						<li id="intSrchFilterNavAnswerToggleAllLi" role="menuitem"><a id="intSrchFilterNavAnswerToggleAll"><i class="fa fa-chevron-circle-right"></i> Select/Unselect All</a></li>						
+						<li id="intSrchFilterNavAnswerApplyGlLi" role="menuitem"><a id="intSrchFilterNavAnswerApplyGl"><i class="fa fa-chevron-circle-right"></i> <b>Apply</b></a></li>						
+						<li role="menuitem" class="divider"></li>
+						<li role="menuitem" id="intSrchFilterNavLinks">
+							<a id="intSrchFilterNavMoreAnswers" style="display:inline;"><strong>More choices</strong></a> | <a id="intSrchFilterNavMoreOptions" style="display:inline;"><strong><span id="intSrchFilterNavMoreOptionsTxt">Show options</span></strong></a> 
+						</li>
+					</ul>					
+				</div>
+				<div id="intSrchFilterNavigationMopContainer" style="display:none;">
+					<ul class="side-nav" role="navigation" title="Refine your search">
+						<li id="intSrchFilterNavigationMopDisambigLi" role="menuitem">
+							<a id="intSrchFilterNavigationMopDisambig" class="advancedOptionLink"><i class="fa fa-chevron-circle-right"></i> Disambiguate</a>
+						</li>
+						<li id="intSrchFilterNavigationMopRelCatLi" role="menuitem">
+							<a id="intSrchFilterNavigationMopRelCat" class="advancedOptionLink"><i class="fa fa-chevron-circle-right"></i> Related Categories</a>
+						</li>
+						<li id="intSrchFilterNavigationMopRelTopicLi" role="menuitem">
+							<a id="intSrchFilterNavigationMopRelTopic" class="advancedOptionLink"><i class="fa fa-chevron-circle-right"></i> Related Topics</a>
+						</li>
+						<li id="intSrchFilterNavigationMopGradeLevLi" role="menuitem">
+							<a id="intSrchFilterNavigationMopGradeLev" class="advancedOptionLink"><i class="fa fa-chevron-circle-right"></i> Grade Levels</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		
+		<div class="medium-8 columns" style="padding-top:10px;">
+			<div id="interactiveSearchBusy" class="row" style="display:none;text-align:center">
+		    	<div class="small-12 columns">
+		        	<img src="images/loading.gif"/>
+		            <p class="searchBusy">Searching...</p>
+		        </div>	
+		    </div>           				
+			<div id="numberOfInteractiveSearchResults" class="row" style="display:none">
+			   	<div class="small-12 columns">
+			       	<p id="interactiveSearchResultsCounter" class="resultCounter"></p>
+			       	<br/>
+			   	</div>	
+			</div>		
+			<div class="row">
+				<div class="medium-12 columns">
+					<div id="interactiveSearchResults" style="display:none"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+    
+</div>
+<!--END results screen-->
+
+
+<!-- ********************************MODAL DIALOGS******************************** -->
+
+<!-- Comments Modal -->
+<div id="modalResourceComments" class="reveal-modal small" data-reveal>
+	<div class="row">
+		<div class="large-12 columns">
+			<h5>
+				<i class="fa fa-comments"></i> Comments on <i>"<span id="resourceCommentsTitle"></span>"</i>
+			</h5>
+		</div>
+	</div>
+	<br>
+	<div class="row">
+		<div class="large-12 columns">
+			<div id="resourceCommentsContainer">No comments available</div>
+		</div>
+	</div>
+	<br>
+	<br>
+	<div class="row">
+		<div class="large-12 columns">			
+			<button type="button" style="margin-bottom: 0px;" onclick="$('#modalResourceComments').foundation('reveal', 'close');" class="small">OK</button>
+		</div>
+	</div>	
+	<a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Login Modal -->
+<div id="modalLogin" class="reveal-modal small" data-reveal>
+	<div class="row">
+		<div class="large-12 columns">
+			<h2>
+				<i class="fa fa-smile-o"></i> Welcome back
+			</h2>
+		</div>
+	</div>
+	<form id="login" data-abide="ajax">
+		<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-envelope"></i> Email <input type="email" id="loginEmail" name="email" required> </label> 
+					<small class="error">Enter the email address you used to register.</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns">
+				<div class="password-field">
+					<label><i class="fa fa-lock"></i> Password <input type="password" id="loginPassword" name="password" required> </label> 
+					<small class="error">Please enter a valid password.</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns">
+				<button type="submit">Login</button>
+				<!-- <a class="" data-reveal-id="modalResetPassword" data-reveal>Recover password</a> -->
+			</div>
+		</div>
+		<div class="row">
+			<div id="loginErrorContainer" style="display:none"></div>		
+			<div id="loginBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div> 	
+		</div>
+	</form>
+	<a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Reset Password Modal -->
+<div id="modalResetPassword" class="reveal-modal small" data-reveal>
+	<div class="row">
+		<div class="large-12 columns">
+			<h2>
+				<i class="fa fa-ambulance"></i> Password Recovery
+			</h2>
+			<p>
+				Please enter the email address you used when registering. If
+				you no longer have access to that account you will need to
+				re-register with your new email.
+			</p>
+		</div>
+	</div>
+	<form id="resetPassword" data-abide>
+		<div class="row">
+			<div class="large-12 columns">
+				<div class="name-field">
+					<label><i class="fa fa-envelope"></i> Email <input type="email" id="resetEmail" name="email" required> </label> 
+					<small class="error">Enter the email address you used to register.</small>
+				</div>
+			</div>
+		</div>
+		<div class="large-12 columns">
+			<button type="submit" onclick="alert('TO DO: The email reset option is not yet functional');">Reset</button>
+			<a class="" data-reveal-id="modalLogin" data-reveal>Login</a>
+		</div>		
+	</form>
+	<a class="close-reveal-modal">&#215;</a>
+</div>
+
+<!-- Create Account Modal -->
+<div id="modalRegister" class="reveal-modal small" data-reveal>
+	<div class="row">
+		<div class="small-12 columns">
+			<h2><i class="fa fa-check-square"></i> Get personalized results</h2>
+			<p>Login or create an account for advanced Learning Registry access</p>
+		</div>
+	</div>
+	<form id="register" data-abide="ajax">
+		<div class="row">
+			<div class="large-6 columns">
+				<div class="name-field">
+					<label><i class="fa fa-user"></i> First Name <input type="text" id="firstName" name="firstName" required pattern="[a-zA-Z]+"> </label> 
+					<small class="error">Is this really your first name?</small>
+				</div>
+			</div>
+			<div class="large-6 columns">
+				<div class="name-field">
+					<label><i class="fa fa-user"></i> Last Name <input type="text" id="lastName" name="lastName" required pattern="[a-zA-Z]+"> </label> 
+					<small class="error">Is this really your last name?</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-6 columns">
+				<div class="email-field">
+					<label><i class="fa fa-envelope"></i> Email <input type="email" id="newEmail" name="newEmail" required> </label> 
+					<small class="error">A valid email address is required.</small>
+				</div>
+			</div>
+			<div class="large-6 columns">
+				<div class="email-field">
+					<label><i class="fa fa-envelope"></i> Confirm Email <input type="email" id="confirmEmail" name="confirmEmail" required data-equalto="newEmail" data-invalid=""> </label> 
+					<small class="error">Your emails don't match.</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-6 columns">
+				<div class="password-field">
+					<label><i class="fa fa-lock"></i> Password <input type="password" id="newPassword" name="newPassword" required></label> 
+					<small class="error">Passwords require at least 8 characters with 1 upper-case character, 1 lower-case character, and 1 numeric or special character.</small>
+				</div>
+			</div>
+			<div class="large-6 columns">
+				<div class="password-field">
+					<label><i class="fa fa-lock"></i> Confirm Password <input type="password" id="confirmPassword" name="confirmPassword" required data-equalto="newPassword" data-invalid=""> </label> 
+					<small class="error">Passwords don't match.</small>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="large-12 columns">
+				<label>All fields are required</label>
+				<button type="submit" class="small">Submit</button>
+				<button type="reset" class="small secondary">Reset</button>
+			</div>
+		</div>
+		<div class="row">
+			<div id="registrationErrorContainer" style="display:none"></div>
+			<div id="registrationBusy" style="display:none"><img src="images/status-busy.gif" style="display:inline"/></div>
+		</div>
+	</form>
+	<a class="close-reveal-modal">&#215;</a>
+</div>
+
+

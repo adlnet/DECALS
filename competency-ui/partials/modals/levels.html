@@ -1,0 +1,34 @@
+<header style="margin: 10px; text-align: center;">
+	<h4>Levels</h4>
+</header>
+<div class="row">
+	<div class="small-5 columns" style="text-align: center;">
+		<strong style="margin-bottom: 5px; display: block;">Available
+			in Model</strong> <select size="10" style="background-image: none;"
+			ng-model="$parent.available"
+			ng-options="levelObj.id as levelObj.name +' (Rank: '+levelObj.rank+')' for (id, levelObj) in allLevels | orderByObj: 'rank' | filterObj: notContainsLevel">
+		</select>
+	</div>
+
+	<div class="small-2 columns"
+		style="padding-top: 40px; text-align: center;">
+		<button style="padding: 0.5rem 1rem;" ng-click="addLevel()">
+			>></button>
+		<button style="padding: 0.5rem 1rem;" ng-click="removeLevel()">
+			<<</button>
+		<button style="padding: 0.5rem 1rem;" ng-click="showCreateModal()">
+			+</button>
+	</div>
+
+	<div class="small-5 columns" style="text-align: center;">
+		<strong style="margin-bottom: 5px; display: block;">Selected
+			Defaults</strong> <select size="10" style="background-image: none;"
+			ng-model="$parent.selected"
+			ng-options="levelObj.id as levelObj.name +' (Rank: '+levelObj.rank+')' for (id, levelObj) in appCache.editedItem.levels | orderByObj: 'rank' ">
+		</select>
+	</div>
+</div>
+
+<div class="row">
+	<button ng-click="close()" style="float: right; margin-right: 20px;">Done</button>
+</div>

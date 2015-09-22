@@ -1,0 +1,40 @@
+
+getMetadata = #solrQuery(
+	url=#decalsRegistrySolrUrl(),
+    sq=#add(a="id:", b="@resourceUri"),
+    rows="1",
+    start="0"
+).cget(items="").getIndex(index="0").displayJson(_collapse="true");
+
+getFile = #getFileFromUrl(url="@resourceUri").getIndex(index="0");
+
+getResourceOrMetadata = #if(operator=#indexOf(str="@resourceUri", substr=#decalsFileDownloadUrlPrefix()), operand="0",
+								eq=getFile,
+								ne=getMetadata
+							).ccall(
+								resourceUri=#toArray(obj="@resourceObjArray").getIndex(index="0").decode().cget(resourceUrl="")
+							);
+
+getTitle = #if(operator=#indexOf(str="@title", substr="."), operand="-1",
+				eq=#add(a="@title", b=".txt"),
+				ne=#if(operator=#indexOf(str="@title", substr="."), operand=#count(obj="@title"),
+						eq=#add(a="@title", b="txt"),
+						ne=#if(operator=#indexOf(str="@title", substr="."), operand=#add(a="-5", b=#count(obj="@title")),
+								gt="@title",
+								le=#add(a="@title", b=".txt"),
+							)
+					)
+			).ccall(
+				title=#decode(obj="@resourceObj").cget(resourceTitle="")
+			);
+
+
+exportTradem = #object(
+					a=#decalsCheckSession(),
+					b=#decalsGetCollection().cget(items="").cforEach(op=getTitle, paramName="resourceObj").pivot().cforEach(op=getResourceOrMetadata, paramName="title", valueName="resourceObjArray")
+				).ccall(
+					sessionId=#getMultipartPostData(field="sessionId"),
+					collectionId=#getMultipartPostData(field="collectionId")
+				).cget(b="").filesToZip();
+
+/decalsExportTrademPackage = exportTradem;

@@ -1,0 +1,11 @@
+dbPutTest=#object(
+	f=#object(foo="@testString").dbPut(key="test",index="db",databaseName="test"),
+	g=#if(
+		operator=#dbGet(key="test",index="db",databaseName="test").toString().debug(),
+		operand=#object(foo="@testString").toString().debug(),
+		eq="true",
+		ne=#error(msg="DB PUT/GET Test Failed.")
+	)
+).call(testString=#randomString(length="5"));
+#dbPutTestAutoExecute=dbPutTest;
+/test=dbPutTest;

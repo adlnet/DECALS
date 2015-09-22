@@ -1,0 +1,40 @@
+
+//==============
+// SETUP Competency Manager
+//==============
+
+setup = #competencySetupAutoExecute().displayJson(_collapse="true");
+
+/competency/setup = setup;
+
+//==============
+// API For Competency Manager
+//==============
+
+api = #object().putInObject(
+	dest="/competency",
+	item=#execute(service="api_Competency")
+).putInObject(
+	dest="/competency/model",
+	item=#execute(service="api_Model")
+).putInObject(
+	dest="/competency/user",
+	item=#execute(service="api_User")
+).putInObject(
+	dest="/competency/record",
+	item=#execute(service="api_Record")
+).putInObject(
+	dest="/competency/validation",
+	item=#execute(service="api_Validation")
+).putInObject(
+	dest="/competency/query",
+	item=#execute(service="api_Query")
+).putInObject(
+	dest="/competency/level",
+	item=#execute(service="api_Level")
+).putInObject(
+	dest="/competency/session",
+	item=#execute(service="api_Session")
+).displayJson(_collapse="true");
+					
+/competency = api;

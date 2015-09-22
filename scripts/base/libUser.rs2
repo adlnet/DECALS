@@ -1,0 +1,155 @@
+
+//---------------------------------------//---------------------------------------
+//---------------user helper functions
+//==============
+user=#idxGet(key="@userId").buildArguments().toObject();
+
+getMultipartPostDataObj = #getFileFromPost(name="@field").fileToString().toObject();
+userPostMetadata = getMultipartPostDataObj.ccall(field="@field");
+               
+//==============
+//check if user exists
+userExists=#if(
+	operator=user.ccall(userId="@userId"), 
+	operand="",
+	eq="false",
+	ne="true"
+);
+#userExists=userExists;
+
+//==============
+//verify plain text password with stored password hash
+userVerifyPassword=#if(
+	operator=#bCryptCompareHash(
+		passwordHash=user.ccall(userId="@userId").cget(password=""),
+		password="@password"
+	),
+	operand="true",
+	ne=#error(
+		code="401",
+		msg=#object(error="Authentication Failed.")
+	)
+);
+#puserVerifyPassword=userVerifyPassword;
+
+//---------------------------------------//---------------------------------------
+//--------------Service calls
+//==============
+//Create a user if the user doesn't already exist with a bcrypted password and store the user
+userCreate=#object(
+	password=#bCryptHash(
+		password="@password",
+		rounds="10"
+	)
+).idxSet(key="@userId").buildArguments();
+userCreate=#if(
+	operator=user.ccall(userId="@userId"),
+	operand="",
+	eq=#object(
+		a=userCreate,
+		b="true"
+	).cget(b=""),
+	ne="false"
+);
+#userCreate = userCreate;
+
+//==============
+//Login a user if the user exists and the password matches the stored hash.
+//Generates and stores session UUID for logged in user.
+//Also stores last login and last ip for the user.
+login=#if(
+	operator=#userExists(userId="@userId"),
+	operand="",
+	ne=#object(
+		b=#puserVerifyPassword(password="@password"),
+		d=#idxPut(
+			key="@userId",
+			lastLogin=#date(_raw="true"),
+			lastIp="@ip"
+		).buildArguments(remove="password", remove1="userId"),
+		f="true"
+	).cget(f=""),
+	eq="false");
+#userLogin = login;
+
+//==============
+//Delete a user if they exist and the password is correct
+delete=#object(
+	c=#idxDelete(key="@userId").buildArguments(),
+	f="true"
+).cget(f="");
+#userDelete = delete;
+
+//==============
+//Update user metadata with arbitrary fields
+update = #object(
+	b=#idxPut(key="@userId").buildArguments(arguments="@metadata"),
+	c="true"
+).cget(c="");
+#userUpdate = update;
+
+//==============
+//Read user metadata
+read=user.ccall(userId="@userId");
+#userRead = read;
+
+//==============
+//Returns a user with the given userId
+
+userGet=#if(
+	operator=userExists,
+	operand="true",
+	eq=user,
+	ne="false"
+);
+
+#userGet=userGet;
+
+//==============
+//Updates a field with the given key with the given value for a given userId
+
+getValue=#if(
+	operator="@isArray",
+	operand="true",
+	eq=#object(a="@value").cget(a="").toArray(),
+	ne="@value"
+);
+             
+updateUserField=#if(
+	operator=userExists,
+	operand="true",
+	eq=#object(
+		a=#idxPut(key="@userId").buildArguments(
+			key="@field",
+			value=getValue,
+			remove="field",
+			remove1="value",
+			remove3="isArray"
+		),
+		b="true"
+	).cget(b=""),             	              	    
+	ne="false"
+);
+  
+ #userUpdateField=updateUserField;
+ 
+//==============
+//Adds a set of metadata to a user with the given ID
+
+updateUserMetadata = #object(
+	a=#userExists(userId=userPostMetadata.ccall(field="@field").cget(userId="")),
+	b=#idxPut(
+		key=userPostMetadata.ccall(field="@field").cget(userId="")
+	).buildArguments(
+		arguments=userPostMetadata.ccall(field="@field"),
+		remove="field",
+		remove1="userId"
+	),
+    c="true"
+).cget(c="").displayJson();
+
+#userUpdateMetadata=updateUserMetadata;
+
+//==============
+//TODO reset user password
+//---------------------------------------

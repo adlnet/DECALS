@@ -1,0 +1,21 @@
+ontologies = #ontologyListOntologies(directory=#competencyDirectory()).displayJson(_collapse="true");
+
+/competency/debug/ontologies = ontologies;
+
+
+
+readAllCompetencies = #object(
+						a=#if(operator=#mod(operator=#toInteger(obj="@num"), obj=#toInteger(obj="4")), operand="0",
+								eq=#competencyCreate(
+										modelId="model-default", 
+										competencyTitle=#add(a="test competency ", b="@num"),
+										currentUser="test"
+									),
+								ne=#competencyReadAll(),
+							),
+						b=#debug(obj="@num")
+					);
+
+loopAllCompetencies = #numberObject(min="1", max="5").cforEach(op=readAllCompetencies, paramName="num", valueName="empty").displayJson(_collapse="true");
+
+/competency/debug/readAll = loopAllCompetencies;

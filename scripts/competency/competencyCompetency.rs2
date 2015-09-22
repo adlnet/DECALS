@@ -1,0 +1,316 @@
+//---------------------------------------//---------------------------------------
+//---------------Helpers
+//============== 
+
+optionalModelId = #if(operator="@modelId", operand="", eq=#competencyDefaultModel(), ne="@modelId");
+
+modelDB = {
+	indexDir = #competencyDirectory(),
+	databaseName = #competencyModelDBName(),
+	index = "0"
+};
+
+
+   
+// TODO: Add Logging to each CRUD service
+
+//---------------------------------------//---------------------------------------
+//---------------Service Functions
+//==============
+// CREATE Competency
+//--------------
+// #competencyCreate
+//--------------
+// modelId:
+// competencyTitle:
+// competencyDescription:
+// competencyLevels:
+// competencyRelationships: 
+//==============
+
+defaultLevels = #competencyReadModel(modelId="@modelId").get(defaultLevels="").toArray();
+
+clearArrayBars=#string(str="@competencyLevels", op="substr", begin="1").string(str="@obj", op="reverse").string(str="@obj", op="substr", begin="1").string(str="@obj", op="reverse");
+
+trim= #string(str="@val", op="trim", chars="'", trimQuotes="true");
+firstChar = #string(str="@str", op="substr", begin="0", end="1");
+getLevelsArray =  #if(operator=#call(obj=firstChar, str="@competencyLevels"), operand="[", eq=clearArrayBars, ne="@competencyLevels").split(split=",").cforEach(op=trim, paramName="val", array="true"); 
+
+levelsExist = getLevelsArray.cforEach(op=#competencyErrorLevelExists(), paramName="levelId", threaded="false").string(str="true");
+
+checkLevelsExist = #object(
+						a=#competencyErrorCompetencyLevelsValue(),
+						b=#if(operator=levelsExist, operand="true", eq=getLevelsArray)
+					).cget(b="");
+
+getLevelsOrDefault = #if(operator="@competencyLevels", operand="", eq=defaultLevels, ne=checkLevelsExist); 
+
+createCompetencyValues = #toObject(obj="@competencyRelationships").putInObject(
+	dest=":competencyTitle",
+	item=#competencyErrorCompetencyTitleSet(),
+).putInObject(
+	dest=":competencyDescription",
+	item=#toArray(obj="@competencyDescription"),
+).putInObject(
+	dest=":competencyLevels",
+	item=getLevelsOrDefault
+).displayJson(_collapse="true");
+
+createCompParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(),
+	classId = "Competency",
+	vals = createCompetencyValues
+};
+
+createCompetency = #object(
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorUserOrAgentWriteAccess(),
+	d=#ontologyCreateInstance(createCompParams)
+).get(d="");
+
+#competencyCreate = createCompetency;
+
+//==============
+// READ Competency
+//--------------
+// #competencyRead
+//--------------
+// modelId:
+// competencyId: 
+//==============
+
+readCompParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(),
+	instanceId = "@competencyId",  
+};
+
+readCompetency = #ontologyReadInstance(readCompParams);
+
+read = #object(
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorUserOrAgentReadAccess(),
+	d=#competencyErrorCompetencyIdSet(),
+	e=readCompetency
+).get(e="");
+
+#competencyRead = read;
+
+
+//==============
+// READ ALL Competencies
+//--------------
+// #competencyReadAll
+//--------------
+// modelId:
+//==============   
+
+readAllCompParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(),  
+	classId="Competency",
+	local="true",
+};
+
+readAllCompetency = #ontologyReadClassInstances(readAllCompParams);
+
+clearArrayBars=#string(str="@modelId", op="substr", begin="1").string(str="@obj", op="reverse").string(str="@obj", op="substr", begin="1").string(str="@obj", op="reverse");
+
+trim= #string(str="@val", op="trim", chars="'| ", trimQuotes="true");
+firstChar = #string(str="@str", op="substr", begin="0", end="1");
+getModelsArray =  #if(operator=#call(obj=firstChar, str="@modelId"), operand="[", 
+						eq=clearArrayBars, 
+						ne="@modelId"
+					).split(split=",").cforEach(op=trim, paramName="val", array="true"); 
+
+readAllCompetencies = getModelsArray.cforEach(
+								op=#competencyErrorModelExists(), 
+								paramName="modelId"
+							).keySet(
+							).cforEach(
+								op=#competencyCheckUserOrAgentReadAccess(), 
+								paramName="modelId"
+							).removeFromObject(
+								item="false"
+							).keySet(
+							).cforEach(
+								op=readAllCompetency, 
+								paramName="modelId",
+								threaded="false"
+							);
+
+readAll = #if(operator="@modelId", operand="",
+				eq=readAllCompetencies.call(modelId=#competencyGetModelIds()),
+				ne=readAllCompetencies
+			);  
+
+#competencyReadAll = readAll;
+
+//==============
+// Count ALL Competencies
+//--------------
+// #competencyCount
+//--------------
+// modelId:
+//==============         
+
+count = #competencyReadAll(modelId="@modelId").getByParam(param="@modelId").count();
+
+//==============
+// UPDATE Competency
+//--------------
+// #competencyUpdate
+//--------------
+// modelId:
+// competencyId:
+// competencyTitle:
+// competencyDescription:
+// competencyLevels:
+// competencyRelationships:
+//==============
+  
+addTitle = #object(
+				a=#competencyErrorCompetencyTitleSet(),
+				b=#toObject(obj="@object").putInObject(dest=":competencyTitle", item=#toArray(obj="@competencyTitle"))
+			).cget(b="");
+addDescription = #toObject(obj="@object").putInObject(dest=":competencyDescription", item=#toArray(obj="@competencyDescription"));
+addLevels= #object(
+					a=#competencyErrorCompetencyLevelsSet(),
+					b=#competencyErrorCompetencyLevelsValue(),
+					c=getLevelsArray.cforEach(op=#competencyErrorLevelExists(), paramName="levelId"),
+					d=#toObject(obj="@object").putInObject(dest=":competencyLevels", item=getLevelsArray)
+				).cget(d="");
+
+addTitleIfSet = #paramExists(paramName="competencyTitle", true=addTitle, false="@object");
+addDescriptionIfSet = #paramExists(paramName="competencyDescription", true=addDescription, false="@object");
+addLevelsIfSet = #paramExists(paramName="competencyLevels", true=addLevels, false="@object");
+
+relationshipValueArray = #toArray(obj="@val");
+addRelationship = #variableSet(key="oldComp", obj=#toObject(obj=#variableGet(key="oldComp")).putInObject(dest="@rel", item=relationshipValueArray));
+
+addRelationships = #toObject(obj="@competencyRelationships").cforEach(op=addRelationship, paramName="rel", valueName="val", threaded="true").string(str="true");
+
+createUpdatedValues = addRelationships.toParameter(op=#variableGet(key="oldComp")).toParameter(
+	op=addTitleIfSet, 
+	paramName="object"
+).toParameter(
+	op=addDescriptionIfSet,
+	paramName="object"
+).toParameter(
+	op=addLevelsIfSet,
+	paramName="object"
+).toObject().displayJson(_collapse="true");
+																
+createFromOldAndNew = #competencyRead(modelId="@modelId", competencyId="@competencyId").getByParam(param="@competencyId").variableSet(key="oldComp").toParameter(op=createUpdatedValues);
+
+updateCompParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(),  
+	instanceId = "@competencyId",
+	vals = createFromOldAndNew
+};
+
+update = #ontologyUpdateInstance(updateCompParams);
+
+updateCompetency = #object(
+						a=#competencyErrorModelIdSet(),
+						b=#competencyErrorModelExists(),
+						c=#competencyErrorUserOrAgentWriteAccess(),
+						d=#competencyErrorCompetencyIdSet(),
+						e=#competencyErrorCompetencyExists(),
+						f=update,
+						g=#competencyRead().getByParam(param="@competencyId"),
+					).cget(g="");
+#competencyUpdate = updateCompetency;
+
+
+//==============
+// UPDATE Competency Source ID
+//--------------
+// #competencyUpdateSourceId
+//--------------
+// modelId:
+// competencyId:
+// sourceIdEntry:
+// sourceIdCatalog
+//==============
+
+// TODO: Check if any users have a record of this competency and if they do, create a new version of this competency and link it to the old one
+
+checkSourceIdEntrySet = #if(operator="@sourceIdEntry", operand="", eq=#error(msg="<sourceIdEntry> parameter must be set"), ne="@sourceIdEntry");
+checkSourceIdCatalogSet = #if(operator="@sourceIdCatalog", operand="", eq=#error(msg="<sourceIdCatalog> parameter must be set"), ne="@sourceIdCatalog");
+
+updateSourceIdVals = #object().putInObject(
+		dest=":competencySourceIdEntry", 
+		item=checkSourceIdEntrySet
+).putInObject(
+		dest=":competencySourceIdCatalog", 
+		item=checkSourceIdCatalogSet
+).displayJson(_collapse="true");
+
+updateCompSourceIdParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyErrorModelIdSet().competencyErrorModelExists().call(obj=#competencyErrorModelNotDefault(), modelId="@modelId"),
+	instanceId = #competencyErrorCompetencyIdSet(),
+	vals = updateSourceIdVals 
+};
+
+updateCompetencySourceId = #ontologyUpdateInstance(updateCompSourceIdParams);
+#competencyUpdateSourceId = updateCompetencySourceId;
+
+updateSource = #competencyUpdateSourceId().displayJson(_collapse="true");
+
+/test/source = updateSource;
+
+//==============
+// DELETE Competency
+//--------------
+// #competencyDelete
+//--------------
+// modelId:
+// competencyId:
+//==============
+
+// TODO: Check if any users have a record of this competency and if they do prevent delete
+
+deleteCompParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(),  
+	instanceId = "@competencyId",
+};
+
+delete = #ontologyDeleteInstance(deleteCompParams).string(str="true");
+
+deleteCompetency = #object(
+						a=#competencyErrorModelIdSet(),
+						b=#competencyErrorModelExists(),
+						c=#competencyErrorUserOrAgentWriteAccess(),
+						d=#competencyErrorCompetencyIdSet(),
+						e=#competencyErrorCompetencyExists(),
+						f=delete
+					).cget(f="");
+
+#competencyDelete = deleteCompetency;
+
+
+//==============
+// List Competency Relationship Types
+//--------------
+// #competencyListRelationshipTypes
+//--------------
+// modelId:
+//==============    
+
+listRelationshipParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(modelId=#competencyErrorModelExists(modelId=optionalModelId)),
+	classId = "Competency",
+	rangeId=":Concept"
+};
+
+competencyRelationships = #ontologyReadClassProperties(listRelationshipParams);
+#competencyListRelationshipTypes = competencyRelationships;
+

@@ -1,0 +1,277 @@
+//---------------------------------------//---------------------------------------
+//---------------Helpers
+//==============
+
+userDB = {
+	indexDir = #competencyUserDirectory(),
+	databaseName = #competencyUserDBName(),
+	index = "0" 
+};
+
+
+structureId = #competencyUserStructureURI();
+
+getUserInfo = #idxGet(userDB, key="@k").toObject();
+
+msgOtherUser = #error(code="access", msg="Cannot update/delete <another user>");
+
+msgWrongPassword = #error(code="value", msg="<password> parameter is not valid");
+
+//TODO: Logging?
+
+//---------------------------------------//---------------------------------------
+//---------------Service Functions
+//==============
+// READALL Competency User Ids
+//--------------
+// #competencyGetUserIds
+//--------------
+
+userIds = #idxKeys(userDB);
+#competencyGetUserIds = userIds;
+
+
+//==============
+// CREATE Competency User
+//--------------
+// #competencyCreateUser
+//--------------
+// userId:
+// password:
+//==============
+
+// TODO: Maybe want to add createdBy field to user DB to store if a user or agent created the user
+
+createUserParams = {
+	directory = #competencyDirectory(),
+	ontologyId = "@userOntName"
+};
+  
+addStructureAndDefaultModel = #object(
+	a=#ontologyAddImport(directory=#competencyDirectory(), ontologyId="@newOntId", importId=structureId), 
+	b=#ontologyAddImport(directory=#competencyDirectory(), ontologyId="@newOntId", importId=#competencyDefaultModel()),
+	c="@newOntId"
+).get(c="");     
+                  
+createModel = #ontologyCreate(createUserParams).cget(ontologyId="").toParameter(op=addStructureAndDefaultModel, paramName="newOntId");
+
+addCompetencyModel = #userUpdateField(userDB, userId="@userId", dateCreated=#competencyNow(), datePasswordUpdated=#competencyNow()).buildArguments(remove="paramObj", remove1="currentUser", remove2="currentAgent", remove3="sessionId", hard="true");
+
+createAndAddUserModel = #competencyErrorUserExists(
+						).competencyUserModel(
+						).toParameter(
+							op=createModel, 
+							paramName="userOntName"
+						).toParameter(
+							op=addCompetencyModel, 
+							paramName="modelId"
+						);
+
+
+createUserInDB = #userCreate(
+	userId="@userId",
+    password="@password", 
+    userDB
+);
+
+addOtherFieldsToDB = #userUpdateField(userDB, userId="@userId", dateCreated=#competencyNow(), datePasswordUpdated=#competencyNow()).buildArguments(remove="password", remove1="currentUser", remove2="sessionId", remove3="paramObj", remove4="currentAgent", hard="true");
+
+newUser = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorPasswordSet(),
+	c=createUserInDB,
+	d=createAndAddUserModel.buildArguments(remove="password", remove1="currentUser", remove2="sessionId", remove3="paramObj", remove4="currentAgent", hard="true"),
+	e=addOtherFieldsToDB,
+	f=#competencyReadUser().putInObject(dest="userId", item="@userId"),
+).get(f="");
+					
+#competencyCreateUser = newUser;
+
+
+//==============
+// READ Competency User
+//--------------
+// #competencyReadUser
+//--------------
+// userId:
+//==============
+   
+readOtherUser = #userGet(
+					userDB, 
+					userId="@userId"
+				).remove(
+					password="",
+					sessionId="",
+					lastIp="",
+					lastLogin="",
+					datePasswordUpdated=""
+				);
+   
+readMyUser = #userGet(
+					userDB, 
+					userId="@userId"
+				).remove(
+					password="",
+					sessionId="",
+				);
+
+readUser = #if(operator="@currentUser", operand="@userId",
+				eq=readMyUser,
+				ne=readOtherUser
+			);
+
+checkReadUser = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=readUser,
+).get(c="");				
+
+#competencyReadUser = checkReadUser;
+
+//==============
+// READ All Competency Users
+//--------------
+// #competencyReadAllUsers
+//--------------
+//==============
+
+readAll = #competencyGetUserIds().cforEach(op=#competencyReadUser(), paramName="userId");
+
+#competencyReadAllUsers = readAll;
+
+//==============
+// UPDATE Competency User
+//--------------
+// #competencyUpdateUser
+//--------------
+// userId:
+//==============
+
+updateUser = #userUpdateField(userDB, userId="@userId").buildArguments(remove="paramObj", hard="true");
+
+checkUpdateUser = #object(	
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#if(operator="@currentUser", operand="@userId",
+			ne=msgOtherUser
+		),
+	d=updateUser,
+	e=#competencyReadUser()
+).get(e="");
+
+#competencyUpdateUser = checkUpdateUser;
+
+//==============
+// RESET Competency User Model
+//--------------
+// #competencyResetUserModel
+//--------------
+// userId:
+//==============
+
+resetModel= #ontologyDelete(
+				directory = #competencyDirectory(),
+				ontologyId = #competencyUserModel()
+			).competencyUserModel(
+			).toParameter(
+				op=createModel,
+				paramName="userOntName"
+			);
+
+checkResetModel = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=errorOtherUser,
+	f=resetModel,
+	g="true"
+).cget(g="");
+
+#competencyResetUserModel = checkResetModel;
+  
+//==============
+// RESET Competency User Password
+//--------------
+// #competencyResetUserPassword
+//--------------
+// userId:
+// password:
+//==============
+
+errorOtherUser = #if(operator="@userId", operand="@currentUser",
+							ne=msgOtherUser
+						);
+
+resetPassword = #userResetPassword(userDB, userId="@userId", password="@password");
+
+checkResetPassword=#object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorPasswordSet(),
+	e=errorOtherUser,
+	f=resetPassword,
+	g="true"
+).cget(g="");
+
+#competencyResetUserPassword = checkResetPassword;
+
+//==============
+// DELETE Competency User & Model
+//--------------
+// #competencyDeleteUser
+//--------------
+// userId:
+// password
+//==============
+
+userDeleteParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel()
+};
+  
+deleteUserFromDB = #catch( 
+	try=#userDelete(userDB, userId="@userId"), 
+	null=msgWrongPassword
+);
+deleteOnt = #ontologyDelete(userDeleteParams);
+     
+deleteUser = #if(
+	operator=deleteUserFromDB, 
+	operand="true",
+	eq=deleteOnt.string(str="true"),
+	ne="false"
+);
+
+checkDeleteUser = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	d=#if(operator="@currentUser", operand="@userId",
+				ne=msgOtherUser
+		),
+	e=deleteUser
+).get(e="");  
+				
+#competencyDeleteUser = checkDeleteUser;
+
+
+//==============
+// Read All User Info
+//--------------
+// #competencyGetAllUserInfo
+//--------------
+// userId:
+//==============
+
+getCompetency = #execute(
+					service="competencyRead", 
+					paramObj=#object(
+									competencyId=#decode(obj="@record").getByParam(paramName=":recordCompetency"),
+									modelId=#decode(obj="@record").getByParam(paramName=":recordCompetencyModel")
+								)
+						);
+
+allInfo = #object(
+				user = #competencyReadUser(userId="@userId"),
+				records = #decode(obj="@records"),
+				competencies = #decode(obj="@records").cforEach(op=getCompetency, paramName="record", array="true")
+			).ccall(records=#competencyReadAllRecords(userId="@userId"));
+				

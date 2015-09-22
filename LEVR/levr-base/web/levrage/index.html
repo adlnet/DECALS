@@ -1,0 +1,43 @@
+<!doctype html>
+<html class="no-js" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Levrage</title>
+        <link rel="stylesheet" href="css/foundation.css" />
+        <script src="js/modernizr.js"></script>
+    </head>
+    <body onload="start();">
+
+    <div class="row">
+        <div class="large-2 columns">
+            <div id="servlets">
+            </div>
+        </div>
+        
+        <div id="mainPanel" class="large-7 columns">
+        </div>
+        
+        <div id="resolverList" class="large-3 columns">
+        </div>
+        
+    </div>
+    
+    <div id="securityModal" class="reveal-modal" data-reveal>
+        <h2>Authentication</h2>
+        <p class="lead">Enter the security code and close this window.</p>
+        <p><input type="text" id="security"></p>
+        <a class="close-reveal-modal" onclick="security=$('#security')[0].value;getResolvers();getFiles();">&#215;</a>
+    </div>
+    <script src="js/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script src="js/antlr3-all.js"></script>
+    <script src="js/output/resolverv2jsLexer.js"></script>
+    <script src="js/output/resolverv2jsParser.js"></script>
+    <script src="js/levrage.js"></script>
+    <link rel="stylesheet" href="css/levrage.css" />
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
+</html>

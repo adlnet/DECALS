@@ -1,0 +1,628 @@
+//---------------------------------------
+//---------------Helpers
+//---------------------------------------
+
+firstChar = #string(str="@str", op="substr", begin="0", end="1");
+
+removedFirst = #string(str="@str", op="substr", begin="1");
+simpleId = #if(operator=firstChar, operand=":", eq=removedFirst, ne="@str");
+
+checkCompetencyIdsSet = #if(operator="@competencyIds", operand="", eq=#error(msg="competencyIds parameter must be set"), ne="@competencyIds");
+
+checkQuerySet = #if(operator="@query", operand="", eq=#error(msg="query string must be given by parameter"), ne="@query");
+
+checkUserIdOrModelIdSet = #if(operator="@userId", operand="", eq=#competencyErrorModelIdSet().competencyErrorModelExists(), ne=#competencyErrorUserExists());
+
+readRecordForQuery = #competencyReadRecord(userId="@userId", recordId="@instanceId").valueSet().reduce();
+
+//---------------------------------------
+//---------------Service Functions
+//---------------------------------------
+
+//==============
+// SEARCH Competencies
+//--------------
+// #competencySearch
+//--------------
+// modelId:
+// query:
+//==============
+
+splitQuery = #string(str="@query", op="split", regex=" ").toArray().flatten(_delimiter="|");
+ 
+searchRegexString = #add(a=".*?(", b=splitQuery, c=").*");
+
+searchString = #add(
+	a="PREFIX comp: <",
+	b=#competencyStructureURI(),
+	c="#>
+		SELECT ?id
+		WHERE { 
+				{?id comp:competencyTitle ?title .
+					FILTER regex(str(?title), '",
+	d=searchRegexString,
+	e="', 'i')
+				} 
+				UNION
+				{ comp:Competency comp:competencyDescription ?desc
+					FILTER regex(str(?desc), '",
+	f=searchRegexString,
+	g="', 'i')
+				}	
+	}"
+);
+
+searchCompParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(),  
+	query = searchString,
+	local = "true"
+};
+
+getId = #decode(obj="@result").getInObject(id="");
+
+readCompetencyForQuery = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyGetModelUri(), instanceId="@instanceId").valueSet().reduce();
+searchCompetency =  #ontologyQuery(searchCompParams).foreach(op=getId, paramName="result", aggregation="appendArray").cforEach(op=readCompetencyForQuery, paramName="instanceId");
+
+searchAllModels = #competencyGetModelIds().forEach(
+												op=#competencyCheckUserOrAgentReadAccess(), 
+												paramName="modelId"
+											).removeFromObject(
+												item="false"
+											).keySet(
+											).foreach(
+												op=searchCompetency, 
+												paramName="modelId"
+											);
+
+clearArrayBars=#string(str="@modelId", op="substr", begin="1").string(str="@obj", op="reverse").string(str="@obj", op="substr", begin="1").string(str="@obj", op="reverse");
+
+trim= #string(str="@val", op="trim", chars="'| ", trimQuotes="true");
+firstChar = #string(str="@str", op="substr", begin="0", end="1");
+getModelsArray =  #if(operator=#call(obj=firstChar, str="@modelId"), operand="[", 
+						eq=clearArrayBars, 
+						ne="@modelId"
+					).split(split=",").forEach(op=trim, paramName="val", aggregation="appendArray"); 
+
+searchModels = getModelsArray.forEach(
+								op=#competencyErrorModelExists(), 
+								paramName="modelId"
+							).keySet(
+							).forEach(
+								op=#competencyCheckUserOrAgentReadAccess(), 
+								paramName="modelId"
+							).removeFromObject(
+								item="false"
+							).keySet(
+							).forEach(
+								op=searchCompetency, 
+								paramName="modelId"
+							);
+
+search = #if(operator="@modelId", operand="", eq=searchAllModels, ne=searchModels);
+
+#competencySearch = search;
+
+//==============
+// SEARCH Models
+//--------------
+// #competencySearchModels
+//--------------
+// query:
+//==============
+
+getIdAndRead = #decode(obj="@object").get(modelId="").toParameter(op=#competencyReadModel(), paramName="modelId");
+
+getNameAndDescription = #object(
+	name=#string(str=#decode(obj="@object").get(name=""), op="lower"), 
+	description=#string(str=#decode(obj="@object").get(description=""), op="lower"),
+	modelId=#decode(obj="@object").get(ontologyId="")
+);
+
+readModel = #competencyReadModel(modelId="@modelId").toParameter(op=getNameAndDescription, paramName="object").toArray().intersect(contains="true", value=#string(str="@query", op="lower"));
+searchForModels = #competencyGetModelIds().forEach(
+												op=#competencyCheckUserOrAgentReadAccess(), 
+												paramName="modelId"
+											).removeFromObject(
+												item="false"
+											).keySet(
+											).foreach(
+												op=readModel, 
+												paramName="modelId", 
+												aggregation="appendArray"
+											).forEach(
+												op=getIdAndRead, 
+												paramName="object", 
+												aggregation="appendArray"
+											);
+
+#competencySearchModels = searchForModels;
+
+//==============
+// SEARCH Users
+//--------------
+// #competencySearchUsers
+//--------------
+// query:
+//==============  
+
+getUserId = #decode(obj="@userObj").get(userId=""); 
+
+readUser = #competencyReadUser(
+				userId="@userId"
+			).displayJson(
+				_collapse="true"
+			).string(
+				str="@obj", 
+				op="lower"
+			).decode(
+				obj="@obj"
+			).putInObject(
+				dest="userId", 
+				item="@userId"
+			);
+			
+searchForUsers = #competencyGetUserIds().forEach(
+											op=readUser, 
+											paramName="userId", 
+											aggregation="appendArray"
+										).intersect(
+											contains="true", 
+											value=#string(str="@query", op="lower")
+										).forEach(
+											op=getUserId, 
+											paramName="userObj", 
+											aggregation="appendArray"
+										).forEach(
+											op=#competencyReadUser(), 
+											paramName="userId"
+										);
+
+#competencySearchUsers = searchForUsers;
+
+//==============
+// Find Related Competencies
+//--------------
+// #competencyFindRelated
+//--------------
+// modelId:
+// competencyId:
+// relationshipIds
+//==============
+
+// TODO: Not sure if this is really an efficient/valuable call, we can find what competencies something is related to just by querying the JSON representation...
+
+trimElements = #string(str="@str", op="trim", chars="[|]| ");
+getRelationshipArray = #split(obj="@relationshipIds", split=",").forEach(op=trimElements, paramName="str", aggregation="appendArray");
+
+relationshipPropertyId = #ontologyGetFullIri(directory = #competencyDirectory(), ontologyId = "@modelId", id="@relationshipId");
+
+relationshipOntIri = #ontologyGetFullIri(directory = #competencyDirectory(), ontologyId = "@modelId", id="@relationshipId").split(split="#").getIndex(index="0");
+
+findRelatedQueryString = #add(
+	a="PREFIX comp: <",
+	b=#competencyStructureURI(),
+	c="#>
+	 PREFIX prop: <",
+	d=relationshipOntIri,
+	e="#> ",
+	f="SELECT ?id
+		WHERE ",
+ 	g="{?compId prop:",
+	h=simpleId.call(str="@relationshipId"),
+	i=" ?id 
+		FILTER( strends(str(?compId), '",
+	j=simpleId.call(str="@competencyId"),
+	k="' ) ) }"
+);
+							 
+findRelatedParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyGetModelUri(),  
+	query = findRelatedQueryString
+};
+
+relationshipRelated = #ontologyQuery(findRelatedParams).forEach(op=getId, paramName="result", aggregation="appendArray");
+
+findRelated = getRelationshipArray.forEach(op=relationshipRelated, paramName="relationshipId");
+
+checkFindRelated = #object(
+						a=#competencyErrorModelIdSet(),
+						b=#competencyErrorModelExists(),
+						c=#comeptencyErrorCompetencyIdSet(),
+						d=#competencyErrorCompetencyExists(),
+						e=#competencyErrorUserOrAgentReadAccess(),
+						f=findRelated,
+					).cget(f="");
+
+#competencyFindRelated = findRelated;
+
+//==============
+// Read Levels of Competency
+//--------------
+// #competencyReadCompetencyLevels
+//--------------
+// modelId:
+// competencyId:
+//==============
+
+readLevelsQueryString = #add(
+	a="PREFIX comp: <",
+	b=#competencyStructureURI(),
+	c="#> ",
+	d="PREFIX record: <",
+	e=#competencyUserStructureURI(),
+	f="#> ",
+	g="SELECT ?compId ?levelId ",
+	h="WHERE { ?compId comp:competencyLevels ?levelId . ",
+	i="FILTER( strends( str(?compId), '", j=simpleId.call(str="@competencyId"), k="') )",
+	l="}"
+);
+
+readLevelsParams = {
+	directory=#competencyDirectory(),
+	ontologyId=#competencyGetModelUri(),  
+	query=readLevelsQueryString
+};
+
+getLevelId = #decode(obj="@result").getInObject(levelId="");
+readLevelForQuery = #competencyReadLevel(modelId="@modelId", levelId="@levelId").getByParam(param="@levelId");
+
+readLevels = #ontologyQuery(readLevelsParams).forEach(op=getLevelId, paramName="result", aggregation="appendArray").forEach(op=readLevelForQuery, paramName="levelId"); 
+
+checkReadLevels = #object(
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorUserOrAgentReadAccess(),
+	d=#competencyErrorCompetencyIdSet(),
+	e=#competencyErrorCompetencyExists(),
+	f=readLevels
+).get(f="");
+
+#competencyReadCompetencyLevels = checkReadLevels;
+
+//==============
+// READ Users Record Validations for Record
+//--------------
+// #competencyReadRecordValidationsOfRecord
+//--------------
+// userId:
+// recordId:
+//==============
+
+readRecordValidations = #competencyReadRecordValidation().getByParam(param="@validationId");
+
+readRecordForValidationsParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	instanceId = "@recordId"
+};
+
+readValidationsOfRecord = #object(
+						a=#competencyErrorUserOrAgentReadAccess(modelId=#decode(obj="@recordObj").getByParam(param=":recordCompetencyModel").toArray().getIndex(index="0")),
+						b=#decode(obj="@recordObj").getByParam(param=":recordValidation").toArray().forEach(op=readRecordValidations, paramName="validationId")
+					).ccall(
+						recordObj=#ontologyReadInstance(readRecordForValidationsParams).getByParam(param="@recordId")
+					).cget(b="");
+					
+checkReadValidationsOfRecord = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorRecordIdSet(),
+	d=#competencyErrorRecordExists(),
+	e=readValidationsOfRecord
+).get(e="");
+
+#competencyReadRecordValidationsOfRecord = checkReadValidationsOfRecord;
+
+//==============
+// Find User Competency Record For Competency
+//--------------
+// #competencyFindUserRecordsForCompetency
+//--------------
+// userId:
+// competencyId:
+// modelId:
+//==============
+
+queryString = #add(
+	a = "PREFIX comp: <",
+	b = #competencyStructureURI(),
+	c = "#> ",
+	d = "PREFIX record: <",
+	e = #competencyUserStructureURI(),
+	f = "#> ",
+	g ="SELECT ?id ",
+	h ="WHERE { ?id record:recordCompetency ?compId . ",
+	i =" ?id record:recordCompetencyModel ?modelId . ",
+	j =		"FILTER ( strends(str(?compId), '", k=simpleId.call(str="@competencyId"), l="') && ",
+	m = 	"str(?modelId) = '", n="@modelId", o="' )",
+	p ="}", 
+);
+
+findRecordParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	query = queryString
+};
+
+getIdFieldFromQueryResult = #decode(obj="@result").getInObject(id="");
+
+runQuery =  #ontologyQuery(findRecordParams).cforEach(op=getIdFieldFromQueryResult, paramName="result", aggregation="appendArray").forEach(op=readRecordForQuery, paramName="instanceId");
+
+
+findRecord = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorModelIdSet(),
+	d=#competencyErrorModelExists(),
+	e=#competencyErrorUserOrAgentReadAccess(),
+	f=#competencyErrorCompetencyIdSet(),
+	g=runQuery,
+).cget(g="");
+
+#competencyFindUserRecordsForCompetency = findRecord;
+
+//==============
+// List User Competencies
+//--------------
+// #competencyListUserCompetencies
+//--------------
+// userId
+//==============
+
+findUserCompetenciesQueryString = #add(
+	a="PREFIX comp: <",
+	b=#competencyStructureURI(),
+	c="#> ",
+	d="PREFIX record: <",
+	e=#competencyUserStructureURI(),
+	f="#> ",
+	g="SELECT ?compId ?recordId ?modelId ",
+	h="WHERE { ?recordId record:recordCompetency ?compId . ",
+	i="?recordId record:recordLevel ?level . ",
+	j="?level comp:competencyLevelRank ?rank . ",
+	k="?recordId record:recordCompetencyModel ?modelId . ",
+	m=" }"
+);
+
+findUserCompetenciesParams = {
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	query = findUserCompetenciesQueryString,
+	local = "false"
+};
+	
+getCompetencyAndModelId = #object(
+	competencyId=#decode(obj="@result").getInObject(compId=""),
+	modelId = #decode(obj="@result").getInObject(modelId=""),
+);
+							  
+getModelId = #decode(obj="@compObj").getInObject(modelId="");
+getCompetencyId = #decode(obj="@compObj").getInObject(competencyId="");
+getCompetencyArray = #toArray(obj="@compArray").forEach(op=getCompetencyId, paramName="compObj", aggregation="appendArray"); 
+
+checkAccessOrGetCompetencyArray = #if(operator=#competencyCheckUserOrAgentReadAccess(), operand="true",
+										ne=#competencyMsgUserOrAgentReadAccess(),
+										eq=getCompetencyArray
+									);
+
+findUserCompetencies = #ontologyQuery(findUserCompetenciesParams).forEach(
+																	op=getCompetencyAndModelId, 
+																	paramName="result", 
+																	aggregation="appendArray"
+																).forEach(
+																	op=getModelId,
+																	paramName="compObj"
+																).pivot(
+																).cforEach(
+																	op=checkAccessOrGetCompetencyArray, 
+																	valueName="compArray", 
+																	paramName="modelId"
+																);
+
+checkFindCompetencies = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=findUserCompetencies
+).get(c="");
+								
+#competencyListUserCompetencies = checkFindCompetencies;
+
+//==============
+// Find Path to Competency
+//--------------
+// #competencyFindPathFromRecord
+//--------------
+// userId
+// recordId
+// competencyId
+// pathRelationships
+//==============
+
+// TODO: NEED TO ADD MODEL ACCESS CONTROL BASED RESTRICTIONS STILL
+
+trimElements = #string(str="@str", op="trim", chars="[|]| ");
+getPathRelationships = #split(obj="@pathRelationships", split=",").forEach(op=trimElements, paramName="str", aggregation="appendArray").append(item=":recordCompetency");
+
+getRelationships = #if(operator="@pathRelationships", operand="",
+							eq=#competencyListRelationshipTypes().append(item=":recordCompetency"),
+							ne=getPathRelationships
+					);
+
+findShortest = #ontologyGetShortestPath(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), startId="@recordId", endId="@competencyId", path=getRelationships);
+
+checkFindShortest = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=#competencyErrorRecordIdSet(),
+	d=#competencyErrorCompetencyIdSet(),
+	e=findShortest
+).get(e="");
+
+#competencyFindPathFromRecord = checkFindShortest;
+
+findPathFromUser = #competencyReadAllRecords(userId="@userId").keySet().forEach(op=findShortest, paramName="recordId");
+
+//==============
+// Find Users with Competency
+//--------------
+// #competencyFindUsersWithCompetency
+//--------------
+// competencyId:
+// modelId
+//==============
+
+checkUserForRecordQueryString = #add(
+	a="PREFIX comp: <",
+	b=#competencyStructureURI(),
+	c="#> ",
+	d="PREFIX record: <",
+	e=#competencyUserStructureURI(),
+	f="#> ",
+	g="SELECT ?recordId ?level ?confidence ",
+	h="WHERE { ?recordId record:recordCompetency ?compId . ",
+	i="?recordId record:recordLevel ?level . ",
+	j="?level comp:competencyLevelRank ?rank . ",
+	k="?recordId record:recordCompetencyModel ?modelId . ",
+	l="OPTIONAL {?recordId record:recordConfidence ?confidence } ",
+	m="FILTER( ?rank > 0 && strends( str(?compId), '",
+	n=simpleId.call(str="@competencyId"),
+	o="') && ?modelId = '", 
+	p="@modelId",
+	q="') }",
+);
+
+
+findCompetencyUsersParams={
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	query=checkUserForRecordQueryString
+};
+
+createResultObj = #object(
+	result = #toArray(obj="@result"),
+	count = #toArray(obj="@result").count()
+);
+
+checkRecordCount = #if(
+	operator=#decode(obj="@resultObj").get(count=""), 
+	operand="0", 
+	gt=#decode(obj="@resultObj").get(result=""), 
+	lte="false"
+);
+
+checkUserForRecord = #ontologyQuery(findCompetencyUsersParams).toParameter(
+	op=createResultObj, 
+	paramName="result"
+).toParameter(
+	op=checkRecordCount, 
+	paramName="resultObj"
+);
+
+findCompetencyUsers = #competencyGetUserIds().forEach(op=checkUserForRecord, paramName="userId");
+
+checkFindCompetencyUsers = #object(
+	a=#competencyErrorModelIdSet(),
+	b=#competencyErrorModelExists(),
+	c=#competencyErrorUserOrAgentReadAccess(),
+	d=#competencyErrorCompetencyIdSet(),
+	e=#competencyErrorCompetencyExists(),
+	f=findCompetencyUsers
+).get(f="");
+									
+#competencyFindUsersWithCompetency = checkFindCompetencyUsers;
+
+//==============
+// Compare User to Competency Set
+//--------------
+// #competencyCompareUserToCompetencySet
+//--------------
+// userId
+// competencyIds:
+//==============
+
+compareUserQueryString = #add(
+	a="PREFIX comp: <",
+	b=#competencyStructureURI(),
+	c="#> ",
+	d="PREFIX record: <",
+	e=#competencyUserStructureURI(),
+	f="#> ",
+	g="SELECT ?recordId ?level ?confidence ",
+	h="WHERE { ?recordId record:recordCompetency ?compId . ",
+	i="?recordId record:recordLevel ?level . ",
+	j="?level comp:competencyLevelRank ?rank . ",
+	k="OPTIONAL {?recordId record:recordConfidence ?confidence } ",
+	l="FILTER( ?rank > 0 && strends( str(?compId), '",
+	m=simpleId.call(str="@competencyId"),
+	n="')) }",
+);
+
+compareUserParams={
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	query=compareUserQueryString
+};
+
+compareUserRecord = #ontologyQuery(compareUserParams);
+
+trimElements = #string(str="@str", op="trim", chars="[|]| ");
+getCompetencyIds = #split(obj="@competencyIds", split=",").forEach(op=trimElements, paramName="str", aggregation="appendArray");
+
+compareToRecords = getCompetencyIds.foreach(op=compareUserRecord, paramName="competencyId");
+
+checkCompare = #object(
+	a=#competencyErrorUserIdSet(),
+	b=#competencyErrorUserExists(),
+	c=checkCompetencyIdsSet,
+	d=compareToRecords
+).get(d="");
+
+#competencyCompareUserToCompetencySet = checkCompare;
+
+//==============
+// Find Users Matching Competency Set
+//--------------
+// #competencyFindUsersMatchingCompetencySet
+//--------------
+// competencyIds:
+//==============
+
+findUsersForSet = #competencyGetUserIds().forEach(op=checkCompare, paramName="userId");
+
+checkFindUsersForSet = #object(
+	a=checkCompetencyIdsSet,
+	b=findUsersForSet
+).get(b="");
+
+#competencyFindUsersMatchingCompetencySet = checkFindUsersForSet;
+
+
+
+//==============
+// Public SPARQL Query
+//--------------
+// #competencySPARQLQuery
+//--------------
+// modelId
+// userId
+// query
+//==============
+
+sparqlQueryParams={
+	directory = #competencyDirectory(),
+	ontologyId = #competencyUserModel(),
+	query = "@query"
+};
+
+runQuery = #ontologyQuery(sparqlQueryParams);
+
+sparqlQuery = #object(
+	a=#competencyErrorUserOrAgentReadAccess(),
+	b=checkUserIdOrModelIdSet,
+	c=checkQuerySet,
+	d=runQuery
+).cget(c="");
+
+#competencySPARQLQuery = sparqlQuery;

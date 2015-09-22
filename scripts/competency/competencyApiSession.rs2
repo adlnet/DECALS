@@ -1,0 +1,89 @@
+getMultipartPostDataObject = #getFileFromPost(name="@field").fileToString().toObject();
+
+postedCompetencyObject = getMultipartPostDataObject.call(field="competency");
+
+postedSessionId = postedCompetencyObject.cget(sessionId="");
+postedUserId = postedCompetencyObject.cget(userId="");
+postedPassword = postedCompetencyObject.cget(password="");
+
+//==============
+// LOGIN 
+//==============
+
+login = #competencySessionLogin(userId=postedUserId, password=postedPassword).displayJson(_collapse="true");
+/competency/session/login = login;
+
+//-----API-------  
+
+API_Login = #object(
+	levr-service="#competencySessionLogin",
+	web-service="/competency/session/login",
+	description="Starts a new session for a user by logging in with userId and password",
+	params=#object(
+				userId="",
+				password=""
+			)
+);
+displayLoginAPI = API_Login.displayJson(_collapse="true");
+/competency/session/login/api = displayLoginAPI;
+
+//==============
+// Validate 
+//==============
+
+validate = #competencySessionValidate(sessionId=postedSessionId).displayJson(_collapse="true");
+/competency/session/validate = validate;
+
+//-----API-------
+
+API_Validate = #object(
+	levr-service="#competencySessionValidate",
+	web-service="/competency/session/validate",
+	description="Validates that the sessionId given is not bad or expired",
+	params=#object(
+				sessionId=""
+			)
+);
+displayValidateAPI = API_Validate.displayJson(_collapse="true");
+/competency/session/validate/api = displayValidateAPI;
+
+//==============
+// Session User Info
+//==============
+
+userInfo = #competencySessionUserInfo(sessionId=postedSessionId).displayJson(_collapse="true");
+/competency/session/userInfo = userInfo;
+
+//-----API-------
+
+API_UserInfo = #object(
+	levr-service="#competencySessionUserInfo",
+	web-service="/competency/session/userInfo",
+	description="Validates that the sessionId given is not bad or expired and returns the session user's info if it is valid",
+	params=#object(
+				sessionId=""
+			)
+);
+displayUserInfoAPI = API_UserInfo.displayJson(_collapse="true");
+/competency/session/userInfo/api = displayUserInfoAPI;
+
+//==============
+// API for Manipulating Competency Session
+//==============
+
+API_Session = #object().putInObject(
+	dest="/competency/session/login",
+	item=API_Login
+).putInObject(
+	dest="/competency/session/validate",
+	item=API_Validate
+).putInObject(
+	dest="/competency/session/userInfo",
+	item=API_UserInfo
+);
+
+
+#api_Session = API_Session;
+
+displaySessionAPI = #displayJson(obj=API_Session);
+/competency/session/api = displaySessionAPI;

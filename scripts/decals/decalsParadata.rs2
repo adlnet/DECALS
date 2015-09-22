@@ -1,0 +1,488 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+
+paraTrackDb={
+	indexDir=#decalsParaTrackDbDirectory(),
+	databaseName=#decalsParaTrackDbName(),
+	index=#decalsParaTrackDbIndexName() 
+};
+
+ratingDb={
+	indexDir=#decalsRatingDbDirectory(),
+	databaseName=#decalsRatingDbName(),
+	index=#decalsRatingDbIndexName() 
+};
+
+commentDb={
+	indexDir=#decalsCommentDbDirectory(),
+	databaseName=#decalsCommentDbName(),
+	index=#decalsCommentDbIndexName() 
+};
+
+paraTrackObj=#idxGet(paraTrackDb,key="@resourceUrl").toObject();
+allParaTrackObj=#idxKeys(paraTrackDb).cforEach(paramName="resourceUrl",op=paraTrackObj);
+
+
+//--------------------------
+//Paradata
+//--------------------------
+
+solrLrRec=#solrQuery(
+	url=#decalsRegistrySolrUrl(),
+    sq=#add(a="id:",b="@resourceUrl"),
+    rows="1",
+    returnFields=#toArray(obj="flrId"),
+    idSort="false",
+    useCursor="false",  
+    useMustMatchAll="false",
+    start="0"
+);
+
+findSolrLrRecDocId=#if(
+	operator=solrLrRec.cget(total=""),
+	operand="0",
+	eq="",
+	lt="",
+	gt=solrLrRec.cget(items="").getIndex(index="0").cget(flrId="")
+);
+
+findSolrLrRecTitle=#if(
+	operator=solrLrRec.cget(total=""),
+	operand="0",
+	eq="**No title available**",
+	lt="**No title available**",
+	gt=solrLrRec.cget(items="").getIndex(index="0").cget(title="").getIndex(index="0")
+);
+
+//--------------------------
+//Get all paradata tracking
+//***DEBUG: COMMENT OUT OF PROD***
+
+showAllParaTrack=allParaTrackObj.displayJson();
+/decalsShowAllParaTrack=showAllParaTrack;
+
+//--------------------------
+//Update paradata tracking information
+
+updateParaPubInfoObj=#object(
+	resourceUrl="@resourceUrl",	
+	lastPublishDate="@pubDate",
+	paradataDocId="@pdDocId",
+	resourceTitle="@resourceTitle",
+);
+
+updateParaPubInfo=updateParaPubInfoObj.idxSet(paraTrackDb,key="@resourceUrl"); 
+
+updateParaPubInfoApp=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=updateParaPubInfo.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""),
+		pubDate=decalsPostData.cget(pubDate=""),
+		pdDocId=decalsPostData.cget(pdDocId=""),
+		resourceTitle=decalsPostData.cget(resourceTitle="")
+	),
+	c=paraTrackObj.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+).cget(c="").displayJson();
+
+/decalsUpdateParaPubInfo=updateParaPubInfoApp;
+
+//--------------------------
+//Get paradata publish info
+
+paraPubUrls=#listAdd(
+	a=#idxKeys(ratingDb),
+	b=#idxKeys(commentDb),
+	c=#idxKeys(paraTrackDb)
+).removeDuplicates();
+
+noParaPubInfoObj=#object(
+	resourceUrl="@resourceUrl",
+	paradataDocId="",
+	resourceTitle=findSolrLrRecTitle,
+	lastPublishDate="0"
+);
+
+paraPubInfo=#if(
+	operator=paraTrackObj,
+	operand="",
+	eq=noParaPubInfoObj,
+	ne=paraTrackObj
+);
+
+allParaPubInfo=paraPubUrls.cforEach(paramName="ppUrl",op=paraPubInfo.ccall(resourceUrl="@ppUrl"));
+
+getAllParaPubInfo=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=allParaPubInfo
+).cget(b="").displayJson();
+
+/decalsGetAllParaPubInfo=getAllParaPubInfo;
+
+//--------------------------
+//Publish all paradata
+
+minRatingDate=#if(
+	operator=#decalsRatingsForFile().count(),
+	operand="0",
+	eq=#toLong(obj="0"),	
+	gt=#decalsRatingsForFile().cforEach(
+		paramName="ratingIt",
+    	op=#toObject(obj="@ratingIt").cget(createDate="")
+	).valueSet().min().toLong()
+);
+
+maxRatingDate=#if(
+	operator=#decalsRatingsForFile().count(),
+	operand="0",
+	eq=#toLong(obj="0"),	
+	gt=#decalsRatingsForFile().cforEach(
+		paramName="ratingIt",
+    	op=#toObject(obj="@ratingIt").cget(createDate="")
+	).valueSet().max().toLong()
+);
+
+minCommentDate=#if(
+	operator=#decalsCommentsForFile().count(),
+	operand="0",
+	eq=#toLong(obj="0"),	
+	gt=#decalsCommentsForFile().cforEach(
+		paramName="commentIt",
+    	op=#toObject(obj="@commentIt").cget(createDate="")
+	).valueSet().min().toLong()
+);
+
+maxCommentDate=#if(
+	operator=#decalsCommentsForFile().count(),
+	operand="0",
+	eq=#toLong(obj="0"),	
+	gt=#decalsCommentsForFile().cforEach(
+		paramName="commentIt",
+    	op=#toObject(obj="@commentIt").cget(createDate="")
+	).valueSet().max().toLong()
+);
+
+maxParadataDate=#listAdd(a=maxRatingDate,b=maxCommentDate).max().toLong();
+
+commentsForFileArray=#decalsCommentsForFile().cforEach(
+	paramName="commentIt",
+    op=#object(
+    	createDate=#date(inputMillis=#toObject(obj="@commentIt").cget(createDate=""),dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
+    	comment=#toObject(obj="@commentIt").cget(comment="")
+    )
+).valueSet();
+
+paradataRatingObj=#object(
+	activity=#object(
+		actor=#object(
+			objectType="community",
+			description=#listAdd(a=#decalsLrPublishParadataActor())
+		),
+		verb=#object(		
+			action="rated",
+			measure=#object(			
+				measureType="star average",
+				value=#decalsRatingInfo().cget(averageRating=""),
+				scaleMin=#toLong(obj="1"),
+				scaleMax=#toLong(obj="5"),
+				sampleSize=#decalsRatingInfo().cget(numberOfRatings="")
+			),
+			context=#decalsLrPublishCurator(),
+			date=#add(
+				a=#date(inputMillis=minRatingDate,dateFormat="yyyy-MM-dd"),
+				b="/",
+				c=#date(inputMillis=maxRatingDate,dateFormat="yyyy-MM-dd")
+			)
+		),
+		content=#add(
+			a=#decalsRatingInfo().cget(numberOfRatings=""),
+			b=" member(s) of the ",
+			c=#decalsLrPublishParadataActor(),
+			d=" gave '",
+			e="@resourceTitle",
+			f="' a rating of ",
+			g=#decalsRatingInfo().cget(averageRating=""),
+			h=" out of 5 stars",
+		)
+	)
+);
+
+paradataCommentObj=#object(
+	activity=#object(
+		actor=#object(
+			objectType="community",
+			description=#listAdd(a=#decalsLrPublishParadataActor())
+		),
+		verb=#object(		
+			action="commented",
+			measure=#object(			
+				measureType="count",
+				value=#decalsCommentInfo().cget(numberOfComments=""),				
+			),
+			context=#decalsLrPublishCurator(),
+			date=#add(
+				a=#date(inputMillis=minCommentDate,dateFormat="yyyy-MM-dd"),
+				b="/",
+				c=#date(inputMillis=maxCommentDate,dateFormat="yyyy-MM-dd")
+			),
+			description=#add(
+				a=#decalsCommentInfo().cget(numberOfComments=""),
+				b=" member(s) of the ",
+				c=#decalsLrPublishParadataActor(),
+				d=" commented on '",
+				e="@resourceTitle",
+				f="'"
+			)
+		),
+		content=commentsForFileArray
+	)
+);
+
+paradataArray=#if(
+	operator=#decalsRatingsForFile().count(),
+	operand="0",
+	eq=#if(
+		operator=#decalsCommentsForFile().count(),
+		operand="0",
+		eq=#listAdd(),
+		gt=#listAdd(a=paradataCommentObj)
+	),	
+	gt=#if(
+		operator=#decalsCommentsForFile().count(),
+		operand="0",
+		eq=#listAdd(a=paradataRatingObj),
+		gt=#listAdd(a=paradataRatingObj,b=paradataCommentObj)
+	)
+);
+
+paradataResourcePayload=#object(
+	collection=#object(
+		items=#if(
+			operator=#decalsRatingsForFile().count(),
+			operand="0",
+			eq=#if(
+				operator=#decalsCommentsForFile().count(),
+				operand="0",
+				eq=#listAdd(),
+				gt=#listAdd(a=paradataCommentObj)
+			),	
+			gt=#if(
+				operator=#decalsCommentsForFile().count(),
+				operand="0",
+				eq=#listAdd(a=paradataRatingObj),
+				gt=#listAdd(a=paradataRatingObj,b=paradataCommentObj)
+			)
+		)
+	)
+);
+
+paradataDocForResourceRaw=#object(
+	doc_type="resource_data",
+	doc_version=#decalsLrParaPubDocVersion(),
+	active=#toBoolean(obj="true"),
+	identity=#object(
+		submitter_type="agent",
+		submitter=#decalsLrPublishSubmitter(),
+		curator=#decalsLrPublishCurator()
+	),
+	publishing_node=#decalsLrPublishFromNode(),
+	resource_data_type="paradata",
+	TOS=#object(
+		submission_TOS="http://www.learningregistry.org/tos/cc0/v0-5/"
+	),
+	resource_locator="@resourceUrl",
+	payload_placement="inline",
+	payload_schema=#listAdd(a="LR Paradata 1.0"),
+	payload_schema_locator="https://docs.google.com/a/eduworks.com/document/d/1IrOYXd3S0FUwNozaEG5tM7Ki4_AZPrBn-pbyVUz-Bh0/edit?hl=en_US#",
+	resource_data=paradataResourcePayload
+);
+
+paradataDocForResource=#if(
+	operator=paraTrackObj.cget(paradataDocId=""),
+	operand="",
+	eq=paradataDocForResourceRaw,
+	ne=paradataDocForResourceRaw.putInObject(dest="replaces", item=#listAdd(a=paraTrackObj.cget(paradataDocId="")))
+);
+
+publishParadataToLr=#object(documents=#listAdd(item=paradataDocForResource)).httpPost(
+	url=#add(a=#decalsLrPublishNode(),b="publish"),
+	contentType="application/json;charset=UTF-8",
+	name="something",
+	multipart="false",
+	authToken=#decalsLrPublishToken()
+);
+
+publishResourceParadata=#if(
+	operator=#toObject(obj="@pubRet").cget(OK=""),
+	operand="true",
+	eq=#if(
+		operator=#toObject(obj="@pubRet").cget(document_results="").getIndex(index="0").cget(OK=""),
+		operand="true",
+		eq=#object(
+			a=updateParaPubInfo.ccall(
+				resourceUrl="@resourceUrl",
+				pubDate=#date(_raw="true"),
+				pdDocId=#toObject(obj="@pubRet").cget(document_results="").getIndex(index="0").cget(doc_ID=""),
+				resourceTitle="@resourceTitle"
+			),
+			b=#object(ok="true",id=#toObject(obj="@pubRet").cget(document_results="").getIndex(index="0").cget(doc_ID=""))
+		).cget(b=""),
+		ne=#object(ok="false",message=#toObject(obj="@pubRet").cget(document_results="").getIndex(index="0").cget(error=""))
+	),
+	ne=#object(ok="false",message="Could not connect to the Learning Registry: Invalid out envelope.")
+).ccall(pubRet=publishParadataToLr);
+
+publishResourceParadataFromApp=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=publishResourceParadata.ccall(resourceTitle=findSolrLrRecTitle)
+).ccall(resourceUrl=decalsPostData.cget(resourceUrl="")).cget(b="").displayJson();
+
+/decalsPublishResourceParadata=publishResourceParadataFromApp;
+
+publishAllResourceParadata=#object(
+	a=allParaPubInfo.valueSet().cforEach(
+		paramName="ppi",
+		op=#if(
+			operator=#toObject(obj="@ppi").cget(lastPublishDate="").toLong(),
+			operand=maxParadataDate.ccall(resourceUrl=#toObject(obj="@ppi").cget(resourceUrl="")),
+			lt=publishResourceParadata.ccall(
+				resourceTitle=findSolrLrRecTitle.ccall(resourceUrl=#toObject(obj="@ppi").cget(resourceUrl="")),
+				resourceUrl=#toObject(obj="@ppi").cget(resourceUrl="")
+			)
+		)
+	),
+	b=allParaPubInfo
+).cget(b="");
+
+publishAllResourceParadataFromApp=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=publishAllResourceParadata
+).cget(b="").displayJson();
+
+/decalsPublishAllResourceParadata=publishAllResourceParadataFromApp;
+
+deleteParadataLrEntry=#if(	
+	operator=paraTrackObj,
+	operand="",
+	ne=#if(	
+		operator=paraTrackObj.cget(paradataDocId=""),
+		operand="",
+		ne=#decalsPublishDeleteToLr(lrDocId=paraTrackObj.cget(paradataDocId=""))
+	)
+);
+#decalsDeleteParadataLrEntry = deleteParadataLrEntry;
+
+deleteResourceParadata=#object(
+	a=#idxDelete(paraTrackDb,key="@resourceUrl"),
+	b=#idxDelete(ratingDb,key="@resourceUrl"),
+	c=#idxDelete(commentDb,key="@resourceUrl")	
+);
+#decalsDeleteResourceParadata = deleteResourceParadata;
+
+
+paradataDb={
+	indexDir=#decalsParaTrackDbDirectory(),
+	databaseName=#decalsParadataDbName(),
+	index=#decalsParadataDbIndexName() 
+};
+
+paradataObj = #idxGet(paradataDb, key="@resourceUrl").decode();
+
+//--------------------------
+//Resource Paradata (View and Collection Count)
+
+resourceParadataObj = #object(
+						resourceUrl="@resourceUrl",
+						viewCount=#if(operator="@viewCount", operand="",
+										eq="0",
+										ne="@viewCount"
+									).ccall(viewCount=paradataObj.cget(viewCount="")),
+						collectionCount=#if(operator="@collectionCount", operand="",
+											eq="0",
+											ne="@collectionCount"
+										).ccall(collectionCount=paradataObj.cget(collectionCount="")),
+					);
+
+//--------------------------
+//Increment paradata view count
+
+incrementViewCount = #object(
+						a=#decode(obj="@paraTrackObj").putInObject(
+														dest="viewCount",
+														item=#add(a=#decode(obj="@paraTrackObj").cget(viewCount=""), b="1")
+													).idxSet(paradataDb, key="@resourceUrl")
+					).ccall(paraTrackObj=#idxGet(paradataDb, key="@resourceUrl")).cget(a="");
+				
+incrementViews = incrementViewCount.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""));
+
+#decalsIncrementViewCount = incrementViews;
+
+/decalsIncrementViewCount = incrementViews;
+
+//--------------------------
+//Increment paradata collection count
+
+incrementCollectionCount = #object(
+								a=#decode(obj="@paraTrackObj").putInObject(
+																dest="collectionCount",
+																item=#add(a=#decode(obj="@paraTrackObj").cget(collectionCount=""), b="1")
+															).idxSet(paradataDb, key="@resourceUrl")
+							).ccall(paraTrackObj=#idxGet(paradataDb, key="@resourceUrl")).cget(a="");
+				
+incrementCollections = incrementCollectionCount.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""));
+
+#decalsIncrementCollectionCount = incrementCollections;
+
+/decalsIncrementCollectionCount = incrementCollections;
+
+//--------------------------
+//Decrement paradata collection count
+
+decrementCollectionCount = #object(
+								a=#decode(obj="@paraTrackObj").putInObject(
+																dest="collectionCount",
+																item=#add(a=#decode(obj="@paraTrackObj").cget(collectionCount=""), b="-1")
+															).idxSet(paradataDb, key="@resourceUrl")
+							).ccall(paraTrackObj=#idxGet(paradataDb, key="@resourceUrl")).cget(a="");
+				
+decrementCollections = decrementCollectionCount.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""));
+
+#decalsDecrementCollectionCount = decrementCollections;
+
+/decalsDecrementCollectionCount = decrementCollections;
+
+
+//--------------------------
+//Get paradata publish info
+
+getParadataForUrlGroup = #object(
+	b=#toArray(obj=decalsPostData.cget(resourceUrls="")).cforEach(
+																threaded="false",
+																paramName="rurl",
+																op=resourceParadataObj.ccall(resourceUrl="@rurl")
+	)
+).cget(b="").displayJson();
+
+/decalsGetParadataForUrlGroup = getParadataForUrlGroup;
+
+redirectBody = #add(
+				a="<html><head>",
+				b="<META http-equiv='refresh' content=00;URL=",
+				c=#if(operator="@resourceUrl", operand="",
+						eq="http://www.eduworks.com",
+						ne="@resourceUrl",
+					),
+				d="></head>",
+				e="<body>",
+				f="You should have been redirected. Click <a href='",
+				g="@resourceUrl", 
+				h="'>Here</a> to go to the link you requested.</body></html>"
+			);
+
+redirectToLink = redirectBody.toString();
+
+/testRedirect = redirectToLink;
+
+incrementViewsAndGo = #object(
+						a=incrementViews,
+						b=redirectToLink
+					).cget(b="");
+
+/decalsIncrementViewsAndGo = incrementViewsAndGo;

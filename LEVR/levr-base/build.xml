@@ -1,0 +1,164 @@
+<project name="levr-base" default="levr-base-dist" basedir=".">
+	<description> 
+  </description>
+
+	<property name="levr.base.name" value="levr-base" />
+	<property name="levr.scripts.dir" value="../levr-scripts" />
+	<property name="levr.base.build.dir" value="../levr-base/web/WEB-INF/classes" />
+	<property name="levr.base.src" value="../levr-base/src/java" />
+	<property name="levr.base.base.src" value="../levr-base-base/src/java" />
+	<property name="levr.base.dist" value="../levr-base/dist" />
+	<property name="levr.base.deps" value="../levr-base/deps" />
+	<property name="levr.base.lib" value="../levr-base/lib" />
+	<property name="levr.base.web.lib" value="../levr-base/web/WEB-INF/lib" />
+	<property name="levr.base.web" value="../levr-base/web" />
+	<property name="levr.base.etc" value="../levr-base/etc" />
+	<property name="levr.base.base.etc" value="../levr-base-base/etc" />
+	<import file="../levr-core/build.xml" />
+
+	<target name="levr-base-copy-config" depends="" description="Copies the src config files to etc, useful in development">
+
+		<copy todir="${levr.base.etc}">
+			<fileset dir="${levr.core.src}">
+				<include name="*.json" />
+				<include name="*.rsl" />
+				<include name="*.rs2" />
+				<include name="**/*.json" />
+				<include name="**/*.rsl" />
+				<include name="**/*.rs2" />
+			</fileset>
+		</copy>
+		<copy todir="${levr.base.etc}">
+			<fileset dir="${levr.base.src}">
+				<include name="*.json" />
+				<include name="*.rsl" />
+				<include name="*.rs2" />
+				<include name="**/*.json" />
+				<include name="**/*.rsl" />
+				<include name="**/*.rs2" />
+			</fileset>
+		</copy>
+		<copy todir="${levr.base.etc}">
+			<fileset dir="${levr.scripts.dir}">
+				<include name="*.json" />
+				<include name="*.rsl" />
+				<include name="*.rs2" />
+				<include name="**/*.json" />
+				<include name="**/*.rsl" />
+				<include name="**/*.rs2" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- used to depend on compile -->
+	<target name="levr-base-docs" depends="" description="generates documentation">
+		<javadoc sourcepath="${src}" defaultexcludes="yes" destdir="${doc}" version="true" use="true" public="true" windowtitle="LEVR API" packagenames="com.eduworks.*" classpathref="compile.classpath" source="1.4">
+			<doctitle>
+							&lt;h1&gt;Levr API Specification&lt;/h1&gt;
+						</doctitle>
+			<bottom>
+							&lt;font size=&quot;-1&quot;&gt;&lt;a href=&quot;mailto:support@eduworks.com&quot;&gt;Feedback&lt;/a&gt;.&lt;/font&gt;
+						</bottom>
+		</javadoc>
+	</target>
+
+	<target name="levr-base-init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<mkdir dir="${levr.base.build.dir}" />
+		<mkdir dir="${levr.base.dist}" />
+		<mkdir dir="web/WEB-INF/classes" />
+		<copy file="web/WEB-INF/logback.xml" todir="web/WEB-INF/classes"/>
+		<mkdir dir="web/WEB-INF/lib" />
+	</target>
+
+	<target name="levr-base-deps">
+		<ant antfile="../levr-core/build.xml" target="levr-core-jar" inheritall="false" />
+	</target>
+
+	<target name="levr-base-compile" depends="eduworks-common-libs, levr-base-init, levr-base-deps" description="compile the source ">
+	    
+		<path id="levr-base-classpath">
+			<pathelement path="${levr.base.build.dir}" />
+			<fileset dir="${eduworks.common.lib.dir}">
+				<include name="**/**/lib/*.jar" />
+				<include name="**/**/deps/*.jar" />
+				<include name="**/**/jars/*.jar" />
+				<include name="**/**/bundles/*.jar" />
+			</fileset>
+			<fileset dir="${eduworks.common.dist}">
+				<include name="${eduworks.common.name}-${eduworks.common.version}.jar" />
+			</fileset>
+			<fileset dir="${levr.core.dist}">
+				<include name="${levr.core.name}-${levr.core.version}.jar" />
+			</fileset>
+		</path>
+	    
+		<javac srcdir="${levr.base.src}" destdir="${levr.base.build.dir}" debug="true" source="1.5" classpathref="levr-base-classpath" />
+		<copy todir="${levr.base.build.dir}">
+			<fileset dir="${levr.base.src}">
+				<include name="*.xml" />
+				<include name="*.json" />
+				<include name="*.class" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="levr-base-jar" depends="levr-base-compile" description="generate the distribution">
+		<delete dir="${levr.base.dist}" />
+		<mkdir dir="${levr.base.dist}" />
+		<jar destfile="${levr.base.dist}/${levr.base.name}-${levr.base.version}.jar">
+			<fileset dir="${levr.base.build.dir}">
+				<include name="*.xml" />
+				<include name="*.json" />
+				<include name="**/*.class" />
+			</fileset>
+		</jar>
+		<jar destfile="${levr.base.dist}/${levr.base.name}.jar">
+			<fileset dir="${levr.base.build.dir}">
+				<include name="*.xml" />
+				<include name="*.json" />
+				<include name="**/*.class" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="levr-base-dist" depends="levr-base-jar" description="generate the distribution"><delete dir="${levr.core.web.lib}" />
+		<copy todir="${levr.base.web.lib}/" file="${levr.core.dist}/${levr.core.name}-${levr.core.version}.jar" />
+		<copy flatten="true" todir="${levr.base.web.lib}/">
+		    <fileset dir="${eduworks.common.lib.dir}">
+				<include name="**/**/lib/*.jar" />
+				<include name="**/**/deps/*.jar" />
+				<include name="**/**/jars/*.jar" />
+				<include name="**/**/bundles/*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${levr.base.web.lib}/" file="${eduworks.common.dist}/${eduworks.common.name}-${eduworks.common.version}.jar" />
+		<zip destfile="dist/levr.war" basedir="web" />
+	</target>
+
+	<target name="levr-base-clean" description="clean up">
+		<delete dir="web/WEB-INF/lib" />
+		<delete dir="web/WEB-INF/classes" />
+		<delete dir="web/WEB-INF/etc" />
+		<delete dir="${levr.base.build.dir}" />
+		<delete dir="${levr.base.dist}" />
+	</target>
+
+	<target name="levr-base-test" depends="levr-base-compile" description="Run JUnit Tests">
+		<!-- clear out the old test results and setup new ones -->
+		<deltree dir="junit" />
+		<mkdir dir="junit" />
+		<junit printsummary="on" newenvironment="true" maxmemory="1024m" fork="true" haltonfailure="false" failureproperty="tests.failed" showoutput="true">
+			<classpath refid="master-classpath" />
+			<batchtest todir="junit">
+				<formatter type="brief" usefile="false" />
+				<formatter type="xml" usefile="true" />
+				<fileset dir="${build.dir}">
+					<include name="**/*Test.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+</project>

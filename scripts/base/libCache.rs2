@@ -1,0 +1,30 @@
+cacheDir = #string(str="./cache");
+cacheName = #string(str="cache");
+
+cacheDb = {
+	indexDir = cacheDir,
+	databaseName = cacheName,
+	index=#if(operator="@index", operand="", eq="0", ne="@index")
+};
+
+setCache = #if(operator=#idxGet(cacheDb, key="@cacheId"), operand="",
+				eq=#object().putInObject(
+									dest="@name",
+									item="@item"
+							),
+				ne=#idxGet(cacheDb, key="@cacheId").toObject().putInObject(
+																dest="@name",
+																item="@item"	
+															)
+			).idxSet(
+				cacheDb, 
+				key="@cacheId", 
+				ttlAccessSeconds=#if(operator="@accessSeconds", operand="", eq="", ne="@accessSeconds")
+			).toObject().getByParam(param="@name");
+
+#setCache = setCache;
+
+getCache = #idxGet(cacheDb, key="@cacheId").toObject().getByParam(param="@name");
+ 
+#getCache = getCache;
+ 
