@@ -25,11 +25,11 @@
     * [Install and configure the decals-ui project](#3_15)
     * [Open decals/js/installation.settings for edit](#3_15_1)
     * [Open /var/lib/tomcat7/etc/decals.competency.config.rs2 for edit](#3_15_2)
-..* [Open /var/lib/tomcat7/etc/decals.config.rs2 for edit](#3_15_3)
-..* [Installing the competency-ui source](#3_16)
-..* [Open /var/lib/tomcat7/webapps/ROOT/competency/index.html for edit](#3_16_1)
-..* [Open /var/lib/tomcat7/webapps/ROOT/competency/js/definitions.js for edit](#3_16_2)
-..* [Final Steps](#3_17)
+    * [Open /var/lib/tomcat7/etc/decals.config.rs2 for edit](#3_15_3)
+    * [Installing the competency-ui source](#3_16)
+    * [Open /var/lib/tomcat7/webapps/ROOT/competency/index.html for edit](#3_16_1)
+    * [Open /var/lib/tomcat7/webapps/ROOT/competency/js/definitions.js for edit](#3_16_2)
+    * [Final Steps](#3_17)
 
 
 # <a name="1_0"></a>DECALS
