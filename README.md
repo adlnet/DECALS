@@ -33,7 +33,7 @@
 
 
 # <a name="1_0"></a>DECALS
-*DECALS, stands for **Data for Enabling Content in Adaptive Learning Systems**. DECALS was a follow-on project to RUSSEL with disparate high-level goals, all of which were achieved during the two-year project*.
+*DECALS, stands for Data for Enabling Content in Adaptive Learning Systems. DECALS was a follow-on project to RUSSEL with disparate high-level goals, all of which were achieved during the two-year project*.
 
 **GOAL 1**: Improve search in the LR by adding “semantic search” capabilities.
 
@@ -71,14 +71,14 @@ These are instructions for getting the RUSSEL, DECALS, and Competency System ins
 + EwGWTLib
 + competency-ui
 + LEVR
-⋅⋅* eduworks-common
-⋅⋅* levr-core
-⋅⋅* levr-base
+    * eduworks-common
+    * levr-core
+    * levr-base
 + scripts
-⋅⋅* base-v2
-⋅⋅* base
-⋅⋅* competency
-⋅⋅* decals
+    * base-v2
+    * base
+    * competency
+    * decals
 
 
 #### <a name="3_0_2"></a>Prerequisites:
