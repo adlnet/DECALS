@@ -30,6 +30,8 @@
     * [Open /var/lib/tomcat7/webapps/ROOT/competency/index.html for edit](#3_16_1)
     * [Open /var/lib/tomcat7/webapps/ROOT/competency/js/definitions.js for edit](#3_16_2)
     * [Final Steps](#3_17)
++ [Contributing to the Project](#CTTP)
++ [License](#License)
 
 
 # <a name="1_0"></a>DECALS
@@ -491,7 +493,7 @@ The following lines should be edited for your local server environment:
 line 9:
 ```
 change <base href="/"> to <base href="/competency/">
-
+```
 
 #### <a name="3_16_2"></a>Open /var/lib/tomcat7/webapps/ROOT/competency/js/definitions.js for edit: 
 The following lines should be edited for your local server environment:
@@ -523,3 +525,22 @@ sudo service tomcat7 start
 Navigate to http://<server url>/decals/ to visit DECALS website
 Navigate to http://<server url>/darSolr/ to check darSolr DB stats
 Navigate to http://<server url>/registrySolr/ to check registrySolr DB stats
+
+
+## Contributing to the project <a name="CTTP"></a>
+We welcome contributions to this project. Fork this repository, make changes, and submit pull requests. If you're not comfortable with editing the code, please [submit an issue](https://github.com/adlnet/DECALS/issues) and we'll be happy to address it. 
+
+## License <a name="License"></a>
+   Copyright &copy;2016 Advanced Distributed Learning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
